@@ -7,6 +7,7 @@
 # Precompiled Headers
 *.gch
 *.pch
+*.ipch
 
 # Compiled Dynamic libraries
 *.so
@@ -77,3 +78,16 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# Visual C++ projects
+*.suo
+*.sdf
+RT/RT/Build
+RT/RTCmd/Build
+
+# Unity Project
+RT/RTGUI/*.csproj
+RT/RTGUI/ProjectSettings
+RT/RTGUI/*.sln
+RT/RTGUI/Library
+RT/RTGUI/Temp
