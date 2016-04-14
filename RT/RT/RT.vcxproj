@@ -1,0 +1,127 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Headers\BoundingBox.h" />
+    <ClInclude Include="Headers\Camera.h" />
+    <ClInclude Include="Headers\FastRand.h" />
+    <ClInclude Include="Headers\Main.hpp" />
+    <ClInclude Include="Headers\Material.h" />
+    <ClInclude Include="Headers\Material_Lambert.h" />
+    <ClInclude Include="Headers\Material_Metal.h" />
+    <ClInclude Include="Headers\Mathf.h" />
+    <ClInclude Include="Headers\Matrix4f.h" />
+    <ClInclude Include="Headers\Mesh.h" />
+    <ClInclude Include="Headers\Plane.h" />
+    <ClInclude Include="Headers\Quaternion.h" />
+    <ClInclude Include="Headers\Ray.h" />
+    <ClInclude Include="Headers\RT.hpp" />
+    <ClInclude Include="Headers\Shape.h" />
+    <ClInclude Include="Headers\SkyMaterial.h" />
+    <ClInclude Include="Headers\SkyMaterial_SimpleColor.h" />
+    <ClInclude Include="Headers\SkyMaterial_VerticalGradient.h" />
+    <ClInclude Include="Headers\Sphere.h" />
+    <ClInclude Include="Headers\Texture2D.h" />
+    <ClInclude Include="Headers\Tracer.h" />
+    <ClInclude Include="Headers\Transform.h" />
+    <ClInclude Include="Headers\Triangle.h" />
+    <ClInclude Include="Headers\Vector3f.h" />
+    <ClInclude Include="Headers\Vertex.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Impl\BoundingBox.cpp" />
+    <ClCompile Include="Impl\Camera.cpp" />
+    <ClCompile Include="Impl\Material.cpp" />
+    <ClCompile Include="Impl\Material_Lambert.cpp" />
+    <ClCompile Include="Impl\Material_Metal.cpp" />
+    <ClCompile Include="Impl\Mathf.cpp" />
+    <ClCompile Include="Impl\Matrix4f.cpp" />
+    <ClCompile Include="Impl\Mesh.cpp" />
+    <ClCompile Include="Impl\Plane.cpp" />
+    <ClCompile Include="Impl\Quaternion.cpp" />
+    <ClCompile Include="Impl\SkyMaterial_SimpleColor.cpp" />
+    <ClCompile Include="Impl\SkyMaterial_VerticalGradient.cpp" />
+    <ClCompile Include="Impl\Sphere.cpp" />
+    <ClCompile Include="Impl\Texture2D.cpp" />
+    <ClCompile Include="Impl\Tracer.cpp" />
+    <ClCompile Include="Impl\Transform.cpp" />
+    <ClCompile Include="Impl\Triangle.cpp" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{76FEFAE8-101C-4274-9F1D-C05DAA976547}</ProjectGuid>
+    <RootNamespace>RT</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <TargetExt>.dll</TargetExt>
+    <OutDir>$(SolutionDir)\$(ProjectName)\Build\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)\$(ProjectName)\Build\temp\$(Configuration)\</IntDir>
+    <TargetName>$(ProjectName)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <TargetExt>.dll</TargetExt>
+    <OutDir>$(SolutionDir)\$(ProjectName)\Build\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)\$(ProjectName)\Build\temp\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;RT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;RT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

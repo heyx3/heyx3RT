@@ -1,0 +1,153 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Impl">
+      <UniqueIdentifier>{1aa34547-eff7-41ac-8f4d-9f42fba968e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{59456a17-e4d9-4348-bb60-22c66ebf6df4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Math">
+      <UniqueIdentifier>{cb8166e3-b882-441e-add3-3b4f09d7b0b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\TracerEngine">
+      <UniqueIdentifier>{3bcab04b-ce5b-407a-858e-42f519c62412}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\TracerEngine\Materials">
+      <UniqueIdentifier>{849a99b5-0bec-4e60-8c96-938d12125c52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Shapes">
+      <UniqueIdentifier>{98c3b541-cf50-4dd0-9458-a3a8db7231b9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Headers\Camera.h">
+      <Filter>Headers\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\FastRand.h">
+      <Filter>Headers\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Mathf.h">
+      <Filter>Headers\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Matrix4f.h">
+      <Filter>Headers\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Quaternion.h">
+      <Filter>Headers\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Vector3f.h">
+      <Filter>Headers\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Mesh.h">
+      <Filter>Headers\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Ray.h">
+      <Filter>Headers\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Shape.h">
+      <Filter>Headers\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Sphere.h">
+      <Filter>Headers\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Triangle.h">
+      <Filter>Headers\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Vertex.h">
+      <Filter>Headers\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\BoundingBox.h">
+      <Filter>Headers\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Material.h">
+      <Filter>Headers\TracerEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Texture2D.h">
+      <Filter>Headers\TracerEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Tracer.h">
+      <Filter>Headers\TracerEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Main.hpp">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Transform.h">
+      <Filter>Headers\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\RT.hpp">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Plane.h">
+      <Filter>Headers\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\SkyMaterial.h">
+      <Filter>Headers\TracerEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\SkyMaterial_VerticalGradient.h">
+      <Filter>Headers\TracerEngine\Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Material_Lambert.h">
+      <Filter>Headers\TracerEngine\Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Material_Metal.h">
+      <Filter>Headers\TracerEngine\Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\SkyMaterial_SimpleColor.h">
+      <Filter>Headers\TracerEngine\Materials</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Impl\Quaternion.cpp">
+      <Filter>Impl</Filter>
+    </ClCompile>
+    <ClCompile Include="Impl\Matrix4f.cpp">
+      <Filter>Impl</Filter>
+    </ClCompile>
+    <ClCompile Include="Impl\Camera.cpp">
+      <Filter>Impl</Filter>
+    </ClCompile>
+    <ClCompile Include="Impl\Triangle.cpp">
+      <Filter>Impl</Filter>
+    </ClCompile>
+    <ClCompile Include="Impl\Mesh.cpp">
+      <Filter>Impl</Filter>
+    </ClCompile>
+    <ClCompile Include="Impl\Sphere.cpp">
+      <Filter>Impl</Filter>
+    </ClCompile>
+    <ClCompile Include="Impl\Texture2D.cpp">
+      <Filter>Impl</Filter>
+    </ClCompile>
+    <ClCompile Include="Impl\Tracer.cpp">
+      <Filter>Impl</Filter>
+    </ClCompile>
+    <ClCompile Include="Impl\BoundingBox.cpp">
+      <Filter>Impl</Filter>
+    </ClCompile>
+    <ClCompile Include="Impl\Material.cpp">
+      <Filter>Impl</Filter>
+    </ClCompile>
+    <ClCompile Include="Impl\Mathf.cpp">
+      <Filter>Impl</Filter>
+    </ClCompile>
+    <ClCompile Include="Impl\Transform.cpp">
+      <Filter>Impl</Filter>
+    </ClCompile>
+    <ClCompile Include="Impl\Plane.cpp">
+      <Filter>Impl</Filter>
+    </ClCompile>
+    <ClCompile Include="Impl\SkyMaterial_VerticalGradient.cpp">
+      <Filter>Impl</Filter>
+    </ClCompile>
+    <ClCompile Include="Impl\Material_Lambert.cpp">
+      <Filter>Impl</Filter>
+    </ClCompile>
+    <ClCompile Include="Impl\Material_Metal.cpp">
+      <Filter>Impl</Filter>
+    </ClCompile>
+    <ClCompile Include="Impl\SkyMaterial_SimpleColor.cpp">
+      <Filter>Impl</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
