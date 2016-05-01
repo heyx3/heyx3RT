@@ -1,6 +1,12 @@
 #include "../Headers/BoundingBox.h"
 
 
+namespace
+{
+    float max(float f1, float f2) { return (f1 > f2) ? f1 : f2; }
+    float min(float f1, float f2) { return (f1 > f2) ? f2 : f1; }
+}
+
 bool BoundingBox::RayIntersects(const Ray& ray) const
 {
     Vector3f dirFrac = ray.GetDir().Reciprocal();

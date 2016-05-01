@@ -17,4 +17,8 @@ public:
 
     virtual bool Scatter(const Ray& rIn, const Vertex& surf, const Shape& shpe,
                          FastRand& prng, Vector3f& attenuation, Ray& rOut) const override;
+
+
+    virtual void WriteData(DataWriter& writer) const override;
+    virtual void ReadData(DataReader& reader) override;
 };

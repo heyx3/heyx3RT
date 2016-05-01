@@ -1,9 +1,10 @@
 #pragma once
 
 #include "Matrix4f.h"
+#include "DataSerialization.h"
 
 
-struct RT_API Transform
+struct RT_API Transform : public ISerializable
 {
 public:
     
@@ -28,6 +29,10 @@ public:
 
     void SetRot(const Quaternion& newRot);
     void Rotate(const Quaternion& amount) { SetRot(Quaternion(rot, amount)); }
+
+
+    virtual void WriteData(DataWriter& writer) const override;
+    virtual void ReadData(DataReader& reader) override;
 
 
 private:

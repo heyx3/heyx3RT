@@ -2,10 +2,11 @@
 
 #include "Main.hpp"
 #include "Tracer.h"
+#include "DataSerialization.h"
 
 
 //A way to calculate the color of the sky (i.e. a ray that didn't hit anything).
-class RT_API SkyMaterial
+class RT_API SkyMaterial : public ISerializable
 {
 public:
 
@@ -14,4 +15,7 @@ public:
 
     //Gets the color on the given surface using the given ray tracer.
     virtual Vector3f GetColor(const Ray& ray) const = 0;
+
+    virtual void ReadData(DataReader& data) override { }
+    virtual void WriteData(DataWriter& data) const override { }
 };

@@ -22,6 +22,10 @@ public:
     virtual bool CastRay(const Ray& ray, Vertex& outHit) const override;
 
 
+    virtual void WriteData(DataWriter& writer) const override;
+    virtual void ReadData(DataReader& reader) override;
+
+
 private:
 
     BoundingBox bounds;

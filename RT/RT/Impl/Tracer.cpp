@@ -8,10 +8,17 @@
 
 
 #ifdef OS_WINDOWS
-#include <Windows.h>
+
 #else
 #include <pthread.h>
 #endif
+
+
+namespace
+{
+    float max(float f1, float f2) { return (f1 > f2) ? f1 : f2; }
+    float min(float f1, float f2) { return (f1 > f2) ? f2 : f1; }
+}
 
 
 namespace
@@ -231,4 +238,14 @@ void Tracer::TraceFullImage(const Camera& cam, Texture2D& tex,
         pthread_join(threads[i], &dummy);
 #endif
     }
+}
+
+void Tracer::WriteData(DataWriter& writer) const
+{
+    writer.WriteInt(MaxBounces, "MaxBounces");
+    
+}
+void Tracer::ReadData(DataReader& reader)
+{
+
 }

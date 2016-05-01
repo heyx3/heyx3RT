@@ -4,9 +4,10 @@
 
 #include "Main.hpp"
 #include "Vector3f.h"
+#include "DataSerialization.h"
 
-//TODO: Generic "SurfaceColor" class that gets a color based on Vertex and Ray input. Texture2D will inherit from it.
 
+//TODO: Inherit from SurfaceColor.
 class RT_API Texture2D
 {
 public:

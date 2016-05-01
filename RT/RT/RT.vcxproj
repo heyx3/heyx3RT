@@ -25,12 +25,18 @@
     <ClInclude Include="Headers\Quaternion.h" />
     <ClInclude Include="Headers\Ray.h" />
     <ClInclude Include="Headers\RT.hpp" />
+    <ClInclude Include="Headers\DataSerialization.h" />
+    <ClInclude Include="Headers\JsonSerialization.h" />
     <ClInclude Include="Headers\Shape.h" />
     <ClInclude Include="Headers\SkyMaterial.h" />
     <ClInclude Include="Headers\SkyMaterial_SimpleColor.h" />
     <ClInclude Include="Headers\SkyMaterial_VerticalGradient.h" />
     <ClInclude Include="Headers\Sphere.h" />
+    <ClInclude Include="Headers\MaterialValue.h" />
+    <ClInclude Include="Headers\MaterialValues.h" />
     <ClInclude Include="Headers\Texture2D.h" />
+    <ClInclude Include="Headers\ThirdParty\base64.h" />
+    <ClInclude Include="Headers\ThirdParty\json.hpp" />
     <ClInclude Include="Headers\Tracer.h" />
     <ClInclude Include="Headers\Transform.h" />
     <ClInclude Include="Headers\Triangle.h" />
@@ -40,6 +46,7 @@
   <ItemGroup>
     <ClCompile Include="Impl\BoundingBox.cpp" />
     <ClCompile Include="Impl\Camera.cpp" />
+    <ClCompile Include="Impl\DataSerialization.cpp" />
     <ClCompile Include="Impl\Material.cpp" />
     <ClCompile Include="Impl\Material_Lambert.cpp" />
     <ClCompile Include="Impl\Material_Metal.cpp" />
@@ -48,10 +55,12 @@
     <ClCompile Include="Impl\Mesh.cpp" />
     <ClCompile Include="Impl\Plane.cpp" />
     <ClCompile Include="Impl\Quaternion.cpp" />
+    <ClCompile Include="Impl\JsonSerialization.cpp" />
     <ClCompile Include="Impl\SkyMaterial_SimpleColor.cpp" />
     <ClCompile Include="Impl\SkyMaterial_VerticalGradient.cpp" />
     <ClCompile Include="Impl\Sphere.cpp" />
     <ClCompile Include="Impl\Texture2D.cpp" />
+    <ClCompile Include="Impl\ThirdParty\base64.cpp" />
     <ClCompile Include="Impl\Tracer.cpp" />
     <ClCompile Include="Impl\Transform.cpp" />
     <ClCompile Include="Impl\Triangle.cpp" />

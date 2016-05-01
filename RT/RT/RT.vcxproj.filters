@@ -19,6 +19,18 @@
     <Filter Include="Headers\Shapes">
       <UniqueIdentifier>{98c3b541-cf50-4dd0-9458-a3a8db7231b9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Headers\TracerEngine\MaterialValue">
+      <UniqueIdentifier>{8db67d7f-afe6-4992-91e0-29e0d5e5f728}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Serializer">
+      <UniqueIdentifier>{c99e0903-6242-4dab-bd0d-2f19cf0598e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Impl\Third Party">
+      <UniqueIdentifier>{f4990294-73e6-45a8-b77c-51a2fc13f241}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Third Party">
+      <UniqueIdentifier>{0af378f1-5a27-4abb-9ccf-51fb2cb773f2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\Camera.h">
@@ -96,6 +108,24 @@
     <ClInclude Include="Headers\SkyMaterial_SimpleColor.h">
       <Filter>Headers\TracerEngine\Materials</Filter>
     </ClInclude>
+    <ClInclude Include="Headers\MaterialValue.h">
+      <Filter>Headers\TracerEngine\MaterialValue</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\MaterialValues.h">
+      <Filter>Headers\TracerEngine\MaterialValue</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\DataSerialization.h">
+      <Filter>Headers\Serializer</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\JsonSerialization.h">
+      <Filter>Headers\Serializer</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\ThirdParty\json.hpp">
+      <Filter>Headers\Third Party</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\ThirdParty\base64.h">
+      <Filter>Headers\Third Party</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Impl\Quaternion.cpp">
@@ -147,6 +177,15 @@
       <Filter>Impl</Filter>
     </ClCompile>
     <ClCompile Include="Impl\SkyMaterial_SimpleColor.cpp">
+      <Filter>Impl</Filter>
+    </ClCompile>
+    <ClCompile Include="Impl\JsonSerialization.cpp">
+      <Filter>Impl</Filter>
+    </ClCompile>
+    <ClCompile Include="Impl\ThirdParty\base64.cpp">
+      <Filter>Impl\Third Party</Filter>
+    </ClCompile>
+    <ClCompile Include="Impl\DataSerialization.cpp">
       <Filter>Impl</Filter>
     </ClCompile>
   </ItemGroup>

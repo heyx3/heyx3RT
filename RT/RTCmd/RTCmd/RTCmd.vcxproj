@@ -15,6 +15,7 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>RTCmd</RootNamespace>
     <ProjectName>RTCmd</ProjectName>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -42,15 +43,15 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)\$(ProjectName)\Build\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)\$(ProjectName)\Build\temp\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)$(ProjectName)\Build\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)$(ProjectName)\Build\temp\$(Configuration)\</IntDir>
     <IncludePath>$(SolutionDir)\RT\Headers;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)\RT\Build\$(Configuration);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)\$(ProjectName)\Build\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)\$(ProjectName)\Build\temp\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)$(ProjectName)\Build\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)$(ProjectName)\Build\temp\$(Configuration)\</IntDir>
     <IncludePath>$(SolutionDir)\RT\Headers;$(IncludePath)</IncludePath>
     <TargetName>$(ProjectName)</TargetName>
     <LibraryPath>$(SolutionDir)\RT\Build\$(Configuration);$(LibraryPath)</LibraryPath>
@@ -72,7 +73,8 @@
       <AdditionalDependencies>RT.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y "$(SolutionDir)RT\Build\$(Configuration)\*.dll" "$(TargetDir)*.dll"*</Command>
+      <Command>xcopy /Y "$(SolutionDir)RT\Build\$(Configuration)\*.dll" "$(TargetDir)*.dll"*
+xcopy /y "$(SolutionDir)RT\Build\$(Configuration)\*.pdb" "$(TargetDir)*.pdb"*</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

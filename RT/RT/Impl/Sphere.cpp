@@ -1,6 +1,13 @@
 #include "../Headers/Sphere.h"
 
 
+namespace
+{
+    float max(float f1, float f2) { return (f1 > f2) ? f1 : f2; }
+    float min(float f1, float f2) { return (f1 > f2) ? f2 : f1; }
+}
+
+
 void Sphere::PrecalcData()
 {
     //http://stackoverflow.com/questions/4368961/calculating-an-aabb-for-a-transformed-sphere

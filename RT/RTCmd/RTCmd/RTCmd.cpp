@@ -36,6 +36,8 @@ Exit codes:
 #include "XmlData.h"
 #include "bmp_io.hpp"
 
+#include "../../RT/Headers/JsonSerialization.h"
+
 
 namespace
 {

@@ -8,6 +8,7 @@
 #include "Shape.h"
 #include "Camera.h"
 #include "Texture2D.h"
+#include "DataSerialization.h"
 
 
 class Material;
@@ -15,7 +16,7 @@ class SkyMaterial;
 
 
 //A thread-safe ray-tracer.
-class RT_API Tracer
+class RT_API Tracer : public ISerializable
 {
 public:
 
@@ -48,6 +49,10 @@ public:
     //Note that passing 1 for the number of threads means that no extra threads will be created.
     void TraceFullImage(const Camera& cam, Texture2D& outTex, int nThreads,
                         float gamma = 2.0f, int samplesPerPixel = 100) const;
+
+
+    virtual void ReadData(DataReader& data) override;
+    virtual void WriteData(DataWriter& data) const override;
   
 
 private:

@@ -16,4 +16,8 @@ public:
 
 
     virtual Vector3f GetColor(const Ray& ray) const override;
+
+
+    virtual void WriteData(DataWriter& writer) const override;
+    virtual void ReadData(DataReader& reader) override;
 };

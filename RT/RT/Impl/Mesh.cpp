@@ -33,12 +33,12 @@ void Mesh::PrecalcData()
     {
         for (int i = 0; i < 3; ++i)
         {
-            bounds.Min.x = min(bounds.Min.x, Tris[tri].Verts[i].Pos.x);
-            bounds.Min.y = min(bounds.Min.y, Tris[tri].Verts[i].Pos.y);
-            bounds.Min.z = min(bounds.Min.z, Tris[tri].Verts[i].Pos.z);
-            bounds.Max.x = max(bounds.Max.x, Tris[tri].Verts[i].Pos.x);
-            bounds.Max.y = max(bounds.Max.y, Tris[tri].Verts[i].Pos.y);
-            bounds.Max.z = max(bounds.Max.z, Tris[tri].Verts[i].Pos.z);
+            bounds.Min.x = std::fminf(bounds.Min.x, Tris[tri].Verts[i].Pos.x);
+            bounds.Min.y = std::fminf(bounds.Min.y, Tris[tri].Verts[i].Pos.y);
+            bounds.Min.z = std::fminf(bounds.Min.z, Tris[tri].Verts[i].Pos.z);
+            bounds.Max.x = std::fmaxf(bounds.Max.x, Tris[tri].Verts[i].Pos.x);
+            bounds.Max.y = std::fmaxf(bounds.Max.y, Tris[tri].Verts[i].Pos.y);
+            bounds.Max.z = std::fmaxf(bounds.Max.z, Tris[tri].Verts[i].Pos.z);
         }
     }
 }

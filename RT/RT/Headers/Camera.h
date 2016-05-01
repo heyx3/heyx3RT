@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Matrix4f.h"
+#include "DataSerialization.h"
 
 
 //TODO: Most of this isn't needed for ray-tracing, including FOV and z clip planes.
@@ -12,7 +13,7 @@
 //   - If "LockUp" is false, the camera's Up vector is not locked in any way.
 //Note that rolling this camera or rotating it with a Quaternion will change the Up vector
 //    regardless of "LockUp".
-class RT_API Camera
+class RT_API Camera : public ISerializable
 {
 public:
 
@@ -54,6 +55,10 @@ public:
 	void GetViewTransform(Matrix4f& outM) const;
     void GetPerspectiveProjection(Matrix4f& outM) const;
     void GetOrthoProjection(Matrix4f& outM) const;
+
+
+    virtual void ReadData(DataReader& data) override;
+    virtual void WriteData(DataWriter& data) const override;
 	
 
 private:

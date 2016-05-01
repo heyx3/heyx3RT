@@ -7,6 +7,7 @@
 #include "Shape.h"
 
 
+//TODO: Also provide "IndexedMesh" class.
 struct RT_API Mesh : public Shape
 {
 public:
@@ -25,6 +26,10 @@ public:
 
     virtual void GetBoundingBox(BoundingBox& b) const override { b = bounds; }
     virtual bool CastRay(const Ray& ray, Vertex& outHit) const override;
+
+
+    virtual void WriteData(DataWriter& writer) const override;
+    virtual void ReadData(DataReader& reader) override;
 
 
 private:
