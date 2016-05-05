@@ -11,3 +11,4 @@
 #include "Material_Metal.h"
 #include "SkyMaterial_SimpleColor.h"
 #include "SkyMaterial_VerticalGradient.h"
+#include "MaterialValues.h"

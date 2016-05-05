@@ -201,7 +201,7 @@ std::string XmlData::FromFile(const std::string& filePath,
                 triEl = triEl->NextSiblingElement("Tri");
             }
 
-            Mesh* ms = new Mesh(tris.data(), tris.size());
+            Mesh* ms = new Mesh(tris);
             ms->Tr = tr;
             outShapes[i] = ms;
         }
@@ -358,9 +358,9 @@ std::string XmlData::ToFile(const std::string& filePath,
             shapeEl->SetAttribute("Type", "Mesh");
             Mesh& msh = dynamic_cast<Mesh&>(shpe);
 
-            shapeEl->SetAttribute("NTris", msh.NTris);
+            shapeEl->SetAttribute("NTris", msh.Tris.size());
 
-            for (int k = 0; k < msh.NTris; ++k)
+            for (int k = 0; k < msh.Tris.size(); ++k)
             {
                 Triangle& tri = msh.Tris[k];
                 tinyxml2::XMLElement* triEl = doc.NewElement("Tri");

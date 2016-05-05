@@ -1,6 +1,9 @@
 #include "../Headers/Plane.h"
 
 
+ADD_SHAPE_REFLECTION_DATA_CPP(Plane);
+
+
 namespace
 {
     float max(float f1, float f2) { return (f1 > f2) ? f1 : f2; }
@@ -73,4 +76,14 @@ bool Plane::CastRay(const Ray& ray, Vertex& outHit) const
     outHit.UV[1] = outHit.Pos.Dot(bitangent);
 
     return true;
+}
+void Plane::WriteData(DataWriter& writer) const
+{
+    Shape::WriteData(writer);
+    writer.WriteBool(IsOneSided, "IsOneSided");
+}
+void Plane::ReadData(DataReader& reader)
+{
+    Shape::ReadData(reader);
+    reader.ReadBool(IsOneSided, "IsOneSided");
 }

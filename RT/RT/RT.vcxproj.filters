@@ -48,9 +48,6 @@
     <ClInclude Include="Headers\Quaternion.h">
       <Filter>Headers\Math</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\Vector3f.h">
-      <Filter>Headers\Math</Filter>
-    </ClInclude>
     <ClInclude Include="Headers\Mesh.h">
       <Filter>Headers\Shapes</Filter>
     </ClInclude>
@@ -126,6 +123,24 @@
     <ClInclude Include="Headers\ThirdParty\base64.h">
       <Filter>Headers\Third Party</Filter>
     </ClInclude>
+    <ClInclude Include="Headers\UniquePtr.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\ThirdParty\bmp_io.hpp">
+      <Filter>Headers\Third Party</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\ThirdParty\lodepng.h">
+      <Filter>Headers\Third Party</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\SharedPtr.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Vectors.h">
+      <Filter>Headers\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Vectorf.h">
+      <Filter>Headers\TracerEngine\MaterialValue</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Impl\Quaternion.cpp">
@@ -186,6 +201,27 @@
       <Filter>Impl\Third Party</Filter>
     </ClCompile>
     <ClCompile Include="Impl\DataSerialization.cpp">
+      <Filter>Impl</Filter>
+    </ClCompile>
+    <ClCompile Include="Impl\SkyMaterial.cpp">
+      <Filter>Impl</Filter>
+    </ClCompile>
+    <ClCompile Include="Impl\Shape.cpp">
+      <Filter>Impl</Filter>
+    </ClCompile>
+    <ClCompile Include="Impl\MaterialValues.cpp">
+      <Filter>Impl</Filter>
+    </ClCompile>
+    <ClCompile Include="Impl\MaterialValue.cpp">
+      <Filter>Impl</Filter>
+    </ClCompile>
+    <ClCompile Include="Impl\ThirdParty\bmp_io.cpp">
+      <Filter>Impl\Third Party</Filter>
+    </ClCompile>
+    <ClCompile Include="Impl\ThirdParty\lodepng.cpp">
+      <Filter>Impl\Third Party</Filter>
+    </ClCompile>
+    <ClCompile Include="Impl\Vectorf.cpp">
       <Filter>Impl</Filter>
     </ClCompile>
   </ItemGroup>

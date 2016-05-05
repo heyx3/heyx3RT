@@ -1,6 +1,5 @@
 #include "../Headers/DataSerialization.h"
 
-#include "../Headers/Vector3f.h"
 #include "../Headers/Quaternion.h"
 
 
@@ -71,20 +70,20 @@ namespace
     };
 }
 
-void DataWriter::WriteVec3f(const Vector3f& v, const char* name)
+void DataWriter::WriteVec3f(const Vector3f& v, const std::string& name)
 {
     WriteDataStructure(Vector3f_Writable(v), name);
 }
-void DataReader::ReadVec3f(Vector3f& v, const char* name)
+void DataReader::ReadVec3f(Vector3f& v, const std::string& name)
 {
     ReadDataStructure(Vector3f_Readable(v), name);
 }
 
-void DataWriter::WriteQuaternion(const Quaternion& q, const char* name)
+void DataWriter::WriteQuaternion(const Quaternion& q, const std::string& name)
 {
     WriteDataStructure(Quaternion_Writable(q), name);
 }
-void DataReader::ReadQuaternion(Quaternion& q, const char* name)
+void DataReader::ReadQuaternion(Quaternion& q, const std::string& name)
 {
     ReadDataStructure(Quaternion_Readable(q), name);
 }

@@ -1,17 +1,18 @@
 #pragma once
 
 #include "Material.h"
+#include "MaterialValues.h"
 
 
-//A solid color material.
 class RT_API Material_Lambert : public Material
 {
 public:
 
-    Vector3f Color;
+    MaterialValue::Ptr Color;
 
     
-    Material_Lambert(Vector3f col = Vector3f(1.0f, 1.0f, 1.0f)) : Color(col) { }
+    Material_Lambert(MaterialValue::Ptr& col = new MaterialValue_Constant(Vector3f(1.0f, 1.0f, 1.0f)))
+        : Color(col.Release()) { }
 
 
     virtual bool Scatter(const Ray& rIn, const Vertex& surface, const Shape& shpe,
@@ -20,4 +21,7 @@ public:
 
     virtual void WriteData(DataWriter& writer) const override;
     virtual void ReadData(DataReader& reader) override;
+
+
+    ADD_MATERIAL_REFLECTION_DATA_H(Material_Lambert);
 };

@@ -47,87 +47,73 @@ public:
     //The exception value that's thrown if some operation fails.
     static const int EXCEPTION_FAILURE = 666;
 
-    static const int MAX_ERROR_SIZE = 128;
-
     //An error message that may be set when EXCEPTION_FAILURE is thrown.
-    char ErrorMessage[MAX_ERROR_SIZE] = "";
+    std::string ErrorMessage = "";
 
 
+    DataWriter() { }
     virtual ~DataWriter(void) { }
 
 
-    virtual void WriteBool(bool value, const char* name) = 0;
-    virtual void WriteByte(unsigned char value, const char* name) = 0;
-    virtual void WriteInt(int value, const char* name) = 0;
-    virtual void WriteUInt(unsigned int value, const char* name) = 0;
-    virtual void WriteFloat(float value, const char* name) = 0;
-    virtual void WriteDouble(double value, const char* name) = 0;
-    virtual void WriteString(const char* value, const char* name) = 0;
-    virtual void WriteBytes(const unsigned char* bytes, size_t nBytes, const char* name) = 0;
+    virtual void WriteBool(bool value, const std::string& name) = 0;
+    virtual void WriteByte(unsigned char value, const std::string& name) = 0;
+    virtual void WriteInt(int value, const std::string& name) = 0;
+    virtual void WriteUInt(unsigned int value, const std::string& name) = 0;
+    virtual void WriteFloat(float value, const std::string& name) = 0;
+    virtual void WriteDouble(double value, const std::string& name) = 0;
+    virtual void WriteString(const std::string& value, const std::string& name) = 0;
+    virtual void WriteBytes(const unsigned char* bytes, size_t nBytes, const std::string& name) = 0;
     
-    virtual void WriteVec3f(const Vector3f& v, const char* name);
-    virtual void WriteQuaternion(const Quaternion& q, const char* name);
+    virtual void WriteVec3f(const Vector3f& v, const std::string& name);
+    virtual void WriteQuaternion(const Quaternion& q, const std::string& name);
 
 
     //Writes a data structure that implements the IWritable interface.
-    virtual void WriteDataStructure(const IWritable& toSerialize, const char* name) = 0;
+    virtual void WriteDataStructure(const IWritable& toSerialize, const std::string& name) = 0;
 
 
-    //A function that writes the given element of a collection using the given DataWriter,
-    //   with optional data passed in.
-    typedef void(*ElementWriter)(DataWriter& writer, const void* elementToWrite,
-                                 size_t elementIndex, void* userData);
-    //Writes a collection of some kind of data.
-    //TODO: Implement this using templates in the same way that "WriteDictionary" is implemented.
-    virtual void WriteCollection(ElementWriter writerFunc, const char* name,
-                                 size_t bytesPerElement,
-                                 const void* collection, size_t collectionSize,
-                                 void* userData = 0) = 0;
+    template<typename T>
+    //Writes a given element into the given DataWriter with the given name.
+    using ElementWriter = void(*)(DataWriter& writer, const T& t, const std::string& name);
 
-
-    template<typename Key, typename Value>
-    //Writes a key and value pair.
-    using DictElementWriter = void(*)(DataWriter& writer, const Key* k, const Value* v, void* userData);
-
-    template<typename Key, typename Value>
-    //Writes a set of key-value pairs.
-    void WriteDictionary(const std::unordered_map<Key, Value>& toWrite,
-                         DictElementWriter<Key, Value> pairWriter,
-                         const char* name, void* userData = 0)
+    template<typename T>
+    void WriteList(const T* listData, size_t nValues,
+                   ElementWriter<T> elementWriter,
+                   const std::string& name)
     {
-        KVPDict_Write<Key, Value> helper(toWrite, pairWriter, userData);
+        CollectionWrite<T> helper(listData, nValues, elementWriter);
         WriteDataStructure(helper, name);
     }
 
 private:
 
-    #pragma region Helper data structure for "WriteDictionary()"
+    #pragma region Helper data structure for "WriteList()"
 
-    template<typename Key, typename Value>
-    //Used for "WriteDictionary()", because C++ doesn't like data structures inside a templated function.
-    struct KVPDict_Write : public IWritable
+    template<typename T>
+    struct CollectionWrite : public IWritable
     {
-        const std::unordered_map<Key, Value>& Dict;
-        DictElementWriter<Key, Value> WriterFunc;
-        void* pData;
+        const T* Values;
+        size_t NValues;
+        ElementWriter<T> Writer;
 
-        KVPDict_Write(const std::unordered_map<Key, Value>& dict,
-                      DictElementWriter<Key, Value> writerFunc,
-                      void* _pData)
-            : Dict(dict), WriterFunc(writerFunc), pData(_pData)
-        { }
+        CollectionWrite(const T* values, size_t nValues, ElementWriter<T> writer)
+            : Values(values), NValues(nValues), Writer(writer) { }
 
         virtual void WriteData(DataWriter& writer) const override
         {
-            writer.WriteUInt(Dict.size(), "Number of elements");
-            for (auto i = Dict.begin(); i != Dict.end(); ++i)
+            writer.WriteUInt(NValues, "NValues");
+            for (size_t i = 0; i < NValues; ++i)
             {
-                WriterFunc(writer, &i->first, &i->second, pData);
+                Writer(writer, Values[i], std::to_string(i + 1));
             }
         }
     };
 
     #pragma endregion
+
+
+    DataWriter(const DataWriter& cpy) = delete;
+    DataWriter& operator=(const DataWriter& cpy) = delete;
 };
 
 
@@ -142,94 +128,80 @@ public:
     //The exception value that's thrown if some operation fails.
     static const int EXCEPTION_FAILURE = 667;
 
-
-    static const int MAX_ERROR_SIZE = 128;
-
     //An error message that may be set when EXCEPTION_FAILURE is thrown.
-    char ErrorMessage[MAX_ERROR_SIZE] = "";
+    std::string ErrorMessage = "";
 
 
+    DataReader() { }
     virtual ~DataReader(void) { }
 
 
-    virtual void ReadBool(bool& outB, const char* name) = 0;
-    virtual void ReadByte(unsigned char& outB, const char* name) = 0;
-    virtual void ReadInt(int& outI, const char* name) = 0;
-    virtual void ReadUInt(unsigned int& outU, const char* name) = 0;
-    virtual void ReadFloat(float& outF, const char* name) = 0;
-    virtual void ReadDouble(double& outD, const char* name) = 0;
-    virtual void ReadString(char* outStr, size_t maxStrSize, const char* name) = 0;
-    virtual void ReadBytes(std::vector<unsigned char>& outBytes, const char* name) = 0;
+    virtual void ReadBool(bool& outB, const std::string& name) = 0;
+    virtual void ReadByte(unsigned char& outB, const std::string& name) = 0;
+    virtual void ReadInt(int& outI, const std::string& name) = 0;
+    virtual void ReadUInt(unsigned int& outU, const std::string& name) = 0;
+    virtual void ReadFloat(float& outF, const std::string& name) = 0;
+    virtual void ReadDouble(double& outD, const std::string& name) = 0;
+    virtual void ReadString(std::string& outStr, const std::string& name) = 0;
+    virtual void ReadBytes(std::vector<unsigned char>& outBytes, const std::string& name) = 0;
 
-    virtual void ReadVec3f(Vector3f& v, const char* name);
-    virtual void ReadQuaternion(Quaternion& q, const char* name);
+    virtual void ReadVec3f(Vector3f& v, const std::string& name);
+    virtual void ReadQuaternion(Quaternion& q, const std::string& name);
 
-    //Reads a data structurethat implements the IReadable interface.
-    virtual void ReadDataStructure(IReadable& outData, const char* name) = 0;
+    //Reads a data structure that implements the IReadable interface.
+    virtual void ReadDataStructure(IReadable& outData, const std::string& name) = 0;
 
 
     //A function that resizes a collection to store at least the given number of elements.
-    typedef void(*CollectionResizer)(void* pCollection, size_t nElements);
-    //A function that reads the given element of a collection using the given DataReader,
-    //   with optional data passed in.
-    typedef void(*ElementReader)(DataReader& reader, void* pCollection,
-                                 size_t elementIndex, void* userData);
+    typedef void(*ListResizer)(void* pList, size_t nElements);
 
-    //Reads a collection of some kind of data into "outData".
-    //TODO: Implement this using templates in the same way that "ReadDictionary" is implemented.
-    virtual void ReadCollection(ElementReader readerFunc, CollectionResizer resizer,
-                                const char* name,
-                                void* pCollection, void* userData = 0) = 0;
+    template<typename T>
+    //Reads a given element from the given DataReader with the given name.
+    using ElementReader = void(*)(DataReader& reader, void* pList, size_t listIndex, const std::string& name);
 
-
-    template<typename Key, typename Value>
-    //Reads a key and value pair.
-    using DictElementReader = void(*)(DataReader& reader, Key* k, Value* v, void* userData);
-
-    template<typename Key, typename Value>
-    //Reads a set of key-value pairs.
-    void ReadDictionary(std::unordered_map<Key, Value>& toRead,
-                        DictElementReader<Key, Value> pairReader,
-                        const char* name, void* userData = 0)
+    template<typename T>
+    void ReadList(void* list,
+                  ListResizer listResizer,
+                  ElementReader<T> elementReader,
+                  const std::string& name)
     {
-        KVPDict_Read<Key, Value> helper(toRead, pairReader, userData);
-        ReadDataStructure(helper);
+        CollectionRead<T> helper(list, listResizer, elementReader);
+        ReadDataStructure(helper, name);
     }
 
+
 private:
+    
+    #pragma region Helper data structure for "ReadList()"
 
-    #pragma region Helper data structure for "ReadDictionary()"
-
-    template<typename Key, typename Value>
-    //Used for "ReadDictionary()", because C++ doesn't like data structures inside a templated function.
-    struct KVPDict_Read : public IReadable
+    template<typename T>
+    struct CollectionRead : public IReadable
     {
-        std::unordered_map<Key, Value>& Dict;
-        DictElementReader<Key, Value> ReaderFunc;
-        void* pData;
+        void* List;
+        ListResizer Resizer;
+        ElementReader<T> Reader;
 
-        KVPDict_Read(std::unordered_map<Key, Value>& dict,
-                     DictElementReader<Key, Value> readerFunc,
-                     void* _pData)
-            : Dict(dict), ReaderFunc(readerFunc), pData(_pData)
-        { }
+        CollectionRead(void* list,
+                       ListResizer resizer,
+                       ElementReader<T> reader)
+            : List(list), Resizer(resizer), Reader(reader) { }
 
         virtual void ReadData(DataReader& reader) override
         {
-            unsigned int nElements;
-            reader.ReadUInt(nElements);
+            size_t nValues;
+            reader.ReadUInt(nValues, "NValues");
+            Resizer(List, nValues);
 
-            Dict.reserve(nElements);
-
-            Key k;
-            Value v;
-            for (unsigned int i = 0; i < nElements; ++i)
+            for (size_t i = 0; i < nValues; ++i)
             {
-                ReaderFunc(reader, &k, &v, pData);
-                Dict[k] = v;
+                Reader(reader, List, i, std::to_string(i + 1));
             }
         }
     };
 
     #pragma endregion
+
+
+    DataReader(const DataReader& cpy) = delete;
+    DataReader& operator=(const DataReader& cpy) = delete;
 };

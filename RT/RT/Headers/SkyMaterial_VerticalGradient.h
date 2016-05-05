@@ -20,4 +20,7 @@ public:
 
     virtual void WriteData(DataWriter& writer) const override;
     virtual void ReadData(DataReader& reader) override;
+
+
+    ADD_SKYMAT_REFLECTION_DATA_H(SkyMaterial_VerticalGradient);
 };

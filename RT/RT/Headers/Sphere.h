@@ -31,4 +31,7 @@ private:
     BoundingBox bounds;
 
     void FillInData(Vertex& hitPos, const Vector3f& localPos) const;
+
+
+    ADD_SHAPE_REFLECTION_DATA_H(Sphere);
 };

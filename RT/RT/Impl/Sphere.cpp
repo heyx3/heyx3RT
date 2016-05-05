@@ -1,6 +1,9 @@
 #include "../Headers/Sphere.h"
 
 
+ADD_SHAPE_REFLECTION_DATA_CPP(Sphere);
+
+
 namespace
 {
     float max(float f1, float f2) { return (f1 > f2) ? f1 : f2; }
@@ -120,4 +123,13 @@ void Sphere::FillInData(Vertex& v, const Vector3f& localPos) const
                 inv2Pi = 0.5f * invPi;
     v.UV[0] = 0.5f + (inv2Pi * atan2(localNormal.z, localNormal.x));
     v.UV[1] = 0.5f - (invPi * asin(localNormal.y));
+}
+
+void Sphere::WriteData(DataWriter& writer) const
+{
+    Shape::WriteData(writer);
+}
+void Sphere::ReadData(DataReader& reader)
+{
+    Shape::ReadData(reader);
 }

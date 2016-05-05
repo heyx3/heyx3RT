@@ -39,3 +39,16 @@ void Texture2D::Fill(const Vector3f& col)
     for (int i = 0; i < width * height; ++i)
         colors[i] = col;
 }
+
+Texture2D& Texture2D::operator=(Texture2D&& moveFrom)
+{
+    width = moveFrom.width;
+    height = moveFrom.height;
+    widthF = (float)width;
+    heightF = (float)height;
+    colors = moveFrom.colors;
+
+    moveFrom.colors = nullptr;
+
+    return *this;
+}

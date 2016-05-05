@@ -286,7 +286,7 @@ int main(int argc, const char* argv[])
 {
     //Read in arguments from the command line.
     Camera cam(Vector3f(-50.0f, 5.0f, -50.0f), Vector3f(50.0f, -5.0f, 50.0f).Normalize(),
-               Vector3f(0.0f, 1.0f, 0.0f), 0.0f, 0.0f, 0.0f, 0.0f);
+               Vector3f(0.0f, 1.0f, 0.0f), 2.0f);
     float gamma = 2.2f;
     int nSamples = 100,
         nBounces = 25,
@@ -321,9 +321,10 @@ int main(int argc, const char* argv[])
 
     //Run the tracer.
     PrintLn("Rendering...");
-    Tracer tracer(shapes.size(), skyMat, (const Shape**)shapes.data(), (const Material**)mats.data(),
-                  nBounces);
-    tracer.TraceFullImage(cam, tex, nThreads, gamma, nSamples);
+    std::vector<ShapeAndMat> objs;
+    for (int i = 0; i < shapes.size(); ++i)
+        objs.push_back(ShapeAndMat(shapes[i], mats[i]));
+    Tracer(skyMat, objs).TraceFullImage(cam, tex, nThreads, nBounces, gamma, nSamples);
 
 
     //Generate an image file.

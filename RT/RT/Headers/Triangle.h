@@ -13,6 +13,10 @@ public:
     Vertex Verts[3];
 
 
+    Triangle() { }
+    Triangle(const Vertex& v1, const Vertex& v2, const Vertex& v3)
+        { Verts[0] = v1; Verts[1] = v2; Verts[2] = v3; }
+
 
     //Call this after modifying this triangle's position.
     //Pre-calculates data that will speed up calculation of ray intersections.

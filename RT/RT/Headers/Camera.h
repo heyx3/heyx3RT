@@ -4,9 +4,6 @@
 #include "DataSerialization.h"
 
 
-//TODO: Most of this isn't needed for ray-tracing, including FOV and z clip planes.
-
-
 //Has two modes, indicated by the "LockUp" flag:
 //   - If "LockUp" is true, the camera's Up vector will not be affected by pitching,
 //        and the Forward vector can only get so close to it (specified by "ClosestDotVariance").
@@ -26,20 +23,12 @@ public:
     //Should be between 0 (can look all the way up/down) and 1 (can't pitch the camera at all).
     float ClosestDotVariance;
 
-    //Projection information for a perspective projection.
-    float FOVRadians, WidthOverHeight, zNear, zFar;
-
-    //Projection information for an orthographic projection.
-    //Relative to the camera's position/orientation.
-    Vector3f MinOrthoBounds, MaxOrthoBounds;
+    //Aspect ratio.
+    float WidthOverHeight;
 
     
     Camera(const Vector3f& pos, const Vector3f& forward, const Vector3f& upward,
-           float fovRadians, float widthOverHeight, float zNear, float zFar,
-           bool lockUp = true, float closestDotVariance = 0.05f);
-    Camera(const Vector3f& pos, const Vector3f& forward, const Vector3f& upward,
-           const Vector3f& minOrthoBounds, const Vector3f& maxOrthoBounds,
-           bool lockUp = true, float closestDotVariance = 0.05f);
+           float widthOverHeight, bool lockUp = true, float closestDotVariance = 0.05f);
 
 
 	Vector3f GetForward(void) const { return forward; }
@@ -51,10 +40,6 @@ public:
 	void AddPitch(float radians);
 	void AddYaw(float radians);
 	void AddRoll(float radians);
-
-	void GetViewTransform(Matrix4f& outM) const;
-    void GetPerspectiveProjection(Matrix4f& outM) const;
-    void GetOrthoProjection(Matrix4f& outM) const;
 
 
     virtual void ReadData(DataReader& data) override;

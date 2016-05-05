@@ -10,6 +10,10 @@ class RT_API Material : public ISerializable
 {
 public:
 
+    //Allocates a material on the heap with the given type-name. Used in the serialization system.
+    static Material* Create(const std::string& typeName) { return GetFactory(typeName)(); }
+
+
     //Converts a tangent-space normal to world space.
     //Used for normal-mapping.
     static Vector3f TangentSpaceToWorldSpace(const Vector3f& tangentSpaceNormal,
@@ -30,34 +34,43 @@ public:
     virtual void ReadData(DataReader& data) override { }
     virtual void WriteData(DataWriter& data) const override { }
 
-
-    //Put this in a Material class's .h file to allow it to work correctly with serializers/deserializers.
-    #define ADD_MATERIAL_REFLECTION_DATA_H(className) \
-        public: \
-            virtual std::string GetTypeName() const override { return #className; } \
-        private: \
-            struct _ReflectionDataInitializer \
-            { \
-            public: \
-                _ReflectionDataInitializer(); \
-            }; \
-            static _ReflectionDataInitializer _RefDataInit;
-    //Put this in a Material class's .h file to allow it to work correctly with serializers/deserializers.
-    //The extra arguments after "className" are the arguments for the class's constructor.
-    //They don't have to be sane arguments; the instance won't be used for anything except
-    #define ADD_MATERIAL_REFLECTION_DATA_CPP(className, ...) \
-        className::_ReflectionDataInitializer::_ReflectionDataInitializer() \
-        { \
-            \
-        } \
-        className::_ReflectionDataInitializer _RefDataInit = className::_ReflectionDataInitializer;
-
     //Gets this class's name as a string.
-    //Don't override this manually! Use ADD_MATERIAL_REFLECTION_DATA_H instead.
+    //Don't override this manually! Use the "ADD_MATERIAL_REFLECTION_DATA" macros instead.
     virtual std::string GetTypeName() const = 0;
 
 
 protected:
 
+    typedef Material*(*MaterialFactory)();
 
+
+    //Sets the factory to use for the given class name.
+    //Makes the given class name visible to the serialization system.
+    //NOTE: This should never be called manually; use the "ADD_MATERIAL_REFLECTION_DATA" macros.
+    static void AddReflectionData(const std::string& typeName, MaterialFactory factory);
+    //Gets the factory to create a basic material of the given type name.
+    //Used by the serialization system.
+    static MaterialFactory GetFactory(const std::string& typeName);
 };
+
+
+//Put this in a Material sub-class's .h file to allow it to work with the serialization system.
+//The extra arguments after "className" are the arguments to construct an instance of the class.
+//The actual value of the constructor arguments isn't important.
+#define ADD_MATERIAL_REFLECTION_DATA_H(className, ...) \
+    public: \
+        virtual std::string GetTypeName() const override { return #className; } \
+    private: \
+        struct _ReflectionDataInitializer \
+        { \
+        public: \
+            _ReflectionDataInitializer() \
+            { \
+                AddReflectionData(#className, []() { return (Material*)(new className(__VA_ARGS__)); }); \
+            } \
+        }; \
+        static _ReflectionDataInitializer _RefDataInit;
+
+//Put this in a Material sub-class's .cpp file to allow it to work with the serialization system.
+#define ADD_MATERIAL_REFLECTION_DATA_CPP(className) \
+    className::_ReflectionDataInitializer className::_RefDataInit = className::_ReflectionDataInitializer();

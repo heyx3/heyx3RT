@@ -2,20 +2,10 @@
 
 
 Camera::Camera(const Vector3f& pos, const Vector3f& _forward, const Vector3f& _upward,
-               float fovRadians, float widthOverHeight, float _zNear, float _zFar,
-               bool lockUp, float closestDotVariance)
-    : Pos(pos), forward(_forward), up(_upward),
-      LockUp(lockUp), ClosestDotVariance(closestDotVariance), FOVRadians(fovRadians),
-      WidthOverHeight(widthOverHeight), zNear(_zNear), zFar(_zFar)
-{
-    UpdateSideways();
-}
-Camera::Camera(const Vector3f& pos, const Vector3f& _forward, const Vector3f& _upward,
-               const Vector3f& minOrthoBounds, const Vector3f& maxOrthoBounds,
-               bool lockUp, float closestDotVariance)
+               float widthOverHeight, bool lockUp, float closestDotVariance)
     : Pos(pos), forward(_forward), up(_upward),
       LockUp(lockUp), ClosestDotVariance(closestDotVariance),
-      MinOrthoBounds(minOrthoBounds), MaxOrthoBounds(maxOrthoBounds)
+      WidthOverHeight(widthOverHeight)
 {
     UpdateSideways();
 }
@@ -69,15 +59,34 @@ void Camera::AddRoll(float radians)
     up = rot.Rotate(up).Normalize();
     UpdateSideways();
 }
-void Camera::GetViewTransform(Matrix4f& outM) const
+
+void Camera::WriteData(DataWriter& writer) const
 {
-    outM.SetAsView(Pos, forward, up, sideways);
+    writer.WriteVec3f(Pos, "Pos");
+    writer.WriteBool(LockUp, "LockUp");
+    if (LockUp)
+    {
+        writer.WriteFloat(ClosestDotVariance, "ClosestDotVariance");
+    }
+    writer.WriteFloat(WidthOverHeight, "WidthOverHeight");
+    writer.WriteVec3f(forward, "Forward");
+    writer.WriteVec3f(up, "Up");
+    writer.WriteVec3f(sideways, "Sideways");
 }
-void Camera::GetPerspectiveProjection(Matrix4f& outM) const
+void Camera::ReadData(DataReader& reader)
 {
-    outM.SetAsPerspectiveProjection(FOVRadians, WidthOverHeight, zNear, zFar);
-}
-void Camera::GetOrthoProjection(Matrix4f& outM) const
-{
-    outM.SetAsOrthoProjection(MinOrthoBounds + Pos, MaxOrthoBounds + Pos);
+    reader.ReadVec3f(Pos, "Pos");
+    reader.ReadBool(LockUp, "LockUp");
+    if (LockUp)
+    {
+        reader.ReadFloat(ClosestDotVariance, "ClosestDotVariance");
+    }
+    reader.ReadFloat(WidthOverHeight, "WidthOverHeight");
+    reader.ReadVec3f(forward, "Forward");
+    reader.ReadVec3f(up, "Up");
+    reader.ReadVec3f(sideways, "Sideways");
+
+    forward = forward.Normalize();
+    up = up.Normalize();
+    sideways = sideways.Normalize();
 }

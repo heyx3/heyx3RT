@@ -7,19 +7,24 @@
 #include "Shape.h"
 
 
+EXPORT_STL_VECTOR(Triangle);
+EXPORT_STL_VECTOR(Vertex);
+
+
 //TODO: Also provide "IndexedMesh" class.
 struct RT_API Mesh : public Shape
 {
 public:
 
-    Triangle* Tris;
-    int NTris;
+    std::vector<Triangle> Tris;
 
 
-    Mesh();
-    Mesh(Triangle* tris, int nTris);
+    Mesh() { }
+    Mesh(const std::vector<Triangle>& tris): Tris(tris) { }
 
-    ~Mesh();
+    //Every group of three consecutive vertices makes one triangle.
+    //If the last group of triangles has less than three vertices, it is ignored.
+    Mesh(const std::vector<Vertex>& verts);
 
 
     virtual void PrecalcData() override;
@@ -35,4 +40,7 @@ public:
 private:
 
     BoundingBox bounds;
+
+
+    ADD_SHAPE_REFLECTION_DATA_H(Mesh);
 };

@@ -1,5 +1,9 @@
 #include "../Headers/Material_Metal.h"
 
+
+ADD_MATERIAL_REFLECTION_DATA_CPP(Material_Metal);
+
+
 bool Material_Metal::Scatter(const Ray& rIn, const Vertex& surf, const Shape& shpe,
                              FastRand& prng, Vector3f& atten, Ray& rOut) const
 {
@@ -21,4 +25,18 @@ bool Material_Metal::Scatter(const Ray& rIn, const Vertex& surf, const Shape& sh
     {
         return false;
     }
+}
+void Material_Metal::WriteData(DataWriter& writer) const
+{
+    Material::WriteData(writer);
+
+    writer.WriteVec3f(Albedo, "Albedo");
+    writer.WriteFloat(Roughness, "Roughness");
+}
+void Material_Metal::ReadData(DataReader& reader)
+{
+    Material::ReadData(reader);
+
+    reader.ReadVec3f(Albedo, "Albedo");
+    reader.ReadFloat(Roughness, "Roughness");
 }

@@ -21,4 +21,7 @@ public:
 
     virtual void WriteData(DataWriter& writer) const override;
     virtual void ReadData(DataReader& reader) override;
+
+
+    ADD_MATERIAL_REFLECTION_DATA_H(Material_Metal);
 };

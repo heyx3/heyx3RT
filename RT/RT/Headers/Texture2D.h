@@ -3,11 +3,9 @@
 #include <vector>
 
 #include "Main.hpp"
-#include "Vector3f.h"
 #include "DataSerialization.h"
 
 
-//TODO: Inherit from SurfaceColor.
 class RT_API Texture2D
 {
 public:
@@ -19,7 +17,10 @@ public:
         for (int i = 0; i < width * height; ++i)
             colors[i] = col;
     }
-    ~Texture2D() { delete[] colors; }
+    ~Texture2D() { if (colors != nullptr) delete[] colors; }
+
+    Texture2D(Texture2D&& moveFrom) { *this = std::move(moveFrom); }
+    Texture2D& operator=(Texture2D&& moveFrom);
 
 
     int GetWidth() const { return width; }
@@ -43,4 +44,8 @@ private:
     float widthF, heightF;
 
     Vector3f* colors;
+
+
+    Texture2D(const Texture2D& cpy) = delete;
+    Texture2D& operator=(const Texture2D& cpy) = delete;
 };

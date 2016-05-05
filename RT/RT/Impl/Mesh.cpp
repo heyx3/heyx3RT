@@ -1,26 +1,21 @@
 #include "../Headers/Mesh.h"
 
 
-Mesh::Mesh() : NTris(0), Tris(nullptr) { }
-Mesh::Mesh(Triangle* tris, int nTris)
-    : NTris(nTris), Tris(new Triangle[nTris])
-{
-    memcpy(Tris, tris, sizeof(Triangle) * nTris);
-}
+ADD_SHAPE_REFLECTION_DATA_CPP(Mesh);
 
-Mesh::~Mesh()
+
+Mesh::Mesh(const std::vector<Vertex>& verts)
 {
-    if (Tris != nullptr)
+    Tris.reserve(verts.size() / 3);
+    for (int i = 0; (i + 2) < verts.size(); i += 3)
     {
-        delete[] Tris;
-        Tris = nullptr;
-        NTris = 0;
+        Tris.push_back(Triangle(verts[i], verts[i + 1], verts[i + 2]));
     }
 }
 
 void Mesh::PrecalcData()
 {
-    if (NTris == 0)
+    if (Tris.size() == 0)
     {
         bounds.Min = Vector3f();
         bounds.Max = Vector3f();
@@ -29,8 +24,9 @@ void Mesh::PrecalcData()
     bounds.Min = Tris[0].Verts[0].Pos;
     bounds.Max = Tris[0].Verts[0].Pos;
 
-    for (int tri = 0; tri < NTris; ++tri)
+    for (int tri = 0; tri < Tris.size(); ++tri)
     {
+        Tris[tri].PrecalcData();
         for (int i = 0; i < 3; ++i)
         {
             bounds.Min.x = std::fminf(bounds.Min.x, Tris[tri].Verts[i].Pos.x);
@@ -53,7 +49,7 @@ bool Mesh::CastRay(const Ray& ray, Vertex& outHit) const
 
     const Triangle* closest = nullptr;
     float hitDist = std::numeric_limits<float>().infinity();
-    for (int i = 0; i < NTris; ++i)
+    for (int i = 0; i < Tris.size(); ++i)
     {
         float tempT;
         Vector3f tempPos;
@@ -76,4 +72,45 @@ bool Mesh::CastRay(const Ray& ray, Vertex& outHit) const
     }
 
     return false;
+}
+
+void Mesh::WriteData(DataWriter& writer) const
+{
+    Shape::WriteData(writer);
+
+    //Convert data to vertices for a more compact/simplified format.
+    std::vector<Vertex> verts;
+    verts.reserve(Tris.size() * 3);
+    for (int i = 0; i < Tris.size(); ++i)
+    {
+        verts.push_back(Tris[i].Verts[0]);
+        verts.push_back(Tris[i].Verts[1]);
+        verts.push_back(Tris[i].Verts[2]);
+    }
+
+    writer.WriteList<Vertex>(verts.data(), verts.size(),
+                             [](DataWriter& wr, const Vertex& v, const std::string& name)
+                                 { wr.WriteDataStructure(Vertex_Writable(v), name); },
+                             "Vertices");
+}
+void Mesh::ReadData(DataReader& reader)
+{
+    Shape::ReadData(reader);
+
+    //Data is stored as vertices in the serializer.
+    std::vector<Vertex> verts;
+    reader.ReadList<Vertex>(&verts,
+                            [](void* pList, size_t nElements)
+                                { ((std::vector<Vertex>*)pList)->resize(nElements); },
+                            [](DataReader& rd, void* pList, size_t i, const std::string& name)
+                                { rd.ReadDataStructure(Vertex_Readable((*(std::vector<Vertex>*)pList)[i]),
+                                                       name); },
+                            "Vertices");
+
+    Tris.clear();
+    Tris.reserve(verts.size() / 3);
+    for (int i = 0; (i + 2) < verts.size(); i += 3)
+    {
+        Tris.push_back(Triangle(verts[i], verts[i + 1], verts[i + 2]));
+    }
 }
