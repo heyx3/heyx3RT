@@ -78,7 +78,7 @@ protected:
         public: \
             _ReflectionDataInitializer() \
             { \
-                AddReflectionData(#className, []() { return (Material*)(new className(__VA_ARGS__)); }); \
+                AddReflectionData(#typeName, []() { return (Material*)(new className(__VA_ARGS__)); }); \
             } \
         }; \
         static _ReflectionDataInitializer _RefDataInit;

@@ -100,7 +100,7 @@ std::string JsonWriter::SaveData(const std::string& path, bool compact)
     std::ofstream file(path, std::ios_base::trunc);
     if (file.is_open())
     {
-        file << doc.dump(compact ? -1 : 0);
+        file << doc.dump(compact ? -1 : 4);
     }
     else
     {
@@ -221,15 +221,25 @@ void JsonReader::ReadUInt(unsigned int& outU, const std::string& name)
 }
 void JsonReader::ReadFloat(float& outF, const std::string& name)
 {
+    //Note that integers make valid floats.
     auto& element = GetItem(name);
-    Assert(element->is_number_float(), "Expected a float but got something else");
-    outF = element->get<float>();
+    Assert(element->is_number_float() || element->is_number_integer(),
+           "Expected a float but got something else");
+    if (element->is_number_float())
+        outF = element->get<float>();
+    else
+        outF = (float)element->get<int>();
 }
 void JsonReader::ReadDouble(double& outD, const std::string& name)
 {
+    //Note that integers make valid doubles.
     auto& element = GetItem(name);
-    Assert(element->is_number_float(), "Expected a double but got something else");
-    outD = element->get<double>();
+    Assert(element->is_number_float() || element->is_number_integer(),
+           "Expected a double but got something else");
+    if (element->is_number_float())
+        outD = element->get<double>();
+    else
+        outD = (double)element->get<int>();
 }
 void JsonReader::ReadString(std::string& outStr, const std::string& name)
 {

@@ -20,8 +20,12 @@ namespace
         { }
     };
 
-    std::mutex useVectorMutex;
 
+    std::mutex& GetVectorMutex()
+    {
+        static std::mutex mutx;
+        return mutx;
+    }
     std::vector<ShapeFact>& GetFactoryVector()
     {
         static std::vector<ShapeFact> factories;
@@ -31,7 +35,7 @@ namespace
 
 void Shape::AddReflectionData(const std::string& typeName, ShapeFactory factory)
 {
-    std::lock_guard<std::mutex> lock(useVectorMutex);
+    std::lock_guard<std::mutex> lock(GetVectorMutex());
 
     std::vector<ShapeFact>& factories = GetFactoryVector();
     for (size_t i = 0; i < factories.size(); ++i)
@@ -47,7 +51,7 @@ void Shape::AddReflectionData(const std::string& typeName, ShapeFactory factory)
 }
 Shape::ShapeFactory Shape::GetFactory(const std::string& typeName)
 {
-    std::lock_guard<std::mutex> lock(useVectorMutex);
+    std::lock_guard<std::mutex> lock(GetVectorMutex());
 
     ShapeFactory foundFactory = nullptr;
 

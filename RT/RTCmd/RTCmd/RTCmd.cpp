@@ -236,7 +236,38 @@ namespace
 }
 
 
-int main(int argc, const char* argv[])
+
+int WriteTestFile()
+{
+    Tracer trc;
+    trc.SkyMat = new SkyMaterial_VerticalGradient;
+    trc.Objects.push_back(ShapeAndMat(new Sphere(Vector3f(50.0f, 50.0f, 50.0f), 25.0f),
+                                      new Material_Lambert));
+    trc.Objects.push_back(ShapeAndMat(new Sphere(Vector3f(500.0f, 500.0f, 500.0f), 300.0f),
+                                      new Material_Metal));
+
+    std::string err;
+    if (!JsonSerialization::ToJSONFile("Test.json", trc, false, err))
+    {
+        PrintLn("ERROR writing file: ", err.c_str());
+        return 1;
+    }
+
+    return 0;
+}
+int ReadTestFile()
+{
+    Tracer trc;
+    std::string err;
+    if (!JsonSerialization::FromJSONFile("Test.json", trc, err))
+    {
+        PrintLn("ERROR reading file: ", err.c_str());
+        return 1;
+    }
+
+    return 0;
+}
+int RunTracer(int argc, const char* argv[])
 {
     //Read in arguments from the command line.
     Camera cam(Vector3f(-50.0f, 5.0f, -50.0f), Vector3f(50.0f, -5.0f, 50.0f).Normalize(),
@@ -302,4 +333,10 @@ int main(int argc, const char* argv[])
     PrintLn("Done!");
     Pause();
     return 0;
+}
+
+
+int main(int argc, const char* argv[])
+{
+    return RunTracer(argc, argv);
 }

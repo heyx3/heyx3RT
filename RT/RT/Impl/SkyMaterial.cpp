@@ -18,8 +18,11 @@ namespace
             : TypeName(typeName), Factory(factory) { }
     };
 
-    std::mutex useVectorMutex;
-
+    std::mutex& GetVectorMutex()
+    {
+        static std::mutex mutx;
+        return mutx;
+    }
     std::vector<SMatFact>& GetFactoryVector()
     {
         static std::vector<SMatFact> factories;
@@ -29,7 +32,7 @@ namespace
 
 void SkyMaterial::AddReflectionData(const std::string& typeName, SkyMatFactory factory)
 {
-    std::lock_guard<std::mutex> lock(useVectorMutex);
+    std::lock_guard<std::mutex> lock(GetVectorMutex());
 
     std::vector<SMatFact>& factories = GetFactoryVector();
     for (size_t i = 0; i < factories.size(); ++i)
@@ -45,7 +48,7 @@ void SkyMaterial::AddReflectionData(const std::string& typeName, SkyMatFactory f
 }
 SkyMaterial::SkyMatFactory SkyMaterial::GetFactory(const std::string& typeName)
 {
-    std::lock_guard<std::mutex> lock(useVectorMutex);
+    std::lock_guard<std::mutex> lock(GetVectorMutex());
 
     SkyMatFactory foundFactory = nullptr;
 

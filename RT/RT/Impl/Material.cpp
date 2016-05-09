@@ -19,8 +19,11 @@ namespace
             : TypeName(typeName), Factory(factory) { }
     };
 
-    std::mutex useVectorMutex;
-
+    std::mutex& GetVectorMutex()
+    {
+        static std::mutex mutx;
+        return mutx;
+    }
     std::vector<MatFact>& GetFactoryVector()
     {
         static std::vector<MatFact> factories;
@@ -30,7 +33,7 @@ namespace
 
 void Material::AddReflectionData(const std::string& typeName, MaterialFactory factory)
 {
-    std::lock_guard<std::mutex> lock(useVectorMutex);
+    std::lock_guard<std::mutex> lock(GetVectorMutex());
 
     std::vector<MatFact>& factories = GetFactoryVector();
     for (size_t i = 0; i < factories.size(); ++i)
@@ -46,7 +49,7 @@ void Material::AddReflectionData(const std::string& typeName, MaterialFactory fa
 }
 Material::MaterialFactory Material::GetFactory(const std::string& typeName)
 {
-    std::lock_guard<std::mutex> lock(useVectorMutex);
+    std::lock_guard<std::mutex> lock(GetVectorMutex());
 
     MaterialFactory foundFactory = nullptr;
 
