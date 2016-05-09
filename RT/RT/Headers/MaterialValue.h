@@ -5,7 +5,7 @@
 #include "Shape.h"
 #include "Ray.h"
 #include "DataSerialization.h"
-#include "UniquePtr.h"
+#include "SmartPtrs.h"
 #include "FastRand.h"
 #include "Vectorf.h"
 
@@ -34,11 +34,12 @@ public:
     {
         std::string typeName;
         reader.ReadString(typeName, name + "Type");
-        outMV = Create(typeName).Release();
+        outMV.Reset(Create(typeName).Release());
         reader.ReadDataStructure(*outMV, name + "Value");
     }
 
 
+    MaterialValue() { }
     virtual ~MaterialValue() { }
 
 
@@ -64,6 +65,10 @@ protected:
     typedef MaterialValue*(*MVFactory)();
 
 
+    MaterialValue(const MaterialValue& cpy) = delete;
+    virtual MaterialValue& operator=(const MaterialValue& cpy) = delete;
+
+
     //Sets the factory to use for the given class name.
     //Makes the given class name visible to the serialization system.
     //NOTE: This should never be called manually; use the "ADD_MVAL_REFLECTION_DATA" macros.
@@ -84,7 +89,7 @@ protected:
     public: \
         virtual std::string GetTypeName() const override { return #typeName; } \
     private: \
-        struct _ReflectionDataInitializer \
+        struct RT_API _ReflectionDataInitializer \
         { \
         public: \
             _ReflectionDataInitializer() \

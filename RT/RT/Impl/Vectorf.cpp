@@ -26,6 +26,7 @@ Vectorf::operator Vector4f() const
         case Two: return Vector4f(x, y, 0.0f, 1.0f);
         case Three: return Vector4f(x, y, z, 1.0f);
         case Four: return Vector4f(x, y, z, w);
+        default: assert(false); return Vector4f();
     }
 }
 

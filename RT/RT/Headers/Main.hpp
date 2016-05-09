@@ -38,11 +38,15 @@
 
 //Force generation of a few important STL types.
 
+#pragma warning(disable: 4251)
 #include <string>
 RT_EXIMP template class std::allocator<char>;
 RT_EXIMP template struct std::char_traits<char>;
 RT_EXIMP template class RT_API std::basic_string<char, std::char_traits<char>, std::allocator<char>>;
+#pragma warning(default: 4251)
+
 
 #include <vector>
+
 //Allows a vector of the given type to be used in the public interface of a DLL-exported object/function.
 #define EXPORT_STL_VECTOR(type) RT_EXIMP template class RT_API std::vector<type>;

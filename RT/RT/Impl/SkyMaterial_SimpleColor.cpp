@@ -4,19 +4,19 @@
 ADD_SKYMAT_REFLECTION_DATA_CPP(SkyMaterial_SimpleColor);
 
 
-Vector3f SkyMaterial_SimpleColor::GetColor(const Ray& ray) const
+Vector3f SkyMaterial_SimpleColor::GetColor(const Ray& ray, FastRand& prng) const
 {
-    return Color->GetValue(;
+    return Color->GetValue(ray, prng);
 }
 void SkyMaterial_SimpleColor::WriteData(DataWriter& writer) const
 {
     SkyMaterial::WriteData(writer);
 
-    writer.WriteVec3f(Color, "Color");
+    MaterialValue::WriteValue(Color, writer, "Color");
 }
 void SkyMaterial_SimpleColor::ReadData(DataReader& reader)
 {
     SkyMaterial::ReadData(reader);
 
-    reader.ReadVec3f(Color, "Color");
+    MaterialValue::ReadValue(Color, reader, "Color");
 }

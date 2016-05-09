@@ -1,7 +1,8 @@
 #pragma once
 
 #include "Main.hpp"
-#include "Tracer.h"
+#include "FastRand.h"
+#include "Ray.h"
 #include "DataSerialization.h"
 
 
@@ -14,12 +15,25 @@ public:
     //Used in the serialization system.
     static SkyMaterial* Create(const std::string& typeName) { return GetFactory(typeName)(); }
 
-
-    virtual ~SkyMaterial() { }
+    //Writes out the data for the given SkyMaterial.
+    static void WriteValue(const SkyMaterial& mat, DataWriter& writer, const std::string& name)
+    {
+        writer.WriteString(mat.GetTypeName(), name + "Type");
+        writer.WriteDataStructure(mat, name + "Value");
+    }
+    //Reads in the given SkyMaterial.
+    //Note that the code calling this function is responsible for "delete"-ing the new material.
+    static void ReadValue(SkyMaterial*& outMat, DataReader& reader, const std::string& name)
+    {
+        std::string typeName;
+        reader.ReadString(typeName, name + "Type");
+        outMat = Create(typeName);
+        reader.ReadDataStructure(*outMat, name + "Value");
+    }
 
 
     //Gets the color of the sky using the given ray.
-    virtual Vector3f GetColor(const Ray& ray) const = 0;
+    virtual Vector3f GetColor(const Ray& ray, FastRand& prng) const = 0;
 
     virtual void ReadData(DataReader& data) override { }
     virtual void WriteData(DataWriter& data) const override { }
@@ -54,7 +68,7 @@ protected:
     public: \
         virtual std::string GetTypeName() const override { return #typeName; } \
     private: \
-        struct _ReflectionDataInitializer \
+        struct RT_API _ReflectionDataInitializer \
         { \
         public: \
             _ReflectionDataInitializer() \

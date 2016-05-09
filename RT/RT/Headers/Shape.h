@@ -16,12 +16,24 @@ public:
     //Used in the serialization system.
     static Shape* Create(const std::string& typeName) { return GetFactory(typeName)(); }
 
+    //Saves the given shape to the given DataWriter.
+    static void WriteValue(const Shape& shpe, DataWriter& writer, const std::string& name)
+    {
+        writer.WriteString(shpe.GetTypeName(), name + "Type");
+        writer.WriteDataStructure(shpe, name + "Value");
+    }
+    //Reads the given shape from the given DataReader.
+    //The code that calls this function is responsible for deleting the new shape.
+    static void ReadValue(Shape*& outShpe, DataReader& reader, const std::string& name)
+    {
+        std::string typeName;
+        reader.ReadString(typeName, name + "Type");
+        outShpe = Create(typeName);
+        reader.ReadDataStructure(*outShpe, name + "Value");
+    }
+
 
     Transform Tr;
-
-
-    Shape() { }
-    virtual ~Shape() { }
 
 
     virtual void PrecalcData() { }
@@ -59,7 +71,7 @@ protected:
     public: \
         virtual std::string GetTypeName() const override { return #className; } \
     private: \
-        struct _ReflectionDataInitializer \
+        struct RT_API _ReflectionDataInitializer \
         { \
         public: \
             _ReflectionDataInitializer() \

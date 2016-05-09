@@ -11,7 +11,7 @@ public:
     MaterialValue::Ptr Color;
 
     
-    Material_Lambert(MaterialValue::Ptr& col = new MaterialValue_Constant(Vector3f(1.0f, 1.0f, 1.0f)))
+    Material_Lambert(MaterialValue::Ptr col = new MaterialValue_Constant(Vector3f(1.0f, 1.0f, 1.0f)))
         : Color(col.Release()) { }
 
 
@@ -23,5 +23,5 @@ public:
     virtual void ReadData(DataReader& reader) override;
 
 
-    ADD_MATERIAL_REFLECTION_DATA_H(Material_Lambert);
+    ADD_MATERIAL_REFLECTION_DATA_H(Material_Lambert, Lambert);
 };

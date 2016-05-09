@@ -1,7 +1,7 @@
 #pragma once
 
 #include "FastRand.h"
-#include "Tracer.h"
+#include "Shape.h"
 #include "DataSerialization.h"
 
 
@@ -13,6 +13,21 @@ public:
     //Allocates a material on the heap with the given type-name. Used in the serialization system.
     static Material* Create(const std::string& typeName) { return GetFactory(typeName)(); }
 
+    //Writes out the data for the given Material.
+    static void WriteValue(const Material& mat, DataWriter& writer, const std::string& name)
+    {
+        writer.WriteString(mat.GetTypeName(), name + "Type");
+        writer.WriteDataStructure(mat, name + "Value");
+    }
+    //Reads in the given Material.
+    //Note that the code calling this function is responsible for "delete"-ing the new material.
+    static void ReadValue(Material*& outMat, DataReader& reader, const std::string& name)
+    {
+        std::string typeName;
+        reader.ReadString(typeName, name + "Type");
+        outMat = Create(typeName);
+        reader.ReadDataStructure(*outMat, name + "Value");
+    }
 
     //Converts a tangent-space normal to world space.
     //Used for normal-mapping.
@@ -20,9 +35,6 @@ public:
                                              const Vector3f& worldNormal,
                                              const Vector3f& worldTangent,
                                              const Vector3f& worldBitangent);
-
-
-    virtual ~Material() { }
 
 
     //Scatters the given incoming ray after it hits the given surface point of this material.
@@ -57,11 +69,11 @@ protected:
 //Put this in a Material sub-class's .h file to allow it to work with the serialization system.
 //The extra arguments after "className" are the arguments to construct an instance of the class.
 //The actual value of the constructor arguments isn't important.
-#define ADD_MATERIAL_REFLECTION_DATA_H(className, ...) \
+#define ADD_MATERIAL_REFLECTION_DATA_H(className, typeName, ...) \
     public: \
-        virtual std::string GetTypeName() const override { return #className; } \
+        virtual std::string GetTypeName() const override { return #typeName; } \
     private: \
-        struct _ReflectionDataInitializer \
+        struct RT_API _ReflectionDataInitializer \
         { \
         public: \
             _ReflectionDataInitializer() \

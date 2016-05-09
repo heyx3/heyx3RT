@@ -15,7 +15,7 @@ public:
         : Color(col.Release()) { }
 
 
-    virtual Vector3f GetColor(const Ray& ray) const override;
+    virtual Vector3f GetColor(const Ray& ray, FastRand& prng) const override;
 
 
     virtual void WriteData(DataWriter& writer) const override;

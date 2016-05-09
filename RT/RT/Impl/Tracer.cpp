@@ -29,9 +29,9 @@ namespace
         const Camera* cam;
         Texture2D* tex;
         float gamma;
-        int samples;
+        size_t samples, bounces;
         
-        int startY, endY;
+        size_t startY, endY;
     };
 
 #ifdef OS_WINDOWS
@@ -42,7 +42,7 @@ namespace
     {
 #endif
         ThreadDat& d = *(ThreadDat*)pDat;
-        d.tracer->TraceImage(*d.cam, *d.tex, d.startY, d.endY, d.gamma, d.samples);
+        d.tracer->TraceImage(*d.cam, *d.tex, d.startY, d.endY, d.bounces, d.gamma, d.samples);
         return 0;
     }
 }
@@ -50,38 +50,33 @@ namespace
 
 void ShapeAndMat::WriteData(DataWriter& writer) const
 {
-    writer.WriteString(Shpe->GetTypeName(), "ShapeType");
-    writer.WriteDataStructure(*Shpe, "Shape");
-
-    writer.WriteString(Mat->GetTypeName(), "MaterialType");
-    writer.WriteDataStructure(*Mat, "Material");
+    Shape::WriteValue(*Shpe, writer, "Shape");
+    Material::WriteValue(*Mat, writer, "Material");
 }
 void ShapeAndMat::ReadData(DataReader& reader)
 {
-    std::string typeName;
+    Shape* sPtr;
+    Shape::ReadValue(sPtr, reader, "Shape");
+    Shpe.Reset(sPtr);
 
-    reader.ReadString(typeName, "ShapeType");
-    Shpe = Shape::Create(typeName);
-    reader.ReadDataStructure(*Shpe, "Shape");
-
-    reader.ReadString(typeName, "MaterialType");
-    Mat = Material::Create(typeName);
-    reader.ReadDataStructure(*Mat, "Material");
+    Material* mPtr;
+    Material::ReadValue(mPtr, reader, "Material");
+    Mat.Reset(mPtr);
 }
 
 
-Tracer::Tracer(const SkyMaterial* skyMat, const std::vector<ShapeAndMat>& objects)
+Tracer::Tracer(SkyMaterial* skyMat, const std::vector<ShapeAndMat>& objects)
     : Objects(objects), SkyMat(skyMat)
 {
 }
 
-bool Tracer::TraceRay(int bounce, int maxBounces,
+bool Tracer::TraceRay(size_t bounce, size_t maxBounces,
                       Ray& ray, FastRand& prng,
                       Vector3f& outColor, Vertex& outHit, float& outDist) const
 {
     if (bounce >= maxBounces)
     {
-        outColor = SkyMat->GetColor(ray);
+        outColor = SkyMat->GetColor(ray, prng);
         return false;
     }
 
@@ -89,7 +84,7 @@ bool Tracer::TraceRay(int bounce, int maxBounces,
     int closestShape = -1;
 
     //Get the closest intersection with a shape.
-    for (int i = 0; i < Objects.size(); ++i)
+    for (size_t i = 0; i < Objects.size(); ++i)
     {
         float tempDist;
         Vertex tempHit;
@@ -130,24 +125,24 @@ bool Tracer::TraceRay(int bounce, int maxBounces,
     }
 
     //No shape was hit, so get the color of the sky.
-    outColor = SkyMat->GetColor(ray);
+    outColor = SkyMat->GetColor(ray, prng);
     return false;
 }
 
 void Tracer::TraceImage(const Camera& cam, Texture2D& tex,
-                        int startY, int endY, int maxBounces,
-                        float gamma, int nSamples) const
+                        size_t startY, size_t endY, size_t maxBounces,
+                        float gamma, size_t nSamples) const
 {
     float invSamples = 1.0f / (float)nSamples,
           invWidth = 1.0f / (float)tex.GetWidth(),
           invHeight = 1.0f / (float)tex.GetHeight();
     float gammaPow = 1.0f / gamma;
 
-    for (int y = startY; y <= endY; ++y)
+    for (size_t y = startY; y <= endY; ++y)
     {
         float fY = -0.5f + ((float)y  * invHeight);
 
-        for (int x = 0; x < tex.GetWidth(); ++x)
+        for (size_t x = 0; x < tex.GetWidth(); ++x)
         {
             float fX = (-0.5f + ((float)x * invWidth)) * cam.WidthOverHeight;
 
@@ -157,7 +152,7 @@ void Tracer::TraceImage(const Camera& cam, Texture2D& tex,
 
             FastRand fr(x, y);
 
-            for (int i = 0; i < nSamples; ++i)
+            for (size_t i = 0; i < nSamples; ++i)
             {
                 float cX = fX + (fr.NextFloat() * invWidth),
                       cY = fY + (fr.NextFloat() * invHeight);
@@ -187,10 +182,10 @@ void Tracer::TraceImage(const Camera& cam, Texture2D& tex,
 }
 
 void Tracer::TraceFullImage(const Camera& cam, Texture2D& tex,
-                            int nThreads, int maxBounces,
-                            float gamma, int nSamples) const
+                            size_t nThreads, size_t maxBounces,
+                            float gamma, size_t nSamples) const
 {
-    nThreads = max(1, nThreads);
+    nThreads = (nThreads > 1 ? nThreads : 1);
     int span = tex.GetHeight() / nThreads;
 
     ThreadDat dat;
@@ -198,6 +193,7 @@ void Tracer::TraceFullImage(const Camera& cam, Texture2D& tex,
     dat.tex = &tex;
     dat.tracer = this;
     dat.gamma = gamma;
+    dat.bounces = maxBounces;
     dat.samples = nSamples;
     
     std::vector<ThreadDat> dats;
@@ -210,11 +206,14 @@ void Tracer::TraceFullImage(const Camera& cam, Texture2D& tex,
 #endif
 
     //The 0th thread is this one we're currently in.
-    for (int i = 1; i < nThreads; ++i)
+    for (size_t i = 1; i < nThreads; ++i)
     {
         dats[i] = dat;
         dats[i].startY = i * span;
-        dats[i].endY = min(tex.GetHeight() - 1, (i * span) + span - 1);
+
+        assert(tex.GetHeight() > 0);
+        size_t endY = (i * span) + span - 1;
+        dats[i].endY = (tex.GetHeight() - 1 < endY ? (tex.GetHeight() - 1) : endY);
 
 #ifdef OS_WINDOWS
         threads.push_back(CreateThread(nullptr, 0, &RunTrace, &dats[i], 0, nullptr));
@@ -231,7 +230,7 @@ void Tracer::TraceFullImage(const Camera& cam, Texture2D& tex,
     RunTrace(&dats[0]);
 
     //Now wait for all the other threads to complete.
-    for (unsigned int i = 0; i < threads.size(); ++i)
+    for (size_t i = 0; i < threads.size(); ++i)
     {
 #ifdef OS_WINDOWS
         WaitForSingleObject(threads[i], INFINITE);
@@ -244,9 +243,7 @@ void Tracer::TraceFullImage(const Camera& cam, Texture2D& tex,
 
 void Tracer::WriteData(DataWriter& writer) const
 {
-    writer.WriteString(SkyMat->GetTypeName(), "SkyMatType");
-    writer.WriteDataStructure(*SkyMat, "SkyMat");
-    
+    SkyMaterial::WriteValue(*SkyMat, writer, "SkyMaterial");
     writer.WriteList<ShapeAndMat>(Objects.data(), Objects.size(),
                                   [](DataWriter& writer, const ShapeAndMat& o, const std::string& name)
                                     { writer.WriteDataStructure(o, name); },
@@ -254,14 +251,10 @@ void Tracer::WriteData(DataWriter& writer) const
 }
 void Tracer::ReadData(DataReader& reader)
 {
-    std::string str;
-    reader.ReadString(str, "SkyMatType");
+    SkyMaterial* smPtr;
+    SkyMaterial::ReadValue(smPtr, reader, "SkyMaterial");
+    SkyMat.Reset(smPtr);
 
-    SkyMaterial* sMat = SkyMaterial::Create(str);
-    reader.ReadDataStructure(*sMat, "SkyMat");
-    SkyMat = sMat;
-
-    Objects.clear();
     reader.ReadList<ShapeAndMat>(&Objects,
                                  [](void* pList, size_t nElements)
                                     { ((std::vector<ShapeAndMat>*)pList)->resize(nElements); },

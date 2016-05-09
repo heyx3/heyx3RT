@@ -32,7 +32,7 @@ void SkyMaterial::AddReflectionData(const std::string& typeName, SkyMatFactory f
     std::lock_guard<std::mutex> lock(useVectorMutex);
 
     std::vector<SMatFact>& factories = GetFactoryVector();
-    for (int i = 0; i < factories.size(); ++i)
+    for (size_t i = 0; i < factories.size(); ++i)
     {
         if (factories[i].TypeName == typeName)
         {
@@ -50,7 +50,7 @@ SkyMaterial::SkyMatFactory SkyMaterial::GetFactory(const std::string& typeName)
     SkyMatFactory foundFactory = nullptr;
 
     std::vector<SMatFact>& factories = GetFactoryVector();
-    for (int i = 0; i < factories.size(); ++i)
+    for (size_t i = 0; i < factories.size(); ++i)
     {
         if (factories[i].TypeName == typeName)
         {

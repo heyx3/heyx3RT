@@ -1,7 +1,7 @@
 /*
 
 RT Cmd: Generates a ray-traced image via the command-line using RT.
-The generated image is a BMP or PPM file.
+The generated image is a BMP or PNG file.
 
 Options:
 -nThreads 4              The number of threads to split the work across. Defaults to 4.
@@ -11,15 +11,15 @@ Options:
 -gamma 2.2               The gamma value, used to gamma-correct the output file.
 -nSamples 100            The number of rays/samples per pixel.
 -nBounces 50             The maximum number of times each ray can bounce/scatter.
--outputPath "MyImg.bmp"  The path of the output image. Must end in either .bmp or .ppm.
+-outputPath "MyImg.bmp"  The path of the output image. Must end in either .bmp or .png.
 -outputSize 800 600      The width/height of the output image.
--scene "MyScene.xml"     The scene XML file containing materials and shapes.
+-scene "MyScene.json"     The scene JSON file containing the Tracer scene.
 
 Exit codes:
 
 1: unable to parse integer or float.
 2: unrecognized option.
-3: output file type wasn't .bmp or .ppm.
+3: output file type wasn't .bmp or .png.
 4: couldn't parse scene XML file.
 
 */
@@ -32,9 +32,6 @@ Exit codes:
 #include <vector>
 
 #include <RT.hpp>
-
-#include "XmlData.h"
-#include "bmp_io.hpp"
 
 #include "../../RT/Headers/JsonSerialization.h"
 
@@ -89,62 +86,6 @@ namespace
     }
 
 
-    unsigned char ToByte(float colorComponent)
-    {
-        return (unsigned char)(255.0f * Mathf::Clamp(colorComponent, 0.0f, 1.0f));
-    }
-
-    void OutputBMP(const std::string& fileName, const Texture2D& tex)
-    {
-        std::vector<unsigned char> r, g, b;
-        r.resize(tex.GetWidth() * tex.GetHeight());
-        g.resize(r.size());
-        b.resize(r.size());
-
-        for (int y = 0; y < tex.GetHeight(); ++y)
-        {
-            for (int x = 0; x < tex.GetWidth(); ++x)
-            {
-                int i = x + (y * tex.GetWidth());
-                Vector3f col = tex.GetColor(tex.GetWidth() - 1 - x, y);
-                r[i] = ToByte(col.x);
-                g[i] = ToByte(col.y);
-                b[i] = ToByte(col.z);
-            }
-        }
-
-        bmp_24_write(fileName.c_str(), tex.GetWidth(), tex.GetHeight(),
-                     r.data(), g.data(), b.data());
-    }
-
-    void OutputPPM(std::ostream& outS, const Texture2D& outTex)
-    {
-        outS << "P3\n" << outTex.GetWidth() << " " << outTex.GetHeight() << " " << "255";
-        for (int y = 0; y < outTex.GetHeight(); ++y)
-        {
-            outS << "\n";
-            for (int x = 0; x < outTex.GetWidth(); ++x)
-            {
-                if (x > 0)
-                {
-                    outS << "\t";
-                }
-
-                Vector3f col = outTex.GetColor(outTex.GetHeight() - 1 - x, outTex.GetHeight() - 1 - y);
-                outS << (int)ToByte(col.x) << " " << (int)ToByte(col.y) << " " << (int)ToByte(col.z);
-            }
-        }
-    }
-    void OutputPPM(const std::string& fileName, const Texture2D& outTex)
-    {
-        std::ofstream fileS(fileName, std::ios::trunc);
-        if (fileS.is_open())
-        {
-            OutputPPM(fileS, outTex);
-        }
-    }
-
-
     bool FailParse(const char* str, const char* type)
     {
         std::string stdS = "ERROR: couldn't parse \"";
@@ -168,6 +109,19 @@ namespace
         }
 
         outI = atoi(str);
+        return true;
+    }
+    bool TryParse(const char* str, size_t& outU)
+    {
+        size_t i = 0;
+        while (str[i] != '\0')
+        {
+            if (str[i] < '0' || str[i] > '9')
+                return FailParse(str, "int");
+            i += 1;
+        }
+
+        outU = (size_t)atoi(str);
         return true;
     }
     bool TryParse(const char* str, float& outF)
@@ -201,13 +155,13 @@ namespace
                TryParse(args[2], outV.z);
     }
 
-    void ParseArgs(int nArgs, const char* args[],
-                   Camera& cam, float& gamma, int& nSamples, int& nBounces,
+    void ParseArgs(size_t nArgs, const char* args[],
+                   Camera& cam, float& gamma, size_t& nSamples, size_t& nBounces,
                    std::string& outputFilePath, std::string& sceneFilePath,
-                   int& outputFileWidth, int& outputFileHeight, int& nThreads)
+                   size_t& outputFileWidth, size_t& outputFileHeight, size_t& nThreads)
     {
         //Skip the first argument, which is the program path.
-        for (int i = 1; i < nArgs; ++i)
+        for (size_t i = 1; i < nArgs; ++i)
         {
             PrintLn("Parsing option ", args[i]);
 #define IS_STR(s) std::string(s).compare(args[i]) == 0
@@ -288,13 +242,13 @@ int main(int argc, const char* argv[])
     Camera cam(Vector3f(-50.0f, 5.0f, -50.0f), Vector3f(50.0f, -5.0f, 50.0f).Normalize(),
                Vector3f(0.0f, 1.0f, 0.0f), 2.0f);
     float gamma = 2.2f;
-    int nSamples = 100,
-        nBounces = 25,
-        nThreads = 4;
-    std::string outFilePath = "MyImg.ppm",
-                sceneFilePath = "SampleScene.xml";
-    int outFileW = 256,
-        outFileH = 128;
+    size_t nSamples = 100,
+           nBounces = 25,
+           nThreads = 4;
+    std::string outFilePath = "MyImg.png",
+                sceneFilePath = "SampleScene.json";
+    size_t outFileW = 256,
+           outFileH = 128;
     ParseArgs(argc, argv, cam, gamma, nSamples, nBounces, outFilePath, sceneFilePath, outFileW, outFileH, nThreads);
 
     //Finalize the camera.
@@ -302,10 +256,9 @@ int main(int argc, const char* argv[])
     cam.WidthOverHeight = (float)outFileW / (float)outFileH;
 
     //Read the scene data from the file.
-    std::vector<Shape*> shapes;
-    std::vector<Material*> mats;
-    SkyMaterial* skyMat;
-    std::string err = XmlData::FromFile(sceneFilePath, shapes, mats, &skyMat);
+    Tracer tracer;
+    std::string err;
+    JsonSerialization::FromJSONFile(sceneFilePath, tracer, err);
     if (err.size() > 0)
     {
         PrintLn("ERROR: ", err.c_str());
@@ -313,34 +266,37 @@ int main(int argc, const char* argv[])
         exit(4);
     }
 
-    for (unsigned int i = 0; i < shapes.size(); ++i)
-        shapes[i]->PrecalcData();
-
-    Texture2D tex(outFileW, outFileH);
-
 
     //Run the tracer.
+
+    Texture2D tex(outFileW, outFileH);
+    tracer.PrecalcData();
+
     PrintLn("Rendering...");
-    std::vector<ShapeAndMat> objs;
-    for (int i = 0; i < shapes.size(); ++i)
-        objs.push_back(ShapeAndMat(shapes[i], mats[i]));
-    Tracer(skyMat, objs).TraceFullImage(cam, tex, nThreads, nBounces, gamma, nSamples);
+
+    tracer.TraceFullImage(cam, tex, nThreads, nBounces, gamma, nSamples);
 
 
     //Generate an image file.
+    err = "";
     if (outFilePath.substr(outFilePath.size() - 3, 3).compare("bmp") == 0)
     {
-        OutputBMP(outFilePath, tex);
+        err = tex.SaveBMP(outFilePath);
     }
-    else if (outFilePath.substr(outFilePath.size() - 3, 3).compare("ppm") == 0)
+    else if (outFilePath.substr(outFilePath.size() - 3, 3).compare("png") == 0)
     {
-        OutputPPM(outFilePath, tex);
+        err = tex.SavePNG(outFilePath);
     }
     else
     {
         PrintLn("Unrecognized output image type ", outFilePath.substr(outFilePath.size() - 3, 3).c_str());
         Pause();
         exit(3);
+    }
+
+    if (!err.empty())
+    {
+        PrintLn("Error saving file: ", err.c_str());
     }
 
     PrintLn("Done!");

@@ -121,8 +121,8 @@ void Sphere::FillInData(Vertex& v, const Vector3f& localPos) const
     
     const float invPi = 1.0f / (float)M_PI,
                 inv2Pi = 0.5f * invPi;
-    v.UV[0] = 0.5f + (inv2Pi * atan2(localNormal.z, localNormal.x));
-    v.UV[1] = 0.5f - (invPi * asin(localNormal.y));
+    v.UV.x = 0.5f + (inv2Pi * atan2(localNormal.z, localNormal.x));
+    v.UV.x = 0.5f - (invPi * asin(localNormal.y));
 }
 
 void Sphere::WriteData(DataWriter& writer) const

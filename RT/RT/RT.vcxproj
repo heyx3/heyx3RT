@@ -28,7 +28,6 @@
     <ClInclude Include="Headers\DataSerialization.h" />
     <ClInclude Include="Headers\JsonSerialization.h" />
     <ClInclude Include="Headers\Shape.h" />
-    <ClInclude Include="Headers\SharedPtr.h" />
     <ClInclude Include="Headers\SkyMaterial.h" />
     <ClInclude Include="Headers\SkyMaterial_SimpleColor.h" />
     <ClInclude Include="Headers\SkyMaterial_VerticalGradient.h" />
@@ -43,7 +42,7 @@
     <ClInclude Include="Headers\Tracer.h" />
     <ClInclude Include="Headers\Transform.h" />
     <ClInclude Include="Headers\Triangle.h" />
-    <ClInclude Include="Headers\UniquePtr.h" />
+    <ClInclude Include="Headers\SmartPtrs.h" />
     <ClInclude Include="Headers\Vectorf.h" />
     <ClInclude Include="Headers\Vectors.h" />
     <ClInclude Include="Headers\Vertex.h" />

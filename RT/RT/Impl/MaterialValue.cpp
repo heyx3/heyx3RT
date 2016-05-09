@@ -32,7 +32,7 @@ void MaterialValue::AddReflectionData(const std::string& typeName, MVFactory fac
     std::lock_guard<std::mutex> lock(useVectorMutex);
 
     std::vector<MVFact>& factories = GetFactoryVector();
-    for (int i = 0; i < factories.size(); ++i)
+    for (size_t i = 0; i < factories.size(); ++i)
     {
         if (factories[i].TypeName == typeName)
         {
@@ -50,7 +50,7 @@ MaterialValue::MVFactory MaterialValue::GetFactory(const std::string& typeName)
     MVFactory foundFactory = nullptr;
 
     std::vector<MVFact>& factories = GetFactoryVector();
-    for (int i = 0; i < factories.size(); ++i)
+    for (size_t i = 0; i < factories.size(); ++i)
     {
         if (factories[i].TypeName == typeName)
         {

@@ -72,8 +72,8 @@ bool Plane::CastRay(const Ray& ray, Vertex& outHit) const
     }
 
     //Compute UV.
-    outHit.UV[0] = outHit.Pos.Dot(tangent);
-    outHit.UV[1] = outHit.Pos.Dot(bitangent);
+    outHit.UV.x = outHit.Pos.Dot(tangent);
+    outHit.UV.y = outHit.Pos.Dot(bitangent);
 
     return true;
 }

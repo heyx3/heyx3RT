@@ -1,18 +1,20 @@
 #pragma once
 
 #include "Material.h"
+#include "MaterialValues.h"
 
 
 class RT_API Material_Metal : public Material
 {
 public:
 
-    Vector3f Albedo;
-    float Roughness;
+    MaterialValue::Ptr Albedo;
+    MaterialValue::Ptr Roughness;
 
 
-    Material_Metal(Vector3f albedo = Vector3f(1.0f, 1.0f, 1.0f), float roughness = 0.0f)
-        : Albedo(albedo), Roughness(roughness) { }
+    Material_Metal(MaterialValue::Ptr albedo = new MaterialValue_Constant(Vector3f(1.0f, 1.0f, 1.0f)),
+                   MaterialValue::Ptr roughness = new MaterialValue_Constant(0.0f))
+        : Albedo(albedo.Release()), Roughness(roughness.Release()) { }
 
 
     virtual bool Scatter(const Ray& rIn, const Vertex& surf, const Shape& shpe,
@@ -23,5 +25,5 @@ public:
     virtual void ReadData(DataReader& reader) override;
 
 
-    ADD_MATERIAL_REFLECTION_DATA_H(Material_Metal);
+    ADD_MATERIAL_REFLECTION_DATA_H(Material_Metal, Metal);
 };

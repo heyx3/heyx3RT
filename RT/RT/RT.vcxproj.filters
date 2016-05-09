@@ -123,23 +123,20 @@
     <ClInclude Include="Headers\ThirdParty\base64.h">
       <Filter>Headers\Third Party</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\UniquePtr.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
     <ClInclude Include="Headers\ThirdParty\bmp_io.hpp">
       <Filter>Headers\Third Party</Filter>
     </ClInclude>
     <ClInclude Include="Headers\ThirdParty\lodepng.h">
       <Filter>Headers\Third Party</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\SharedPtr.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
     <ClInclude Include="Headers\Vectors.h">
       <Filter>Headers\Math</Filter>
     </ClInclude>
     <ClInclude Include="Headers\Vectorf.h">
       <Filter>Headers\TracerEngine\MaterialValue</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\SmartPtrs.h">
+      <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

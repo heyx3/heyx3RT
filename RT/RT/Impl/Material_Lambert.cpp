@@ -11,7 +11,7 @@ bool Material_Lambert::Scatter(const Ray& rIn, const Vertex& surface, const Shap
     Vector3f targetPos = surface.Pos + surface.Normal + prng.GetRandUnitVector();
     rOut = Ray(newPos, (targetPos - newPos).Normalize());
 
-    attenuation = Color->GetValue(shpe, surface, rIn, prng);
+    attenuation = Color->GetValue(rIn, prng, &shpe, &surface);
 
     return true;
 }

@@ -25,6 +25,7 @@ namespace JsonSerialization
     bool RT_API FromJSONFile(const std::string& filePath, IReadable& toRead, std::string& outErrorMsg);
 }
 
+#pragma warning(disable: 4251)
 
 class RT_API JsonWriter : public DataWriter
 {
@@ -113,3 +114,5 @@ private:
 
     void Assert(bool expr, const std::string& errorMsg);
 };
+
+#pragma warning(default: 4251)

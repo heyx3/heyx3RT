@@ -22,96 +22,18 @@ void MaterialValue_Constant::ReadData(DataReader& reader)
 
 
 MaterialValue_Tex2D::MaterialValue_Tex2D(const std::string& _filePath, std::string& errMsg,
-                                         SupportedFileTypes type)
+                                         Texture2D::SupportedFileTypes type)
 {
     errMsg = Reload(_filePath, type);
 }
 
-std::string MaterialValue_Tex2D::Reload(const std::string& _filePath, SupportedFileTypes type)
+std::string MaterialValue_Tex2D::Reload(const std::string& _filePath,
+                                        Texture2D::SupportedFileTypes type)
 {
     filePath = _filePath;
     fileType = type;
 
-    if (fileType == UNKNOWN)
-    {
-        if (filePath.size() < 4)
-            return "File-name was too short to infer a type";
-        
-        std::string extension = filePath.substr(filePath.size() - 4, 4);
-
-        if (extension == ".png")
-            fileType == PNG;
-        else if (extension == ".bmp")
-            fileType == BMP;
-        else
-            return "Couldn't infer type from file name";
-    }
-
-    switch (fileType)
-    {
-        case BMP: {
-
-            unsigned long width;
-            long height;
-            unsigned char *reds,
-                          *greens,
-                          *blues;
-            if (bmp_read(filePath.c_str(), &width, &height, &reds, &greens, &blues))
-            {
-                return "Error reading the BMP file";
-            }
-
-            Tex->Resize(width, height);
-
-            //Convert to texture data.
-            float invMaxVal = 1.0f / (float)std::numeric_limits<unsigned char>::max();
-            for (long y = 0; y < height; ++y)
-            {
-                for (unsigned long x = 0; x < width; ++x)
-                {
-                    long i = x + (y * width);
-                    Vector3f col((float)reds[i] * invMaxVal,
-                                 (float)greens[i] * invMaxVal,
-                                 (float)blues[i] * invMaxVal);
-                    Tex->SetColor(x, y, col);
-                }
-            }
-            } break;
-
-        case PNG: {
-
-            std::vector<unsigned char> bytes;
-            unsigned int width, height;
-            unsigned int errCode = lodepng::decode(bytes, width, height, filePath);
-            if (errCode != 0)
-            {
-                return std::string("Error reading the PNG file: ") + lodepng_error_text(errCode);
-            }
-
-            Tex->Resize(width, height);
-
-            //Convert to texture data.
-            float invMaxVal = 1.0f / (float)std::numeric_limits<unsigned char>::max();
-            for (unsigned int y = 0; y < height; ++y)
-            {
-                unsigned int indexOffset = y * width * 4;
-
-                for (unsigned int x = 0; x < width; ++x)
-                {
-                    unsigned int indexOffset2 = indexOffset + (x * 4);
-
-                    Tex->SetColor(x, y, Vector3f((float)bytes[indexOffset2] * invMaxVal,
-                                                 (float)bytes[indexOffset2 + 1] * invMaxVal,
-                                                 (float)bytes[indexOffset2 + 2] * invMaxVal));
-                }
-            }
-            } break;
-
-        default:
-            return std::string("Unexpected file type enum value: ") + std::to_string(type);
-    }
-
-    return "";
+    return Tex->Reload(filePath, fileType);
 }
 
 void MaterialValue_Tex2D::WriteData(DataWriter& writer) const
@@ -136,7 +58,7 @@ void MaterialValue_Tex2D::ReadData(DataReader& reader)
 //Use macros to define the implementation for all the various simple MaterialValues.
 
 
-#define GET_VAL(ptr) (ptr->GetValue(shpe, surface, ray, prng))
+#define GET_VAL(ptr) (ptr->GetValue(ray, prng, shpe, surface))
 
 #define COMMA(thing1, thing2) thing1, thing2
 #define COMMA3(thing1, thing2, thing3) thing1, thing2, thing3
@@ -154,13 +76,24 @@ void MaterialValue_Tex2D::ReadData(DataReader& reader)
             d = MaxIgnoring1D(d, listParamName[i]->GetNDims()); \
         return d; \
     } \
-    Vectorf MaterialValue_##name::GetValue(const Shape& shpe, const Vertex& surface, \
-                                           const Ray& ray, FastRand& prng) const \
+    Vectorf MaterialValue_##name::GetValue(const Ray& ray, FastRand& prng, \
+                                           const Shape* shpe, const Vertex* surface) const \
     { \
         Vectorf val = startVal; \
         for (size_t i = 0; i < listParamName.size(); ++i) \
             accumVal; \
         return val; \
+    } \
+    void MaterialValue_##name::RemoveElement(MaterialValue* ptr) \
+    { \
+        for (size_t i = 0; i < listParamName.size(); ++i) \
+        { \
+            if (listParamName[i].Get() == ptr) \
+            { \
+                listParamName.erase(listParamName.begin() + i); \
+                return; \
+            } \
+        } \
     } \
     void MaterialValue_##name::WriteData(DataWriter& writer) const \
     { \
@@ -189,15 +122,15 @@ void MaterialValue_Tex2D::ReadData(DataReader& reader)
     }
 #define IMPL_SIMPLE_FUNC1(name, valFuncBody) \
     ADD_MVAL_REFLECTION_DATA_CPP(MaterialValue_##name); \
-    Vectorf MaterialValue_##name::GetValue(const Shape& shpe, const Vertex& surface, \
-                                           const Ray& ray, FastRand& prng) const \
+    Vectorf MaterialValue_##name::GetValue(const Ray& ray, FastRand& prng, \
+                                           const Shape* shpe, const Vertex* surface) const \
     { \
         valFuncBody \
     }
 #define IMPL_SIMPLE_FUNC(name, valFuncBody, dimsFuncBody) \
     ADD_MVAL_REFLECTION_DATA_CPP(MaterialValue_##name); \
-    Vectorf MaterialValue_##name::GetValue(const Shape& shpe, const Vertex& surface, \
-                                           const Ray& ray, FastRand& prng) const \
+    Vectorf MaterialValue_##name::GetValue(const Ray& ray, FastRand& prng, \
+                                           const Shape* shpe, const Vertex* surface) const \
     { \
         valFuncBody \
     } \
@@ -205,6 +138,7 @@ void MaterialValue_Tex2D::ReadData(DataReader& reader)
     { \
         dimsFuncBody \
     }
+
 
 IMPL_MULTI_MV(Add, ToAdd, Vectorf(0.0f), val = val + GET_VAL(ToAdd[i]));
 IMPL_MULTI_MV(Sub, ToSub, Vectorf(0.0f), val = (i == 0 ? GET_VAL(ToSub[0]) : (val - GET_VAL(ToSub[i]))));
@@ -233,7 +167,7 @@ IMPL_SIMPLE_FUNC(Lerp,
                                                     GET_VAL(B))); ,
                  return MinIgnoring1D(COMMA(A->GetNDims(), MinIgnoring1D(COMMA(B->GetNDims(), T->GetNDims()))));
                  );
-IMPL_SIMPLE_FUNC1(Smoothstep, return GET_VAL(T).OperateOn([](float f) { return f * f * (3.0 - (2.0 * f)); }););
+IMPL_SIMPLE_FUNC1(Smoothstep, return GET_VAL(T).OperateOn([](float f) { return f * f * (3.0f - (2.0f * f)); }););
 IMPL_SIMPLE_FUNC1(Smootherstep,
                   return GET_VAL(T).OperateOn([](float f)
                                               { return f * f * f * (10.0 + (f * (-15.0f + (6.0f * f)))); }););

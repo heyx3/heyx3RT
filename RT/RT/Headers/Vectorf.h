@@ -1,11 +1,12 @@
 #pragma once
 
+#include <assert.h>
 #include "Vectors.h"
 #include "DataSerialization.h"
 
 
 
-enum RT_API Dimensions
+enum RT_API Dimensions : unsigned char
 {
     One = 1,
     Two = 2,
@@ -13,10 +14,10 @@ enum RT_API Dimensions
     Four = 4,
 };
 
-Dimensions Max(Dimensions a, Dimensions b) { return (a > b ? a : b); }
-Dimensions Min(Dimensions a, Dimensions b) { return (a < b ? a : b); }
-Dimensions MaxIgnoring1D(Dimensions a, Dimensions b) { return (a == One ? b : (b == One ? a : Max(a, b))); }
-Dimensions MinIgnoring1D(Dimensions a, Dimensions b) { return (a == One ? b : (b == One ? a : Min(a, b))); }
+inline Dimensions Max(Dimensions a, Dimensions b) { return (a > b ? a : b); }
+inline Dimensions Min(Dimensions a, Dimensions b) { return (a < b ? a : b); }
+inline Dimensions MaxIgnoring1D(Dimensions a, Dimensions b) { return (a == One ? b : (b == One ? a : Max(a, b))); }
+inline Dimensions MinIgnoring1D(Dimensions a, Dimensions b) { return (a == One ? b : (b == One ? a : Min(a, b))); }
 
 
 //A vector with between 1 and 4 values.
@@ -46,7 +47,7 @@ public:
         Vectorf newV;
         newV.NValues = NValues;
         for (size_t i = 0; i < (size_t)NValues; ++i)
-            newV[i] = doToEachComponent(operator[](i));
+            newV[i] = f(operator[](i));
         return newV;
     }
     //"Func" is of the type "float f(float myF, float otherF)".
@@ -97,7 +98,7 @@ public:
 
             if (other.NValues == One)
                 other2[i] = other.x;
-            else if (i < other.NValues)
+            else if (i < (size_t)other.NValues)
                 other2[i] = other[i];
             else
                 other2[i] = otherIdentity;
@@ -180,13 +181,13 @@ public:
     operator Vector4f() const;
 
 
-    const float& operator[](size_t i) const { switch (i) { case 1: return x; case 2: return y; case 3: return z; case 4: return w; } }
-    float& operator[](size_t i) { switch (i) { case 1: return x; case 2: return y; case 3: return z; case 4: return w; } }
+    const float& operator[](size_t i) const { switch (i) { case 1: return x; case 2: return y; case 3: return z; case 4: return w; default: assert(false); return x; } }
+    float& operator[](size_t i) { switch (i) { case 1: return x; case 2: return y; case 3: return z; case 4: return w; default: assert(false); return x; } }
 
-    Vectorf& operator=(float f)    { NValues = One; x = f; }
-    Vectorf& operator=(Vector2f v) { NValues = Two; x = v.x; y = v.y; }
-    Vectorf& operator=(Vector3f v) { NValues = Three; x = v.x; y = v.y; z = v.z; }
-    Vectorf& operator=(Vector4f v) { NValues = Four; x = v.x; y = v.y; z = v.z; w = v.w; }
+    Vectorf& operator=(float f)    { NValues = One; x = f; return *this; }
+    Vectorf& operator=(Vector2f v) { NValues = Two; x = v.x; y = v.y; return *this; }
+    Vectorf& operator=(Vector3f v) { NValues = Three; x = v.x; y = v.y; z = v.z; return *this; }
+    Vectorf& operator=(Vector4f v) { NValues = Four; x = v.x; y = v.y; z = v.z; w = v.w; return *this; }
 
     Vectorf operator+(const Vectorf& other) const;
     Vectorf operator*(const Vectorf& other) const;

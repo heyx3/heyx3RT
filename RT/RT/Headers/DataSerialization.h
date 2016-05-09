@@ -4,10 +4,11 @@
 
 #include <string.h>
 #include <vector>
-#include <unordered_map>
 
 
+struct Vector2f;
 struct Vector3f;
+struct Vector4f;
 struct Quaternion;
 
 
@@ -63,8 +64,10 @@ public:
     virtual void WriteDouble(double value, const std::string& name) = 0;
     virtual void WriteString(const std::string& value, const std::string& name) = 0;
     virtual void WriteBytes(const unsigned char* bytes, size_t nBytes, const std::string& name) = 0;
-    
+
+    virtual void WriteVec2f(const Vector2f& v, const std::string& name);
     virtual void WriteVec3f(const Vector3f& v, const std::string& name);
+    virtual void WriteVec4f(const Vector4f& v, const std::string& name);
     virtual void WriteQuaternion(const Quaternion& q, const std::string& name);
 
 
@@ -145,7 +148,9 @@ public:
     virtual void ReadString(std::string& outStr, const std::string& name) = 0;
     virtual void ReadBytes(std::vector<unsigned char>& outBytes, const std::string& name) = 0;
 
+    virtual void ReadVec2f(Vector2f& v, const std::string& name);
     virtual void ReadVec3f(Vector3f& v, const std::string& name);
+    virtual void ReadVec4f(Vector4f& v, const std::string& name);
     virtual void ReadQuaternion(Quaternion& q, const std::string& name);
 
     //Reads a data structure that implements the IReadable interface.

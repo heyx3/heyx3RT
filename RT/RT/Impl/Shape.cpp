@@ -34,7 +34,7 @@ void Shape::AddReflectionData(const std::string& typeName, ShapeFactory factory)
     std::lock_guard<std::mutex> lock(useVectorMutex);
 
     std::vector<ShapeFact>& factories = GetFactoryVector();
-    for (int i = 0; i < factories.size(); ++i)
+    for (size_t i = 0; i < factories.size(); ++i)
     {
         if (factories[i].TypeName == typeName)
         {
@@ -52,7 +52,7 @@ Shape::ShapeFactory Shape::GetFactory(const std::string& typeName)
     ShapeFactory foundFactory = nullptr;
 
     std::vector<ShapeFact>& factories = GetFactoryVector();
-    for (int i = 0; i < factories.size(); ++i)
+    for (size_t i = 0; i < factories.size(); ++i)
     {
         if (factories[i].TypeName == typeName)
         {
