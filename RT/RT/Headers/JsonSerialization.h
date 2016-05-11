@@ -11,25 +11,23 @@ namespace JsonSerialization
     //"compact" determines whether the file should forego nice formatting to save space.
     //If something went wrong, outputs an error message and returns false.
     //Otherwise, returns true.
-    bool RT_API ToJSONFile(const char* filePath, const IWritable& toWrite,
-                           bool compact, char* outErrorMsg, size_t maxErrMsgSize);
+    bool RT_API ToJSONFile(const std::string& filePath, const IWritable& toWrite,
+                           bool compact, std::string& outErrorMsg);
     //Writes the given item to a JSON string, then outputs that string into "outString" using the given function to do it.
     //"compact" determines whether the file should forego nice formatting to save space.
     //If something went wrong, outputs an error message and returns false.
     //Otherwise, returns true.
     bool RT_API ToJSONString(const IWritable& toWrite, bool compact,
-                             void* outString,
-                             void(*setOutString)(void* outStr, const char* str, size_t strLen),
-                             char* outErrorMsg, size_t maxErrMsgSize);
+                             std::string& outJSON, std::string& outErrorMsg);
     //Reads the given item from a JSON file.
     //Returns an error message, or the empty string if everything went fine.
     //Otherwise, returns true.
-    bool RT_API FromJSONFile(const char* filePath, IReadable& toRead,
-                             char* outErrorMsg, size_t maxErrMsgSize);
+    bool RT_API FromJSONFile(const std::string& filePath, IReadable& toRead, std::string& outErrorMsg);
 }
 
+#pragma warning(disable: 4251)
 
-class JsonWriter : public DataWriter
+class RT_API JsonWriter : public DataWriter
 {
 public:
 
@@ -39,7 +37,7 @@ public:
     //Saves all written data out to a file at the given path.
     //Returns an error message, or the empty string if the data was saved successfully.
     //"compact" determines whether the file should forego nice formatting to save space.
-    std::string SaveData(const char* path, bool compact);
+    std::string SaveData(const std::string& path, bool compact);
     //Gets the written data as a JSON string.
     //"compact" determines whether the file should forego nice formatting to save space.
     std::string GetData(bool compact) const { return GetToUse().dump((compact ? -1 : 0)); }
@@ -48,19 +46,16 @@ public:
     void ClearData() { doc = nlohmann::json::object(); }
 
 
-    virtual void WriteBool(bool value, const char* name) override;
-    virtual void WriteByte(unsigned char value, const char* name) override;
-    virtual void WriteInt(int value, const char* name) override;
-    virtual void WriteUInt(unsigned int value, const char* name) override;
-    virtual void WriteFloat(float value, const char* name) override;
-    virtual void WriteDouble(double value, const char* name) override;
-    virtual void WriteString(const char* value, const char* name) override;
-    virtual void WriteBytes(const unsigned char* bytes, size_t nBytes, const char* name) override;
-    virtual void WriteDataStructure(const IWritable& toSerialize, const char* name) override;
-    virtual void WriteCollection(ElementWriter writerFunc, const char* name,
-                                 size_t bytesPerElement,
-                                 const void* collection, size_t collectionSize,
-                                 void* userData = 0) override;
+    virtual void WriteBool(bool value, const std::string& name) override;
+    virtual void WriteByte(unsigned char value, const std::string& name) override;
+    virtual void WriteInt(int value, const std::string& name) override;
+    virtual void WriteUInt(unsigned int value, const std::string& name) override;
+    virtual void WriteFloat(float value, const std::string& name) override;
+    virtual void WriteDouble(double value, const std::string& name) override;
+    virtual void WriteString(const std::string& value, const std::string& name) override;
+    virtual void WriteBytes(const unsigned char* bytes, size_t nBytes, const std::string& name) override;
+    virtual void WriteDataStructure(const IWritable& toSerialize, const std::string& name) override;
+
 
 private:
 
@@ -77,34 +72,31 @@ private:
 };
 
 
-class JsonReader : public DataReader
+class RT_API JsonReader : public DataReader
 {
 public:
 
     //If there was an error reading to the given file,
     //    an error message is written to this instance's "ErrorMessage" field.
     //It will NOT throw an exception.
-    JsonReader(const char* filePath);
+    JsonReader(const std::string& filePath);
 
 
     //Loads in new JSON data, resetting this reader.
     //Returns an error message, or the empty string if the file was loaded successfully.
-    std::string Reload(const char* filePath);
+    std::string Reload(const std::string& filePath);
 
 
-    virtual void ReadBool(bool& outB, const char* name) override;
-    virtual void ReadByte(unsigned char& outB, const char* name) override;
-    virtual void ReadInt(int& outI, const char* name) override;
-    virtual void ReadUInt(unsigned int& outU, const char* name) override;
-    virtual void ReadFloat(float& outF, const char* name) override;
-    virtual void ReadDouble(double& outD, const char* name) override;
-    virtual void ReadString(char* outStr, size_t maxStrSize, const char* name) override;
-            void ReadString(std::string& outStr, const char* name);
-    virtual void ReadBytes(std::vector<unsigned char>& outBytes, const char* name) override;
-    virtual void ReadDataStructure(IReadable& outData, const char* name) override;
-    virtual void ReadCollection(ElementReader readerFunc, CollectionResizer resizer,
-                                const char* name,
-                                void* pCollection, void* userData = 0) override;
+    virtual void ReadBool(bool& outB, const std::string& name) override;
+    virtual void ReadByte(unsigned char& outB, const std::string& name) override;
+    virtual void ReadInt(int& outI, const std::string& name) override;
+    virtual void ReadUInt(unsigned int& outU, const std::string& name) override;
+    virtual void ReadFloat(float& outF, const std::string& name) override;
+    virtual void ReadDouble(double& outD, const std::string& name) override;
+    virtual void ReadString(std::string& outStr, const std::string& name) override;
+    virtual void ReadBytes(std::vector<unsigned char>& outBytes, const std::string& name) override;
+    virtual void ReadDataStructure(IReadable& outData, const std::string& name) override;
+
 
 private:
 
@@ -118,7 +110,9 @@ private:
 
     const nlohmann::json& GetToUse() const { return (subDoc == nullptr ? doc : *subDoc); }
 
-    nlohmann::json::const_iterator GetItem(const char* name);
+    nlohmann::json::const_iterator GetItem(const std::string& name);
 
     void Assert(bool expr, const std::string& errorMsg);
 };
+
+#pragma warning(default: 4251)

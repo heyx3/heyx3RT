@@ -88,6 +88,7 @@ xcopy /y "$(SolutionDir)RT\Build\$(Configuration)\*.pdb" "$(TargetDir)*.pdb"*</C
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <AdditionalIncludeDirectories>
       </AdditionalIncludeDirectories>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -102,16 +103,12 @@ xcopy /y "$(SolutionDir)RT\Build\$(Configuration)\*.pdb" "$(TargetDir)*.pdb"*</C
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="bmp_io.hpp" />
+    <ClInclude Include="IOHelper.h" />
+    <ClInclude Include="RTCmdIO.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="tinyxml2.h" />
-    <ClInclude Include="XmlData.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="bmp_io.cpp" />
     <ClCompile Include="RTCmd.cpp" />
-    <ClCompile Include="tinyxml2.cpp" />
-    <ClCompile Include="XmlData.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

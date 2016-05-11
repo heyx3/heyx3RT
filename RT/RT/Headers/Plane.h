@@ -32,4 +32,7 @@ private:
     float planePos;
 
     BoundingBox bounds;
+
+
+    ADD_SHAPE_REFLECTION_DATA_H(Plane);
 };

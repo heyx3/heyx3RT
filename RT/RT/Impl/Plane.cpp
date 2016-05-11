@@ -1,6 +1,9 @@
 #include "../Headers/Plane.h"
 
 
+ADD_SHAPE_REFLECTION_DATA_CPP(Plane);
+
+
 namespace
 {
     float max(float f1, float f2) { return (f1 > f2) ? f1 : f2; }
@@ -37,7 +40,7 @@ void Plane::GetBoundingBox(BoundingBox& outB) const
 bool Plane::CastRay(const Ray& ray, Vertex& outHit) const
 {
     //If ray is not pointing towards this plane's surface, exit.
-    float dotted = ray.GetDir().Dot(normal);
+    float dotted = normal.Dot(ray.GetDir());
     if (dotted == 0.0f || (IsOneSided && dotted > 0.0f))
         return false;
 
@@ -69,8 +72,18 @@ bool Plane::CastRay(const Ray& ray, Vertex& outHit) const
     }
 
     //Compute UV.
-    outHit.UV[0] = outHit.Pos.Dot(tangent);
-    outHit.UV[1] = outHit.Pos.Dot(bitangent);
+    outHit.UV.x = outHit.Pos.Dot(tangent);
+    outHit.UV.y = outHit.Pos.Dot(bitangent);
 
     return true;
+}
+void Plane::WriteData(DataWriter& writer) const
+{
+    Shape::WriteData(writer);
+    writer.WriteBool(IsOneSided, "IsOneSided");
+}
+void Plane::ReadData(DataReader& reader)
+{
+    Shape::ReadData(reader);
+    reader.ReadBool(IsOneSided, "IsOneSided");
 }

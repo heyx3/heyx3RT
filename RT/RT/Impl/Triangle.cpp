@@ -73,8 +73,7 @@ void Triangle::GetMoreData(Vertex& vert, const Matrix4f& worldM) const
     vert.Tangent = worldM.ApplyVector(vert.Tangent).Normalize();
     vert.Bitangent = vert.Normal.Cross(vert.Tangent);
 
-    vert.UV[0] = (Verts[0].UV[0] * area0) + (Verts[1].UV[0] * area1) + (Verts[2].UV[0] * area2);
-    vert.UV[1] = (Verts[0].UV[1] * area0) + (Verts[1].UV[1] * area1) + (Verts[2].UV[1] * area2);
+    vert.UV = (Verts[0].UV * area0) + (Verts[1].UV * area1) + (Verts[2].UV * area2);
 
     vert.Pos = worldM.ApplyPoint(vert.Pos);
 }

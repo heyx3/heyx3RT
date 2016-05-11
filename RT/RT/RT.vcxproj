@@ -36,11 +36,15 @@
     <ClInclude Include="Headers\MaterialValues.h" />
     <ClInclude Include="Headers\Texture2D.h" />
     <ClInclude Include="Headers\ThirdParty\base64.h" />
+    <ClInclude Include="Headers\ThirdParty\bmp_io.hpp" />
     <ClInclude Include="Headers\ThirdParty\json.hpp" />
+    <ClInclude Include="Headers\ThirdParty\lodepng.h" />
     <ClInclude Include="Headers\Tracer.h" />
     <ClInclude Include="Headers\Transform.h" />
     <ClInclude Include="Headers\Triangle.h" />
-    <ClInclude Include="Headers\Vector3f.h" />
+    <ClInclude Include="Headers\SmartPtrs.h" />
+    <ClInclude Include="Headers\Vectorf.h" />
+    <ClInclude Include="Headers\Vectors.h" />
     <ClInclude Include="Headers\Vertex.h" />
   </ItemGroup>
   <ItemGroup>
@@ -48,6 +52,8 @@
     <ClCompile Include="Impl\Camera.cpp" />
     <ClCompile Include="Impl\DataSerialization.cpp" />
     <ClCompile Include="Impl\Material.cpp" />
+    <ClCompile Include="Impl\MaterialValue.cpp" />
+    <ClCompile Include="Impl\MaterialValues.cpp" />
     <ClCompile Include="Impl\Material_Lambert.cpp" />
     <ClCompile Include="Impl\Material_Metal.cpp" />
     <ClCompile Include="Impl\Mathf.cpp" />
@@ -56,14 +62,19 @@
     <ClCompile Include="Impl\Plane.cpp" />
     <ClCompile Include="Impl\Quaternion.cpp" />
     <ClCompile Include="Impl\JsonSerialization.cpp" />
+    <ClCompile Include="Impl\Shape.cpp" />
+    <ClCompile Include="Impl\SkyMaterial.cpp" />
     <ClCompile Include="Impl\SkyMaterial_SimpleColor.cpp" />
     <ClCompile Include="Impl\SkyMaterial_VerticalGradient.cpp" />
     <ClCompile Include="Impl\Sphere.cpp" />
     <ClCompile Include="Impl\Texture2D.cpp" />
     <ClCompile Include="Impl\ThirdParty\base64.cpp" />
+    <ClCompile Include="Impl\ThirdParty\bmp_io.cpp" />
+    <ClCompile Include="Impl\ThirdParty\lodepng.cpp" />
     <ClCompile Include="Impl\Tracer.cpp" />
     <ClCompile Include="Impl\Transform.cpp" />
     <ClCompile Include="Impl\Triangle.cpp" />
+    <ClCompile Include="Impl\Vectorf.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{76FEFAE8-101C-4274-9F1D-C05DAA976547}</ProjectGuid>

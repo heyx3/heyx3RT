@@ -17,6 +17,8 @@
 #endif
 
 
+//RT_API: Goes before any class/function/global var that should be visible to users of the DLL.
+//RT_EXIMP: Defined as "extern" if importing a DLL, or nothing otherwise.
 #ifdef OS_WINDOWS
 	#ifdef RT_EXPORTS
 		#define RT_API __declspec(dllexport)
@@ -36,15 +38,15 @@
 
 //Force generation of a few important STL types.
 
+#pragma warning(disable: 4251)
 #include <string>
 RT_EXIMP template class std::allocator<char>;
 RT_EXIMP template struct std::char_traits<char>;
 RT_EXIMP template class RT_API std::basic_string<char, std::char_traits<char>, std::allocator<char>>;
+#pragma warning(default: 4251)
+
 
 #include <vector>
-#define EXPORT_STL_VECTOR(type) RT_EXIMP template class RT_API std::vector<type>;
-//EXPORT_STL_VECTOR(int);
 
-#include <unordered_map>
-#define EXPORT_STL_UNORDERED_MAP(keyType, valType) RT_EXIMP template class RT_API std::unordered_map<keyType, valType>;
-//EXPORT_STL_UNORDERED_MAP(unsigned char, bool);
+//Allows a vector of the given type to be used in the public interface of a DLL-exported object/function.
+#define EXPORT_STL_VECTOR(type) RT_EXIMP template class RT_API std::vector<type>;

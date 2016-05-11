@@ -1,6 +1,9 @@
 #include "../Headers/Sphere.h"
 
 
+ADD_SHAPE_REFLECTION_DATA_CPP(Sphere);
+
+
 namespace
 {
     float max(float f1, float f2) { return (f1 > f2) ? f1 : f2; }
@@ -116,8 +119,27 @@ void Sphere::FillInData(Vertex& v, const Vector3f& localPos) const
     v.Tangent = v.Normal.Cross(fabs(v.Normal.x) == 1.0f ? Vector3f::Y() : Vector3f::X()).Normalize();
     v.Bitangent = v.Normal.Cross(v.Tangent);
     
+    size_t otherAxis1 = (WrapAxis == 0 ? 2 : (WrapAxis - 1)),
+           otherAxis2 = (WrapAxis == 2 ? 0 : (WrapAxis + 1));
     const float invPi = 1.0f / (float)M_PI,
                 inv2Pi = 0.5f * invPi;
-    v.UV[0] = 0.5f + (inv2Pi * atan2(localNormal.z, localNormal.x));
-    v.UV[1] = 0.5f - (invPi * asin(localNormal.y));
+    v.UV.x = 0.5f + (inv2Pi * atan2(localNormal[otherAxis2], localNormal[otherAxis1]));
+    v.UV.y = 0.5f - (invPi * asin(localNormal[WrapAxis]));
+}
+
+void Sphere::WriteData(DataWriter& writer) const
+{
+    Shape::WriteData(writer);
+    writer.WriteUInt(WrapAxis, "WrapAxis");
+}
+void Sphere::ReadData(DataReader& reader)
+{
+    Shape::ReadData(reader);
+    reader.ReadUInt(WrapAxis, "WrapAxis");
+    if (WrapAxis > 2)
+    {
+        reader.ErrorMessage = "Sphere wrap axis should be [0, 2] but it was ";
+        reader.ErrorMessage += std::to_string(WrapAxis);
+        throw DataReader::EXCEPTION_FAILURE;
+    }
 }

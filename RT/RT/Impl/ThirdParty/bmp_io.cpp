@@ -5,7 +5,7 @@
 
 using namespace std;
 
-# include "bmp_io.hpp"
+#include "../../Headers/ThirdParty/bmp_io.hpp"
 
 //
 //  BMP_BYTE_SWAP controls how the program assumes that the bytes in 

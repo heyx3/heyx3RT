@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Vector3f.h"
+#include "Vectors.h"
 
 
 struct RT_API Quaternion
@@ -33,5 +33,8 @@ public:
     float Dot(const Quaternion& other) const { return (x * other.x) + (y * other.y) + (z * other.z) + (w * other.w); }
     Quaternion Normalize() const { float invLen = 1.0f / sqrt(Dot(*this)); return Quaternion(x * invLen, y * invLen, z * invLen, w * invLen); }
 
-    void GetAxisAngle(Vector3f& outAxis, float& outAngle) const;
+    void GetAxisAngle(Vector3f& outAxis, float& outAngleRadians) const;
+    //Gets the axis/angle rotation represented by this Quaternion as a 4D vector.
+    //The X/Y/Z is the axis of rotation, and the W is the angle in radians.
+    inline Vector4f GetAxisAngle() const { Vector3f ax; float ang; GetAxisAngle(ax, ang); return Vector4f(ax.x, ax.y, ax.z, ang); }
 };
