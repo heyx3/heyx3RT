@@ -26,6 +26,7 @@ public:
     virtual void ReadData(DataReader& reader) override;
 };
 
+
 #pragma warning(disable: 4251)
 EXPORT_STL_VECTOR(ShapeAndMat);
 #pragma warning(default: 4251)

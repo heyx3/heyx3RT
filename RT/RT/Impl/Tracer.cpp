@@ -134,8 +134,8 @@ void Tracer::TraceImage(const Camera& cam, Texture2D& tex,
                         float gamma, size_t nSamples) const
 {
     float invSamples = 1.0f / (float)nSamples,
-          invWidth = 1.0f / (float)tex.GetWidth(),
-          invHeight = 1.0f / (float)tex.GetHeight();
+          invWidth = 1.0f / (float)(tex.GetWidth() - 1),
+          invHeight = 1.0f / (float)(tex.GetHeight() - 1);
     float gammaPow = 1.0f / gamma;
 
     for (size_t y = startY; y <= endY; ++y)
@@ -186,7 +186,7 @@ void Tracer::TraceFullImage(const Camera& cam, Texture2D& tex,
                             float gamma, size_t nSamples) const
 {
     nThreads = (nThreads > 1 ? nThreads : 1);
-    int span = tex.GetHeight() / nThreads;
+    size_t span = tex.GetHeight() / nThreads;
 
     ThreadDat dat;
     dat.cam = &cam;
@@ -212,8 +212,16 @@ void Tracer::TraceFullImage(const Camera& cam, Texture2D& tex,
         dats[i].startY = i * span;
 
         assert(tex.GetHeight() > 0);
-        size_t endY = (i * span) + span - 1;
-        dats[i].endY = (tex.GetHeight() - 1 < endY ? (tex.GetHeight() - 1) : endY);
+        if (i == nThreads - 1)
+        {
+            dats[i].endY = tex.GetHeight() - 1;
+        }
+        else
+        {
+            size_t endY = (i * span) + span - 1;
+            dats[i].endY = (endY >= tex.GetHeight() ? (tex.GetHeight() - 1) : endY);
+        }
+
 
 #ifdef OS_WINDOWS
         threads.push_back(CreateThread(nullptr, 0, &RunTrace, &dats[i], 0, nullptr));
@@ -224,6 +232,8 @@ void Tracer::TraceFullImage(const Camera& cam, Texture2D& tex,
         threads.push_back(threadID);
 #endif
     }
+    //Run the last bit of the task in this thread.
+    assert(span > 0);
     dats[0] = dat;
     dats[0].startY = 0;
     dats[0].endY = span - 1;

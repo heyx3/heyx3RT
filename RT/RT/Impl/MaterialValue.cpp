@@ -4,6 +4,7 @@
 #include <thread>
 #include <mutex>
 #include <assert.h>
+#include <iostream>
 
 
 namespace
@@ -64,4 +65,26 @@ MaterialValue::MVFactory MaterialValue::GetFactory(const std::string& typeName)
 
     assert(foundFactory != nullptr);
     return foundFactory;
+}
+
+
+void MaterialValue::AssertExists(const Shape* shpe) const
+{
+    if (shpe == nullptr)
+    {
+        std::cout << "\nERROR: MaterialValue \"" << GetTypeName() <<
+                     "\" requires a Shape to compute value, but it doesn't exist in this context!\n\n";
+        char dummy;
+        std::cin >> dummy;
+    }
+}
+void MaterialValue::AssertExists(const Vertex* surface) const
+{
+    if (surface == nullptr)
+    {
+        std::cout << "\nERROR: MaterialValue \"" << GetTypeName() <<
+                     "\" requires a Vertex to compute value, but it doesn't exist in this context!\n\n";
+        char dummy;
+        std::cin >> dummy;
+    }
 }

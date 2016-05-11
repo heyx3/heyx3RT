@@ -40,7 +40,7 @@ void Plane::GetBoundingBox(BoundingBox& outB) const
 bool Plane::CastRay(const Ray& ray, Vertex& outHit) const
 {
     //If ray is not pointing towards this plane's surface, exit.
-    float dotted = ray.GetDir().Dot(normal);
+    float dotted = normal.Dot(ray.GetDir());
     if (dotted == 0.0f || (IsOneSided && dotted > 0.0f))
         return false;
 

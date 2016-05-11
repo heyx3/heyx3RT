@@ -88,9 +88,10 @@ std::string Texture2D::Reload(const std::string& filePath, SupportedFileTypes fi
                 {
                     size_t indexOffset2 = indexOffset + (x * 4);
 
-                    SetColor(x, y, Vector3f((float)bytes[indexOffset2] * invMaxVal,
-                                            (float)bytes[indexOffset2 + 1] * invMaxVal,
-                                            (float)bytes[indexOffset2 + 2] * invMaxVal));
+                    SetColor(x, height - y - 1,
+                             Vector3f((float)bytes[indexOffset2] * invMaxVal,
+                                      (float)bytes[indexOffset2 + 1] * invMaxVal,
+                                      (float)bytes[indexOffset2 + 2] * invMaxVal));
                 }
             }
             } break;
@@ -155,17 +156,14 @@ std::string Texture2D::SavePNG(const std::string& path) const
 
     for (size_t y = 0; y < height; ++y)
     {
-        size_t indexOffset = y * width * 4;
-
         for (size_t x = 0; x < width; ++x)
         {
-            Vector3f col = GetColor(x, y);
+            Vector3f col = GetColor(x, height - y - 1);
 
-            size_t indexOffset2 = indexOffset + (x * 4);
-            data[indexOffset2] = (unsigned char)Clamp(0, 255, (int)(col.x * 255.0f));
-            data[indexOffset2 + 1] = (unsigned char)Clamp(0, 255, (int)(col.y * 255.0f));
-            data[indexOffset2 + 2] = (unsigned char)Clamp(0, 255, (int)(col.z * 255.0f));
-            data[indexOffset2 + 3] = 255;
+            data.push_back((unsigned char)Clamp(0, 255, (int)(col.x * 255.0f)));
+            data.push_back((unsigned char)Clamp(0, 255, (int)(col.y * 255.0f)));
+            data.push_back((unsigned char)Clamp(0, 255, (int)(col.z * 255.0f)));
+            data.push_back(255);
         }
     }
 

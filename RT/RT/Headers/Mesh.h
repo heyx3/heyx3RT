@@ -7,8 +7,10 @@
 #include "Shape.h"
 
 
+#pragma warning (disable: 4251)
 EXPORT_STL_VECTOR(Triangle);
 EXPORT_STL_VECTOR(Vertex);
+#pragma warning (default: 4251)
 
 
 //TODO: Also provide "IndexedMesh" class.

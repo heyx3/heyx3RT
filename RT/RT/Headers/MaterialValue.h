@@ -69,6 +69,10 @@ protected:
     virtual MaterialValue& operator=(const MaterialValue& cpy) = delete;
 
 
+    void AssertExists(const Shape* shpe) const;
+    void AssertExists(const Vertex* surface) const;
+
+
     //Sets the factory to use for the given class name.
     //Makes the given class name visible to the serialization system.
     //NOTE: This should never be called manually; use the "ADD_MVAL_REFLECTION_DATA" macros.

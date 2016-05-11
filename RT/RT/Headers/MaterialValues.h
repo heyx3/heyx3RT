@@ -5,14 +5,65 @@
 #include "SmartPtrs.h"
 
 
-class RT_API MaterialValue_Constant : public MaterialValue
+//All MaterialValues in this file have the prefix "MV_" in their name.
+//For example: MV_Constant, MV_Tex2D, MV_SurfPos.
+
+
+//Below is a forward declaration of every MaterialValue defined in this file,
+//    so that you don't have to go hunting through it.
+
+class MV_Constant;
+class MV_Tex2D;
+
+class MV_Add;
+class MV_Subtract;
+class MV_Multiply;
+class MV_Divide;
+
+class MV_Sin;
+class MV_Cos;
+class MV_Tan;
+class MV_Asin;
+class MV_Acos;
+class MV_Atan;
+class MV_Atan2;
+
+class MV_Step;
+class MV_Lerp;
+class MV_Smoothstep;
+class MV_Smootherstep;
+class MV_Clamp;
+
+class MV_Floor;
+class MV_Ceil;
+class MV_Abs;
+class MV_Min;
+class MV_Max;
+
+class MV_SurfUV;
+class MV_SurfPos;
+class MV_SurfNormal;
+class MV_SurfTangent;
+class MV_SurfBitangent;
+class MV_RayStartPos;
+class MV_RayPos;
+class MV_RayDir;
+class MV_ShapePos;
+class MV_ShapeScale;
+class MV_ShapeRot;
+class MV_PureNoise;
+
+
+
+//Just outputs a constant value.
+class RT_API MV_Constant : public MaterialValue
 {
 public:
 
     Vectorf Value;
 
     
-    MaterialValue_Constant(Vectorf value) : Value(value) { }
+    MV_Constant(Vectorf value) : Value(value) { }
 
 
     virtual Dimensions GetNDims() const override { return Value.NValues; }
@@ -20,33 +71,103 @@ public:
     virtual Vectorf GetValue(const Ray& ray, FastRand& prng,
                              const Shape* shpe = nullptr,
                              const Vertex* surface = nullptr) const override
-    {
-        return Value;
-    }
+        { return Value; }
 
     virtual void WriteData(DataWriter& writer) const override;
     virtual void ReadData(DataReader& reader) override;
 
 
-    ADD_MVAL_REFLECTION_DATA_H(MaterialValue_Constant, Constant, 1.0f);
+    ADD_MVAL_REFLECTION_DATA_H(MV_Constant, Constant, 1.0f);
+};
+
+
+//Defines a class that outputs a basic property of the ray, shape, or surface.
+#define DEF_BASIC_MVAL(name, nDims, getValueBody) \
+    class RT_API MV_##name : public MaterialValue \
+    { \
+    public: \
+        virtual Dimensions GetNDims() const override { return nDims; } \
+        virtual Vectorf GetValue(const Ray& ray, FastRand& prng, \
+                                 const Shape* shpe = nullptr, \
+                                 const Vertex* surface = nullptr) const override \
+            { getValueBody } \
+        ADD_MVAL_REFLECTION_DATA_H(MV_##name, name); \
+    };
+
+//Gets the UV coords of the surface.
+DEF_BASIC_MVAL(SurfUV, Two, AssertExists(surface); return surface->UV; );
+//Gets the normal of the surface.
+DEF_BASIC_MVAL(SurfNormal, Three, AssertExists(surface); return surface->Normal; );
+//Gets the tangent of the surface.
+DEF_BASIC_MVAL(SurfTangent, Three, AssertExists(surface); return surface->Tangent; );
+//Gets the bitangent of the surface.
+DEF_BASIC_MVAL(SurfBitangent, Three, AssertExists(surface); return surface->Bitangent; );
+//Gets the position of the surface.
+DEF_BASIC_MVAL(SurfPos, Three, AssertExists(surface); return surface->Pos; );
+//Gets the starting position of the ray.
+DEF_BASIC_MVAL(RayStartPos, Three, AssertExists(surface); return ray.GetPos(); );
+//Gets the direction of the ray.
+DEF_BASIC_MVAL(RayDir, Three, return ray.GetDir(); );
+//Gets the position of the shape that was hit.
+DEF_BASIC_MVAL(ShapePos, Three, AssertExists(shpe); return shpe->Tr.GetPos(); );
+//Gets the scale of the shape that was hit.
+DEF_BASIC_MVAL(ShapeScale, Three, AssertExists(shpe); return shpe->Tr.GetScale(); );
+//Gets the axis/angle rotation of the shape that was hit.
+//The X/Y/Z are the axis, and the W is the angle.
+DEF_BASIC_MVAL(ShapeRot, Four, AssertExists(shpe); return shpe->Tr.GetRot().GetAxisAngle(); );
+
+#undef DEF_BASIC_MVAL
+
+
+//Gets a position along the ray given a time T.
+class RT_API MV_RayPos : public MaterialValue
+{
+public:
+    Ptr T;
+    MV_RayPos(Ptr t) : T(t.Release()) { }
+    virtual Dimensions GetNDims() const override { return Three; }
+    virtual Vectorf GetValue(const Ray& ray, FastRand& prng,
+                             const Shape* shpe = nullptr,
+                             const Vertex* surface = nullptr) const override
+        { return ray.GetPos((float)T->GetValue(ray, prng, shpe, surface)); }
+private:
+    MV_RayPos() { }
+    ADD_MVAL_REFLECTION_DATA_H(MV_RayPos, RayPos);
+};
+
+//Gets a totally random value between 0 and 1.
+//The value may have 1-4 dimensions.
+class RT_API MV_PureNoise : public MaterialValue
+{
+public:
+    Dimensions NDims;
+    MV_PureNoise(Dimensions nDims = One) : NDims(nDims) { }
+    virtual Dimensions GetNDims() const override { return NDims; }
+    virtual Vectorf GetValue(const Ray& ray, FastRand& prng,
+                             const Shape* shpe = nullptr,
+                             const Vertex* surface = nullptr) const override;
+    virtual void WriteData(DataWriter& writer) const override;
+    virtual void ReadData(DataReader& reader) override;
+private:
+    ADD_MVAL_REFLECTION_DATA_H(MV_PureNoise, PureNoise);
 };
 
 
 //A 2D texture file lookup.
-//TODO: Use a MaterialValue input for UV's. Create MaterialValues that expose information about the inputs to the function.
-class RT_API MaterialValue_Tex2D : public MaterialValue
+class RT_API MV_Tex2D : public MaterialValue
 {
 public:
 
-
+    Ptr UV;
     UniquePtr<Texture2D> Tex;
 
 
     //Loads an image from the given file of the given type.
     //If the given file type is "UNKNOWN", it will be inferred based on the file's extension.
     //Outputs an error message if the given file wasn't loaded successfully.
-    MaterialValue_Tex2D(const std::string& filePath, std::string& outErrorMsg,
-                        Texture2D::SupportedFileTypes type = Texture2D::UNKNOWN);
+    MV_Tex2D(const std::string& filePath, std::string& outErrorMsg,
+             Ptr uv = new MV_SurfUV,
+             Texture2D::SupportedFileTypes type = Texture2D::UNKNOWN);
 
 
     //Reloads the file this texture came from.
@@ -67,7 +188,7 @@ public:
     virtual Vectorf GetValue(const Ray& ray, FastRand& prng,
                              const Shape* shpe = nullptr,
                              const Vertex* surface = nullptr) const override
-        { return Tex->GetColor(surface->UV); }
+        { return Tex->GetColor(UV->GetValue(ray, prng, shpe, surface)); }
 
 
     virtual void WriteData(DataWriter& writer) const override;
@@ -80,31 +201,33 @@ private:
     Texture2D::SupportedFileTypes fileType;
 
 
-    MaterialValue_Tex2D() { }
+    MV_Tex2D() { }
 
-    ADD_MVAL_REFLECTION_DATA_H(MaterialValue_Tex2D, Tex2D);
+    ADD_MVAL_REFLECTION_DATA_H(MV_Tex2D, Tex2D);
 };
 
 
 /*
     Use a bunch of macros to quickly define the large number of simple MaterialValues.
     For example:
-        * MaterialValue_Add
-        * MaterialValue_Div
-        * MaterialValue_Sin
-        * MaterialValue_Clamp
+        * MV_Add
+        * MV_Div
+        * MV_Sin
+        * MV_Clamp
 */
 
+#pragma region Helper macro definitions
 
 #define MAKE_MULTI_MV(name, paramsListName) \
-    class RT_API MaterialValue_##name : public MaterialValue \
+    class RT_API MV_##name : public MaterialValue \
     { \
     public: \
          \
-        MaterialValue_##name() { } \
-        MaterialValue_##name(Ptr& val1, Ptr& val2) { paramsListName.push_back(Ptr(val1.Release())); paramsListName.push_back(Ptr(val2.Release())); } \
-        MaterialValue_##name(Ptr& val1, Ptr& val2, Ptr& val3) { paramsListName.push_back(Ptr(val1.Release())); paramsListName.push_back(Ptr(val2.Release())); paramsListName.push_back(Ptr(val3.Release())); } \
-        MaterialValue_##name(Ptr& val1, Ptr& val2, Ptr& val3, Ptr& val4) { paramsListName.push_back(Ptr(val1.Release())); paramsListName.push_back(Ptr(val2.Release())); paramsListName.push_back(Ptr(val3.Release())); paramsListName.push_back(Ptr(val4.Release())); } \
+        MV_##name() { } \
+        MV_##name(Ptr& val1, Ptr& val2) { paramsListName.push_back(Ptr(val1.Release())); paramsListName.push_back(Ptr(val2.Release())); } \
+        MV_##name(Ptr& val1, Ptr& val2, Ptr& val3) { paramsListName.push_back(Ptr(val1.Release())); paramsListName.push_back(Ptr(val2.Release())); paramsListName.push_back(Ptr(val3.Release())); } \
+        MV_##name(Ptr& val1, Ptr& val2, Ptr& val3, Ptr& val4) { paramsListName.push_back(Ptr(val1.Release())); paramsListName.push_back(Ptr(val2.Release())); paramsListName.push_back(Ptr(val3.Release())); paramsListName.push_back(Ptr(val4.Release())); } \
+        MV_##name(Ptr& val1, Ptr& val2, Ptr& val3, Ptr& val4, Ptr& val5) { paramsListName.push_back(Ptr(val1.Release())); paramsListName.push_back(Ptr(val2.Release())); paramsListName.push_back(Ptr(val3.Release())); paramsListName.push_back(Ptr(val4.Release())); paramsListName.push_back(Ptr(val5.Release())); } \
          \
         virtual Dimensions GetNDims() const override; \
         virtual Vectorf GetValue(const Ray& ray, FastRand& prng, \
@@ -124,20 +247,20 @@ private:
          \
         std::vector<Ptr> paramsListName; \
          \
-        MaterialValue_##name(const MaterialValue_##name& cpy) = delete; \
-        MaterialValue_##name& operator=(const MaterialValue_##name& cpy) = delete; \
+        MV_##name(const MV_##name& cpy) = delete; \
+        MV_##name& operator=(const MV_##name& cpy) = delete; \
          \
-        ADD_MVAL_REFLECTION_DATA_H(MaterialValue_##name, name); \
+        ADD_MVAL_REFLECTION_DATA_H(MV_##name, name); \
     };
 
 #define MAKE_SIMPLE_FUNC1(name, paramName) \
-    class RT_API MaterialValue_##name : public MaterialValue \
+    class RT_API MV_##name : public MaterialValue \
     { \
     public: \
          \
         Ptr paramName; \
          \
-        MaterialValue_##name(Ptr _##paramName) : paramName(_##paramName.Release()) { }; \
+        MV_##name(Ptr _##paramName) : paramName(_##paramName.Release()) { }; \
          \
         virtual Dimensions GetNDims() const override { return paramName->GetNDims(); } \
         virtual Vectorf GetValue(const Ray& ray, FastRand& prng, \
@@ -147,17 +270,17 @@ private:
         virtual void ReadData(DataReader& reader) override { MaterialValue::ReadData(reader); ReadValue(paramName, reader, #paramName); } \
          \
     private: \
-        MaterialValue_##name() { } \
-        ADD_MVAL_REFLECTION_DATA_H(MaterialValue_##name, name) \
+        MV_##name() { } \
+        ADD_MVAL_REFLECTION_DATA_H(MV_##name, name) \
     };
 #define MAKE_SIMPLE_FUNC2(name, param1Name, param2Name) \
-    class RT_API MaterialValue_##name : public MaterialValue \
+    class RT_API MV_##name : public MaterialValue \
     { \
     public: \
          \
         Ptr param1Name, param2Name; \
          \
-        MaterialValue_##name(Ptr _##param1Name, Ptr _##param2Name) : param1Name(_##param1Name.Release()), param2Name(_##param2Name.Release()) { }; \
+        MV_##name(Ptr _##param1Name, Ptr _##param2Name) : param1Name(_##param1Name.Release()), param2Name(_##param2Name.Release()) { }; \
          \
         virtual Dimensions GetNDims() const override; \
         virtual Vectorf GetValue(const Ray& ray, FastRand& prng, \
@@ -167,17 +290,17 @@ private:
         virtual void ReadData(DataReader& reader) override { MaterialValue::ReadData(reader); ReadValue(param1Name, reader, #param1Name); ReadValue(param2Name, reader, #param2Name); } \
          \
     private: \
-        MaterialValue_##name() { } \
-        ADD_MVAL_REFLECTION_DATA_H(MaterialValue_##name, name) \
+        MV_##name() { } \
+        ADD_MVAL_REFLECTION_DATA_H(MV_##name, name) \
     };
 #define MAKE_SIMPLE_FUNC3(name, param1Name, param2Name, param3Name) \
-    class RT_API MaterialValue_##name : public MaterialValue \
+    class RT_API MV_##name : public MaterialValue \
     { \
     public: \
          \
         Ptr param1Name, param2Name, param3Name; \
          \
-        MaterialValue_##name(Ptr _##param1Name, Ptr _##param2Name, Ptr _##param3Name) : param1Name(_##param1Name.Release()), param2Name(_##param2Name.Release()), param3Name(_##param3Name.Release()) { }; \
+        MV_##name(Ptr _##param1Name, Ptr _##param2Name, Ptr _##param3Name) : param1Name(_##param1Name.Release()), param2Name(_##param2Name.Release()), param3Name(_##param3Name.Release()) { }; \
          \
         virtual Dimensions GetNDims() const override; \
         virtual Vectorf GetValue(const Ray& ray, FastRand& prng, \
@@ -187,16 +310,25 @@ private:
         virtual void ReadData(DataReader& reader) override { MaterialValue::ReadData(reader); ReadValue(param1Name, reader, #param1Name); ReadValue(param2Name, reader, #param2Name); ReadValue(param3Name, reader, #param3Name); } \
          \
     private: \
-        MaterialValue_##name() { } \
-        ADD_MVAL_REFLECTION_DATA_H(MaterialValue_##name, name) \
+        MV_##name() { } \
+        ADD_MVAL_REFLECTION_DATA_H(MV_##name, name) \
     };
 
+#pragma endregion
 
 #pragma warning (disable: 4251)
+//Adds an arbitrary number of inputs together.
 MAKE_MULTI_MV(Add,  ToAdd);
-MAKE_MULTI_MV(Sub,  ToSub);
-MAKE_MULTI_MV(Mult, ToMultiply);
-MAKE_MULTI_MV(Div,  ToDivide);
+//Subtracts an arbitrary number of inputs from the first input.
+MAKE_MULTI_MV(Subtract,  ToSub);
+//Multiplies an arbitrary number of inputs together.
+MAKE_MULTI_MV(Multiply, ToMultiply);
+//Divides an arbitrary number of inputs from the first input.
+MAKE_MULTI_MV(Divide,  ToDivide);
+//Gets the smallest of an arbitrary number of inputs for each component.
+MAKE_MULTI_MV(Min, ToUse);
+//Gets the largest of an arbitrary number of inputs for each component.
+MAKE_MULTI_MV(Max, ToUse);
 #pragma warning (default: 4251)
 
 MAKE_SIMPLE_FUNC1(Sin, Input); MAKE_SIMPLE_FUNC1(Cos, Input); MAKE_SIMPLE_FUNC1(Tan, Input);
@@ -209,9 +341,13 @@ MAKE_SIMPLE_FUNC3(Lerp, A, B, T);
 MAKE_SIMPLE_FUNC1(Smoothstep, T);
 MAKE_SIMPLE_FUNC1(Smootherstep, T);
 
+MAKE_SIMPLE_FUNC1(Floor, X);
+MAKE_SIMPLE_FUNC1(Ceil, X);
+MAKE_SIMPLE_FUNC1(Abs, X);
+
 MAKE_SIMPLE_FUNC3(Clamp, Min, Max, X);
 
-//TODO: Add various other material values, including noise generation.
+//TODO: Add various other material values, including noise generation. MAKE SURE TO ADD THEM TO THE FORWARD DECLARATIONS AT THE TOP.
 
 #undef MAKE_MULTI_MV
 #undef MAKE_SIMPLE_FUNC1

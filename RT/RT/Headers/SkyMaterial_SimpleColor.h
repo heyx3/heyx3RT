@@ -11,7 +11,7 @@ public:
     MaterialValue::Ptr Color;
 
 
-    SkyMaterial_SimpleColor(MaterialValue::Ptr col = new MaterialValue_Constant(Vector3f(0.5f, 0.5f, 1.0f)))
+    SkyMaterial_SimpleColor(MaterialValue::Ptr col = new MV_Constant(Vector3f(0.5f, 0.5f, 1.0f)))
         : Color(col.Release()) { }
 
 

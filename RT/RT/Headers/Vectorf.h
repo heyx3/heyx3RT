@@ -14,10 +14,11 @@ enum RT_API Dimensions : unsigned char
     Four = 4,
 };
 
-inline Dimensions Max(Dimensions a, Dimensions b) { return (a > b ? a : b); }
 inline Dimensions Min(Dimensions a, Dimensions b) { return (a < b ? a : b); }
-inline Dimensions MaxIgnoring1D(Dimensions a, Dimensions b) { return (a == One ? b : (b == One ? a : Max(a, b))); }
 inline Dimensions MinIgnoring1D(Dimensions a, Dimensions b) { return (a == One ? b : (b == One ? a : Min(a, b))); }
+inline Dimensions MinIgnoring1D(Dimensions a, Dimensions b, Dimensions c) { return MinIgnoring1D(a, MinIgnoring1D(b, c)); }
+
+inline Dimensions Max(Dimensions a, Dimensions b) { return (a > b ? a : b); }
 
 
 //A vector with between 1 and 4 values.
@@ -83,7 +84,7 @@ public:
             return OperateOn(f, other);
 
         //Create two new Vectorf's of equal size and do the operation on them.
-        Dimensions outDims = MaxIgnoring1D(NValues, other.NValues);
+        Dimensions outDims = Max(NValues, other.NValues);
         Vectorf me2, other2;
         me2.NValues = outDims;
         other2.NValues = outDims;
@@ -105,6 +106,17 @@ public:
         }
 
         return me2.OperateOn(f, other2);
+    }
+    //"Func" is of the type "float f(float myF, float otherF)".
+    template<typename Func>
+    //Does a component-wise operation between this and the given Vectorf.
+    //When two vectors don't have the same number of dimensions, one of the following will happen:
+    //    * If one of the vectors is 1D, its single component will be applied to each component of the other vector.
+    //    * Otherwise, the output vector will be the same size as the largest vector,
+    //      and the "identity" parameter fills in any missing components in the smaller one.
+    Vectorf OperateOn(Func f, const Vectorf& other, float identity) const
+    {
+        return OperateOn(f, other, identity, identity);
     }
     //"Func" is of the type "float f(float myF, float other1F, float other2F)".
     template<typename Func>

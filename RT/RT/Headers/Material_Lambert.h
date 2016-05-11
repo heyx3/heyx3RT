@@ -11,7 +11,7 @@ public:
     MaterialValue::Ptr Color;
 
     
-    Material_Lambert(MaterialValue::Ptr col = new MaterialValue_Constant(Vector3f(1.0f, 1.0f, 1.0f)))
+    Material_Lambert(MaterialValue::Ptr col = new MV_Constant(Vector3f(1.0f, 1.0f, 1.0f)))
         : Color(col.Release()) { }
 
 

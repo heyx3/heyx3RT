@@ -7,7 +7,7 @@ ADD_SHAPE_REFLECTION_DATA_CPP(Mesh);
 Mesh::Mesh(const std::vector<Vertex>& verts)
 {
     Tris.reserve(verts.size() / 3);
-    for (int i = 0; (i + 2) < verts.size(); i += 3)
+    for (size_t i = 0; (i + 2) < verts.size(); i += 3)
     {
         Tris.push_back(Triangle(verts[i], verts[i + 1], verts[i + 2]));
     }
@@ -24,10 +24,10 @@ void Mesh::PrecalcData()
     bounds.Min = Tris[0].Verts[0].Pos;
     bounds.Max = Tris[0].Verts[0].Pos;
 
-    for (int tri = 0; tri < Tris.size(); ++tri)
+    for (size_t tri = 0; tri < Tris.size(); ++tri)
     {
         Tris[tri].PrecalcData();
-        for (int i = 0; i < 3; ++i)
+        for (size_t i = 0; i < 3; ++i)
         {
             bounds.Min.x = std::fminf(bounds.Min.x, Tris[tri].Verts[i].Pos.x);
             bounds.Min.y = std::fminf(bounds.Min.y, Tris[tri].Verts[i].Pos.y);
@@ -49,7 +49,7 @@ bool Mesh::CastRay(const Ray& ray, Vertex& outHit) const
 
     const Triangle* closest = nullptr;
     float hitDist = std::numeric_limits<float>().infinity();
-    for (int i = 0; i < Tris.size(); ++i)
+    for (size_t i = 0; i < Tris.size(); ++i)
     {
         float tempT;
         Vector3f tempPos;
@@ -81,7 +81,7 @@ void Mesh::WriteData(DataWriter& writer) const
     //Convert data to vertices for a more compact/simplified format.
     std::vector<Vertex> verts;
     verts.reserve(Tris.size() * 3);
-    for (int i = 0; i < Tris.size(); ++i)
+    for (size_t i = 0; i < Tris.size(); ++i)
     {
         verts.push_back(Tris[i].Verts[0]);
         verts.push_back(Tris[i].Verts[1]);
@@ -109,7 +109,7 @@ void Mesh::ReadData(DataReader& reader)
 
     Tris.clear();
     Tris.reserve(verts.size() / 3);
-    for (int i = 0; (i + 2) < verts.size(); i += 3)
+    for (size_t i = 0; (i + 2) < verts.size(); i += 3)
     {
         Tris.push_back(Triangle(verts[i], verts[i + 1], verts[i + 2]));
     }

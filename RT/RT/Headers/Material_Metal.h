@@ -12,8 +12,8 @@ public:
     MaterialValue::Ptr Roughness;
 
 
-    Material_Metal(MaterialValue::Ptr albedo = new MaterialValue_Constant(Vector3f(1.0f, 1.0f, 1.0f)),
-                   MaterialValue::Ptr roughness = new MaterialValue_Constant(0.0f))
+    Material_Metal(MaterialValue::Ptr albedo = new MV_Constant(Vector3f(1.0f, 1.0f, 1.0f)),
+                   MaterialValue::Ptr roughness = new MV_Constant(0.0f))
         : Albedo(albedo.Release()), Roughness(roughness.Release()) { }
 
 
