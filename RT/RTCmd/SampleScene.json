@@ -1,0 +1,150 @@
+{
+    "data": {
+        "Objects": {
+            "1": {
+                "MaterialType": "Lambert",
+                "MaterialValue": {
+                    "ColorType": "Constant",
+                    "ColorValue": {
+                        "Value": {
+							"Dimensions": 3,
+							"x": 1.0,
+							"y": 0.85,
+							"z": 0.85
+						}
+                    }
+                },
+                "ShapeType": "Sphere",
+                "ShapeValue": {
+                    "Transform": {
+                        "Pos": {
+                            "x": 0,
+                            "y": 0,
+                            "z": -1000
+                        },
+                        "QuaternionRot": {
+                            "w": 1,
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1000,
+                            "y": 1000,
+                            "z": 1000
+                        }
+                    },
+					"WrapAxis": 2
+                }
+            },
+            "2": {
+                "MaterialType": "Metal",
+                "MaterialValue": {
+                    "AlbedoType": "Constant",
+                    "AlbedoValue": {
+                        "Value": {
+                            "Dimensions": 3,
+                            "x": 0.75,
+                            "y": 0.75,
+                            "z": 0.8
+                        }
+                    },
+                    "RoughnessType": "Constant",
+                    "RoughnessValue": {
+                        "Value": {
+                            "Dimensions": 1,
+                            "x": 0.2
+                        }
+                    }
+                },
+                "ShapeType": "Sphere",
+                "ShapeValue": {
+                    "Transform": {
+                        "Pos": {
+                            "x": 10,
+                            "y": 10,
+                            "z": 5
+                        },
+                        "QuaternionRot": {
+                            "w": 1,
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 3,
+                            "y": 3,
+                            "z": 3
+                        }
+                    },
+					"WrapAxis": 2
+                }
+            },
+			"3": {
+                "MaterialType": "Lambert",
+                "MaterialValue": {
+                    "ColorType": "Tex2D",
+                    "ColorValue": {
+                        "FilePath": "TestTex.png",
+						"FileType": "Automatic",
+						"UVsType": "SurfUV",
+						"UVsValue": { }
+                    }
+                },
+                "ShapeType": "Sphere",
+                "ShapeValue": {
+                    "Transform": {
+                        "Pos": {
+                            "x": 30,
+                            "y": 30,
+                            "z": 15
+                        },
+                        "QuaternionRot": {
+                            "w": 1,
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 7,
+                            "y": 7,
+                            "z": 7
+                        }
+                    },
+					"WrapAxis": 2
+                }
+            },
+            "NValues": 3
+        },
+        "SkyMaterialType": "VerticalGradient",
+        "SkyMaterialValue": {
+            "BottomColType": "Constant",
+            "BottomColValue": {
+                "Value": {
+                    "Dimensions": 3,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.25
+                }
+            },
+            "TopColType": "Constant",
+            "TopColValue": {
+                "Value": {
+                    "Dimensions": 3,
+                    "x": 0.85,
+                    "y": 0.85,
+                    "z": 1
+                }
+            },
+			"SkyDirType": "Constant",
+			"SkyDirValue": {
+				"Value": {
+					"Dimensions": 3,
+					"x": 0.0,
+					"y": 0.0,
+					"z": 1.0
+				}
+			}
+        }
+    }
+}
