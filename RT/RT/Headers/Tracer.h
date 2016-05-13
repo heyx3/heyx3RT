@@ -32,7 +32,7 @@ EXPORT_STL_VECTOR(ShapeAndMat);
 #pragma warning(default: 4251)
 
 
-//A ray-tracer.
+//A ray-tracer/scene.
 class RT_API Tracer : public ISerializable
 {
 public:

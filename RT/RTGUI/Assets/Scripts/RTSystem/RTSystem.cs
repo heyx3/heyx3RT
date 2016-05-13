@@ -17,6 +17,7 @@ namespace RT
 		public Mesh Shape_Sphere, Shape_Plane,
 					SkySphere;
 		
+
 		public Material Mat_Lambert, Mat_Metal;
 		public Material SkyMat_SolidColor, SkyMat_VerticalGradient;
 	}

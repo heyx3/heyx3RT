@@ -10,17 +10,8 @@
     <Filter Include="Headers\Math">
       <UniqueIdentifier>{cb8166e3-b882-441e-add3-3b4f09d7b0b6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Headers\TracerEngine">
-      <UniqueIdentifier>{3bcab04b-ce5b-407a-858e-42f519c62412}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Headers\TracerEngine\Materials">
-      <UniqueIdentifier>{849a99b5-0bec-4e60-8c96-938d12125c52}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Headers\Shapes">
       <UniqueIdentifier>{98c3b541-cf50-4dd0-9458-a3a8db7231b9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Headers\TracerEngine\MaterialValue">
-      <UniqueIdentifier>{8db67d7f-afe6-4992-91e0-29e0d5e5f728}</UniqueIdentifier>
     </Filter>
     <Filter Include="Headers\Serializer">
       <UniqueIdentifier>{c99e0903-6242-4dab-bd0d-2f19cf0598e6}</UniqueIdentifier>
@@ -30,6 +21,12 @@
     </Filter>
     <Filter Include="Headers\Third Party">
       <UniqueIdentifier>{0af378f1-5a27-4abb-9ccf-51fb2cb773f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Materials">
+      <UniqueIdentifier>{849a99b5-0bec-4e60-8c96-938d12125c52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Materials\MaterialValue">
+      <UniqueIdentifier>{8db67d7f-afe6-4992-91e0-29e0d5e5f728}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -69,15 +66,6 @@
     <ClInclude Include="Headers\BoundingBox.h">
       <Filter>Headers\Shapes</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\Material.h">
-      <Filter>Headers\TracerEngine</Filter>
-    </ClInclude>
-    <ClInclude Include="Headers\Texture2D.h">
-      <Filter>Headers\TracerEngine</Filter>
-    </ClInclude>
-    <ClInclude Include="Headers\Tracer.h">
-      <Filter>Headers\TracerEngine</Filter>
-    </ClInclude>
     <ClInclude Include="Headers\Main.hpp">
       <Filter>Headers</Filter>
     </ClInclude>
@@ -90,26 +78,23 @@
     <ClInclude Include="Headers\Plane.h">
       <Filter>Headers\Shapes</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\SkyMaterial.h">
-      <Filter>Headers\TracerEngine</Filter>
-    </ClInclude>
     <ClInclude Include="Headers\SkyMaterial_VerticalGradient.h">
-      <Filter>Headers\TracerEngine\Materials</Filter>
+      <Filter>Headers\Materials</Filter>
     </ClInclude>
     <ClInclude Include="Headers\Material_Lambert.h">
-      <Filter>Headers\TracerEngine\Materials</Filter>
+      <Filter>Headers\Materials</Filter>
     </ClInclude>
     <ClInclude Include="Headers\Material_Metal.h">
-      <Filter>Headers\TracerEngine\Materials</Filter>
+      <Filter>Headers\Materials</Filter>
     </ClInclude>
     <ClInclude Include="Headers\SkyMaterial_SimpleColor.h">
-      <Filter>Headers\TracerEngine\Materials</Filter>
+      <Filter>Headers\Materials</Filter>
     </ClInclude>
     <ClInclude Include="Headers\MaterialValue.h">
-      <Filter>Headers\TracerEngine\MaterialValue</Filter>
+      <Filter>Headers\Materials\MaterialValue</Filter>
     </ClInclude>
     <ClInclude Include="Headers\MaterialValues.h">
-      <Filter>Headers\TracerEngine\MaterialValue</Filter>
+      <Filter>Headers\Materials\MaterialValue</Filter>
     </ClInclude>
     <ClInclude Include="Headers\DataSerialization.h">
       <Filter>Headers\Serializer</Filter>
@@ -133,9 +118,24 @@
       <Filter>Headers\Math</Filter>
     </ClInclude>
     <ClInclude Include="Headers\Vectorf.h">
-      <Filter>Headers\TracerEngine\MaterialValue</Filter>
+      <Filter>Headers\Materials\MaterialValue</Filter>
     </ClInclude>
     <ClInclude Include="Headers\SmartPtrs.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Material.h">
+      <Filter>Headers\Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\SkyMaterial.h">
+      <Filter>Headers\Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Texture2D.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Tracer.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\RT_C.hpp">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>

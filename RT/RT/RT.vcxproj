@@ -27,6 +27,7 @@
     <ClInclude Include="Headers\RT.hpp" />
     <ClInclude Include="Headers\DataSerialization.h" />
     <ClInclude Include="Headers\JsonSerialization.h" />
+    <ClInclude Include="Headers\RT_C.hpp" />
     <ClInclude Include="Headers\Shape.h" />
     <ClInclude Include="Headers\SkyMaterial.h" />
     <ClInclude Include="Headers\SkyMaterial_SimpleColor.h" />

@@ -135,6 +135,17 @@ void JsonWriter::WriteDouble(double value, const std::string& name)
 }
 void JsonWriter::WriteString(const std::string& value, const std::string& name)
 {
+    //Escape special characters.
+    std::string newVal = value;
+    for (size_t i = 0; i < newVal.size(); ++i)
+    {
+        if (newVal[i] == '"' || newVal[i] == '\\')
+        {
+            newVal.insert(newVal.begin() + i, '\\');
+            i += 1;
+        }
+    }
+
     GetToUse()[name] = value;
 }
 void JsonWriter::WriteBytes(const unsigned char* bytes, size_t nBytes, const std::string& name)
@@ -247,6 +258,17 @@ void JsonReader::ReadString(std::string& outStr, const std::string& name)
     Assert(element->is_string(), "Expected a string but got something else");
 
     outStr = element->get<std::string>();
+
+    //Fix escaped characters.
+    for (size_t i = 0; i < outStr.size(); ++i)
+    {
+        if (outStr[i] == '\\')
+        {
+            outStr.erase(outStr.begin() + i);
+            //Normally we would subtract 1 from "i" here, but we *want* to skip the next character --
+            //    it's the one being escaped.
+        }
+    }
 }
 void JsonReader::ReadBytes(std::vector<unsigned char>& outBytes, const std::string& name)
 {
