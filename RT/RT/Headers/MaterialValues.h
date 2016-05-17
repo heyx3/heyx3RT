@@ -130,6 +130,8 @@ public:
                              const Shape* shpe = nullptr,
                              const Vertex* surface = nullptr) const override
         { return ray.GetPos((float)T->GetValue(ray, prng, shpe, surface)); }
+    virtual void WriteData(DataWriter& writer) const override { WriteValue(T, writer, "T"); }
+    virtual void ReadData(DataReader& reader) override { ReadValue(T, reader, "T"); }
 private:
     MV_RayPos() { }
     ADD_MVAL_REFLECTION_DATA_H(MV_RayPos, RayPos);
