@@ -12,7 +12,7 @@ namespace RT
 	//TODO: Finish this once a "MeshFile" shape exists in RT.
 	public class RTShape_MeshFile : RTShape
 	{
-		public override string TypeName { get { return TypeName_Mesh; } }
+		public override string TypeName { get { return TypeName_MeshFile; } }
 		public override Mesh UnityMesh
 		{
 			get

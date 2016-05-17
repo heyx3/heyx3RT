@@ -75,6 +75,7 @@ C_RT_API void ReleaseImage(float* img)
     delete[] img;
 }
 
+
 //The code that represents "everything was successful!"
 C_RT_API int ERRORCODE_SUCCESS() { return 0; }
 //The code that represents "The texture is not large enough to be traced successfully".

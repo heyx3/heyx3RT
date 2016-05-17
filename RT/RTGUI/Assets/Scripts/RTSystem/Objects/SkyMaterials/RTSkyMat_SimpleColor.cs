@@ -1,19 +1,17 @@
-using System.Collections.Generic;
-using System.Linq;
+using System;
 using System.Xml;
 using UnityEngine;
 
 
-
 namespace RT
 {
-	public class RTMat_Lambert : RTMat
+	public class RTSkyMat_SimpleColor : RTSkyMat
 	{
-		public override string TypeName { get { return TypeName_Lambert; } }
-		public override Material UnityMat { get { return RTSystem.Instance.Mat_Lambert; } }
+		public override string TypeName { get { return TypeName_SimpleColor; } }
+		public override Material UnityMat { get { return RTSystem.Instance.SkyMat_SolidColor; } }
 
 
-		public MaterialValue Color = new MV_Constant(true, new uint[] { 1, 3 }, 1.0f);
+		public MaterialValue Color = new MV_Constant(true, new uint[] { 1, 3 }, new Vector3(0.75f, 0.75f, 1.0f));
 
 
 		public override void DoGUI()
@@ -22,10 +20,9 @@ namespace RT
 			Color.OnGUI(RTGui.Instance.MaterialValueTabSize);
 		}
 
-		public override void SetMaterialParams(Material mat)
+		public override void SetMaterialParams(Material m)
 		{
-			mat.SetFloat("_Metallic", 0.0f);
-			Color.SetMaterialParams(mat, "_MainTex", "_Color");
+			Color.SetMaterialParams(m, null, "_Color");
 		}
 
 		public override void WriteData(RTSerializer.Writer writer)

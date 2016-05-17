@@ -7,38 +7,6 @@ using UnityEngine;
 
 public static class GUIUtil
 {
-	public static Color ToCol(this Vector3 rgb, float a = 1.0f) { return new Color(rgb.x, rgb.y, rgb.z, a); }
-	
-	public static Vector3 ToRGB(this Color col) { return new Vector3(col.r, col.g, col.b); }
-	public static Vector4 ToRGBA(this Color col) { return new Vector4(col.r, col.g, col.b, col.a); }
-
-
-	public static Vector3 RGBEditor(Vector3 current, float tabSize,
-									GUIStyle labelStyle, GUIStyle sliderBarStyle, GUIStyle sliderThumbStyle)
-	{
-		GUILayout.BeginHorizontal();
-			GUILayout.Space(tabSize);
-			GUILayout.Label("R", labelStyle);
-			current.x = GUILayout.HorizontalSlider(current.x, 0.0f, 1.0f,
-												   sliderBarStyle, sliderThumbStyle);
-		GUILayout.EndHorizontal();
-		GUILayout.BeginHorizontal();
-			GUILayout.Space(tabSize);
-			GUILayout.Label("G", labelStyle);
-			current.y = GUILayout.HorizontalSlider(current.y, 0.0f, 1.0f,
-												   sliderBarStyle, sliderThumbStyle);
-		GUILayout.EndHorizontal();
-		GUILayout.BeginHorizontal();
-			GUILayout.Space(tabSize);
-			GUILayout.Label("B", labelStyle);
-			current.z = GUILayout.HorizontalSlider(current.z, 0.0f, 1.0f,
-												   sliderBarStyle, sliderThumbStyle);
-		GUILayout.EndHorizontal();
-
-		return current;
-	}
-
-
 	public class FileBrowserData
 	{
 		public static FileBrowserData Get(int id) { return browsers[id]; }
@@ -107,5 +75,31 @@ public static class GUIUtil
 		if (data.CurrentFile != null && GUILayout.Button("Select", data.ControlButtonsStyle))
 			data.OnFileChosen(data.CurrentFile);
 		GUILayout.EndHorizontal();
+	}
+
+
+	public static Vector3 RGBEditor(Vector3 current, float tabSize,
+									GUIStyle labelStyle, GUIStyle sliderBarStyle, GUIStyle sliderThumbStyle)
+	{
+		GUILayout.BeginHorizontal();
+			GUILayout.Space(tabSize);
+			GUILayout.Label("R", labelStyle);
+			current.x = GUILayout.HorizontalSlider(current.x, 0.0f, 1.0f,
+												   sliderBarStyle, sliderThumbStyle);
+		GUILayout.EndHorizontal();
+		GUILayout.BeginHorizontal();
+			GUILayout.Space(tabSize);
+			GUILayout.Label("G", labelStyle);
+			current.y = GUILayout.HorizontalSlider(current.y, 0.0f, 1.0f,
+												   sliderBarStyle, sliderThumbStyle);
+		GUILayout.EndHorizontal();
+		GUILayout.BeginHorizontal();
+			GUILayout.Space(tabSize);
+			GUILayout.Label("B", labelStyle);
+			current.z = GUILayout.HorizontalSlider(current.z, 0.0f, 1.0f,
+												   sliderBarStyle, sliderThumbStyle);
+		GUILayout.EndHorizontal();
+
+		return current;
 	}
 }

@@ -12,40 +12,38 @@ namespace RT
 		public override Material UnityMat { get { return RTSystem.Instance.Mat_Metal; } }
 
 
-		//TODO: Use MaterialValues here and in Lambert.
-
-		public Vector3 Albedo = Vector3.one;
-		public float Roughness = 0.2f;
+		public MaterialValue Albedo = new MV_Constant(true, new uint[] { 1, 3 }, 1.0f);
+		public MaterialValue Roughness = new MV_Constant(true, new uint[] { 1 }, 0.2f);
 
 
 		public override void DoGUI()
 		{
 			GUILayout.Label("Albedo");
-			Albedo = GUIUtil.RGBEditor(Albedo, 10.0f);
+			Albedo.OnGUI(RTGui.Instance.MaterialValueTabSize);
 
-			GUILayout.EndHorizontal();
-				GUILayout.Label("Roughness");
-				Roughness = GUILayout.HorizontalSlider(Roughness, 0.0f, 1.0f);
-			GUILayout.BeginHorizontal();
+			GUILayout.Label("Roughness");
+			Roughness.OnGUI(RTGui.Instance.MaterialValueTabSize);
 		}
 
 		public override void SetMaterialParams(Material mat)
 		{
-			mat.color = Albedo.ToCol();
-			mat.SetFloat("_Shininess", 1.0f - Roughness);
+			mat.SetFloat("_Metallic", 1.0f);
+
+			Albedo.SetMaterialParams(mat, "_MainTex", "_Color");
+			Roughness.SetMaterialParams(mat, null, "_Glossiness");
 		}
 
 		public override void WriteData(RTSerializer.Writer writer)
 		{
 			base.WriteData(writer);
-			writer.WriteVector3(Albedo, "Albedo");
-			writer.WriteFloat(Roughness, "Roughness");
+			MaterialValue.Write(Albedo, writer, "Albedo");
+			MaterialValue.Write(Roughness, writer, "Roughness");
 		}
 		public override void ReadData(RTSerializer.Reader reader)
 		{
 			base.ReadData(reader);
-			reader.ReadVector3((v) => Albedo = v, "Albedo");
-			Roughness = reader.ReadFloat("Roughness");
+			Albedo = MaterialValue.Read(reader, "Albedo");
+			Roughness = MaterialValue.Read(reader, "Roughness");
 		}
 	}
 }

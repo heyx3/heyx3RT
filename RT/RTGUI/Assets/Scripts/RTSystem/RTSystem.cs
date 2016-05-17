@@ -20,5 +20,7 @@ namespace RT
 
 		public Material Mat_Lambert, Mat_Metal;
 		public Material SkyMat_SolidColor, SkyMat_VerticalGradient;
+
+		public Texture2D DefaultTex, WhiteTex;
 	}
 }

@@ -100,7 +100,7 @@ namespace RTSerializer.SimpleData
 	}
 
 
-	internal struct TransformSerializer : ISerializable
+	internal class TransformSerializer : ISerializable
 	{
 		public Transform Tr;
 		public TransformSerializer(Transform tr) { Tr = tr; }

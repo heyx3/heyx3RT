@@ -26,22 +26,22 @@ namespace RT
 				case TypeName_Plane:
 					shpe = owner.AddComponent<RTShape_Plane>();
 					break;
-				case TypeName_Mesh:
-					shpe = owner.AddComponent<RTShape_Mesh>();
+				case TypeName_MeshFile:
+					shpe = owner.AddComponent<RTShape_MeshFile>();
 					break;
 
 				default: throw new RTSerializer.SerializerException("Unknown RTShape type \"" +
 																	typeName + "\"");
 			}
 
-			reader.ReadDataStructure(ref shpe, name + "Value");
+			reader.ReadDataStructure(shpe, name + "Value");
 			return shpe;
 		}
 
 
 		protected const string TypeName_Sphere = "Sphere",
 		                       TypeName_Plane = "Plane",
-		                       TypeName_Mesh = "Mesh";
+		                       TypeName_MeshFile = "MeshFile";
 
 
 		public Transform Tr { get; private set; }

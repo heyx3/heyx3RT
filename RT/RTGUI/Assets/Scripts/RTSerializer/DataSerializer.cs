@@ -31,6 +31,7 @@ namespace RTSerializer
 		public abstract void WriteDouble(double value, string name);
 		public abstract void WriteString(string value, string name);
 		public abstract void WriteBytes(byte[] bytes, string name);
+
 		public abstract void WriteDataStructure(IWritable toWrite, string name);
 
 		public virtual void WriteVector2(Vector2 v, string name)
@@ -64,7 +65,7 @@ namespace RTSerializer
 		/// <summary>
 		/// Helper struct for "WriteList()".
 		/// </summary>
-		private struct ListWriter<T> : IWritable
+		private class ListWriter<T> : IWritable
 		{
 			public IList<T> ToWrite;
 			public Action<T, string, Writer> WriterFunc;
@@ -95,54 +96,58 @@ namespace RTSerializer
 		public abstract double ReadDouble(string name);
 		public abstract string ReadString(string name);
 		public abstract byte[] ReadBytes(string name);
-		public abstract void ReadDataStructure(ref IReadable toRead, string name);
+
+		/// <summary>
+		/// IMPORTANT NOTE: the IReadable is passed in, so it must generally be a class!
+		/// </summary>
+		public abstract void ReadDataStructure(IReadable toRead, string name);
 		
 		public virtual Vector2 ReadVector2(string name)
 		{
 			Vector2 v = new Vector2();
 			IReadable rd = new SimpleData.Vector2Reader((v2) => v = v2);
-			ReadDataStructure(ref rd, name);
+			ReadDataStructure(rd, name);
 			return v;
 		}
 		public virtual Vector3 ReadVector3(string name)
 		{
 			Vector3 v = new Vector3();
 			IReadable rd = new SimpleData.Vector3Reader((v2) => v = v2);
-			ReadDataStructure(ref rd, name);
+			ReadDataStructure(rd, name);
 			return v;
 		}
 		public virtual Vector4 ReadVector4(string name)
 		{
 			Vector4 v = new Vector4();
 			IReadable rd = new SimpleData.Vector4Reader((v2) => v = v2);
-			ReadDataStructure(ref rd, name);
+			ReadDataStructure(rd, name);
 			return v;
 		}
 		public virtual Quaternion ReadQuaternion(string name)
 		{
 			Quaternion q = new Quaternion();
 			IReadable rd = new SimpleData.QuaternionReader((q2) => q = q2);
-			ReadDataStructure(ref rd, name);
+			ReadDataStructure(rd, name);
 			return q;
 		}
 
 		public void ReadTransform(Transform tr, string name)
 		{
 			SimpleData.TransformSerializer ts = new SimpleData.TransformSerializer(tr);
-			ReadDataStructure(ref ts, name);
+			ReadDataStructure(ts, name);
 		}
 
 		public void ReadList<T>(IList<T> toRead, Func<string, Reader, T> readElementFunc, string name)
 		{
 			IReadable lrd = new ListReader<T>(toRead, readElementFunc);
-			ReadDataStructure(ref lrd, name);
+			ReadDataStructure(lrd, name);
 		}
 
 
 		/// <summary>
 		/// Helper struct for "ReadList()".
 		/// </summary>
-		private struct ListReader<T> : IReadable
+		private class ListReader<T> : IReadable
 		{
 			public IList<T> ToRead;
 			public Func<string, Reader, T> ReaderFunc;

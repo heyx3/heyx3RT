@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace RT
 {
-	public struct RTVertex : RTSerializer.ISerializable
+	public class RTVertex : RTSerializer.ISerializable
 	{
 		public Vector3 Pos, Normal, Tangent, Bitangent;
 		public Vector2 UV;
