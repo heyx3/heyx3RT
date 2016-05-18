@@ -19,13 +19,13 @@ namespace RT
 		public override void DoGUI()
 		{
 			GUILayout.Label("Top Color");
-			TopColor.OnGUI(RTGui.Instance.MaterialValueTabSize);
+			TopColor.OnGUI();
 
 			GUILayout.Label("Bottom Color");
-			BottomColor.OnGUI(RTGui.Instance.MaterialValueTabSize);
+			BottomColor.OnGUI();
 
 			GUILayout.Label("Sky Direction");
-			SkyDir.OnGUI(RTGui.Instance.MaterialValueTabSize);
+			SkyDir.OnGUI();
 		}
 		public override void SetMaterialParams(Material m)
 		{

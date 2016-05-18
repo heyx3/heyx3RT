@@ -19,10 +19,10 @@ namespace RT
 		public override void DoGUI()
 		{
 			GUILayout.Label("Albedo");
-			Albedo.OnGUI(RTGui.Instance.MaterialValueTabSize);
+			Albedo.OnGUI();
 
 			GUILayout.Label("Roughness");
-			Roughness.OnGUI(RTGui.Instance.MaterialValueTabSize);
+			Roughness.OnGUI();
 		}
 
 		public override void SetMaterialParams(Material mat)

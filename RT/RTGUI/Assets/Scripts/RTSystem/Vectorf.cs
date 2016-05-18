@@ -104,11 +104,11 @@ namespace RT
 		/// <param name="allowedNValues">
 		/// Pass "null" if the number of components shouldn't be editable.
 		/// </param>
-		public void DoGUI(float tabLevel, float sliderMin, float sliderMax,
+		public void DoGUI(float sliderMin, float sliderMax,
 						  GUIStyle sliderBar, GUIStyle sliderThumb,
 						  uint[] allowedNValues = null)
 		{
-			DoGUI(tabLevel, allowedNValues,
+			DoGUI(allowedNValues,
 				  (i) =>
 				  {
 					  this[i] = GUILayout.HorizontalSlider(this[i], sliderMin, sliderMax,
@@ -121,9 +121,9 @@ namespace RT
 		/// <param name="allowedNValues">
 		/// Pass "null" if the number of components shouldn't be editable.
 		/// </param>
-		public void DoGUI(float tabLevel, GUIStyle style, uint[] allowedNValues = null)
+		public void DoGUI(GUIStyle style, uint[] allowedNValues = null)
 		{
-			DoGUI(tabLevel, allowedNValues,
+			DoGUI(allowedNValues,
 				  (i) =>
 				  {
 					  string str = GUILayout.TextField(this[i].ToString(), style);
@@ -133,41 +133,34 @@ namespace RT
 				  });
 		}
 
-		private void DoGUI(float tabLevel, uint[] allowedNValues, Action<uint> doComponent)
+		private void DoGUI(uint[] allowedNValues, Action<uint> doComponent)
 		{
-			GUILayout.BeginHorizontal();
-			GUILayout.Space(tabLevel);
-			GUILayout.BeginVertical();
+			if (allowedNValues != null)
 			{
-				if (allowedNValues != null)
+				GUILayout.BeginHorizontal();
 				{
-					GUILayout.BeginHorizontal();
-					{
-						GUILayout.Label("N Dimensions:");
+					GUILayout.Label("N Dimensions:");
 
-						int index = allowedNValues.IndexOf(NValues);
-						if (index > -1)
-						{
-							string[] content = allowedNValues.Select(u => ComponentStrings[u]).ToArray();
-							index = GUILayout.SelectionGrid(index, content, allowedNValues.Length);
-							NValues = allowedNValues[index];
-						}
-					}
-					GUILayout.EndHorizontal();
-				}
-
-				for (uint i = 0; i < NValues; ++i)
-				{
-					GUILayout.BeginHorizontal();
+					int index = allowedNValues.IndexOf(NValues);
+					if (index > -1)
 					{
-						GUILayout.Label(ComponentStrings[i]);
-						doComponent(i);
+						string[] content = allowedNValues.Select(u => ComponentStrings[u]).ToArray();
+						index = GUILayout.SelectionGrid(index, content, allowedNValues.Length);
+						NValues = allowedNValues[index];
 					}
-					GUILayout.EndHorizontal();
 				}
+				GUILayout.EndHorizontal();
 			}
-			GUILayout.EndVertical();
-			GUILayout.EndHorizontal();
+
+			for (uint i = 0; i < NValues; ++i)
+			{
+				GUILayout.BeginHorizontal();
+				{
+					GUILayout.Label(ComponentStrings[i]);
+					doComponent(i);
+				}
+				GUILayout.EndHorizontal();
+			}
 		}
 
 		public void WriteData(RTSerializer.Writer writer)

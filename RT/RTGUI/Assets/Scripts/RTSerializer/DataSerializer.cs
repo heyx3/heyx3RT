@@ -139,6 +139,7 @@ namespace RTSerializer
 
 		public void ReadList<T>(IList<T> toRead, Func<string, Reader, T> readElementFunc, string name)
 		{
+			toRead.Clear();
 			IReadable lrd = new ListReader<T>(toRead, readElementFunc);
 			ReadDataStructure(lrd, name);
 		}

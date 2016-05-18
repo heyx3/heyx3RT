@@ -19,7 +19,7 @@ namespace RT
 		public override void DoGUI()
 		{
 			GUILayout.Label("Color");
-			Color.OnGUI(RTGui.Instance.MaterialValueTabSize);
+			Color.OnGUI();
 		}
 
 		public override void SetMaterialParams(Material mat)

@@ -105,29 +105,31 @@ namespace RT
 							   TypeName_PureNoise = "PureNoise";
 		#endregion
 
-		private const float TabIncrement = 10.0f;
-		
 
 		public abstract string TypeName { get; }
 		public virtual bool HasVariableNumberOfChildren { get { return false; } }
 
 
-		protected RTGui Gui { get { return RTGui.Instance; } }
+		protected RTGui.Gui Gui { get { return RTGui.Gui.Instance; } }
 
 
 		private List<MaterialValue> children = new List<MaterialValue>();
+
+		private RTGui.MaterialValueSelector childSelector = null;
+		private int childSelectorIndex = -1;
+
 		private Dictionary<MaterialValue, bool> isExpanded = new Dictionary<MaterialValue,bool>();
 
 
-		public void OnGUI(float tabLevel = 0.0f)
+		public void OnGUI()
 		{
-			DoGUI(tabLevel);
+			DoGUI();
+
+			StartGUITab();
 
 			for (int i = 0; i < children.Count; ++i)
 			{
 				GUILayout.BeginHorizontal();
-
-					GUILayout.Space(tabLevel);
 
 					//Expand/collapse the child with a button.
 					if (GUILayout.Button(isExpanded[children[i]] ? "^" : "V",
@@ -140,7 +142,29 @@ namespace RT
 					GUILayout.Label(GetInputName(i) + ": " + children[i].TypeName,
 									Gui.Style_MaterialValue_Text);
 
-					//TODO: Option window for choosing a kind of MaterialValue. Use it here to change value type.
+
+					//Selector to change the child's type.
+					if (childSelector == null &&
+						GUILayout.Button("Change", Gui.Style_MaterialValue_Button))
+					{
+						childSelectorIndex = i;
+						childSelector =
+							new RTGui.MaterialValueSelector(new Rect(),
+															(mv) =>
+															{
+																isExpanded.Add(mv, isExpanded[children[childSelectorIndex]]);
+																isExpanded.Remove(children[childSelectorIndex]);
+																children[childSelectorIndex] = mv;
+																childSelector.Release();
+																childSelector = null;
+															},
+															Gui.Style_MaterialValue_Button,
+															new GUIContent("Choose New Type"),
+															children[i].GetType());
+					}
+					if (childSelector != null && i == childSelectorIndex)
+						childSelector.DoGUI();
+
 
 					//Delete the child with a button.
 					if (HasVariableNumberOfChildren)
@@ -158,22 +182,36 @@ namespace RT
 
 				//If the child is expanded, show its gui.
 				if (isExpanded[children[i]])
-					children[i].OnGUI(tabLevel + TabIncrement);
+				{
+					StartGUITab();
+					children[i].OnGUI();
+					EndGUITab();
+				}
 			}
 
 			if (HasVariableNumberOfChildren)
 			{
-				GUILayout.BeginHorizontal();
-				GUILayout.Space(tabLevel);
 				if (GUILayout.Button("+", Gui.Style_MaterialValue_Button))
 				{
 					AddChild(MakeDefaultChild());
 				}
-				GUILayout.EndHorizontal();
 			}
+
+			EndGUITab();
+		}
+		protected void StartGUITab()
+		{
+			GUILayout.BeginHorizontal();
+			GUILayout.Space(Gui.MaterialValueTabSize);
+			GUILayout.BeginVertical();
+		}
+		protected void EndGUITab()
+		{
+			GUILayout.EndVertical();
+			GUILayout.EndHorizontal();
 		}
 
-		protected virtual void DoGUI(float tabLevel) { }
+		protected virtual void DoGUI() { }
 		protected virtual string GetInputName(int index) { return (index + 1).ToString(); }
 
 		public virtual void SetMaterialParams(Material mat,
@@ -201,7 +239,9 @@ namespace RT
 	}
 
 
-
+	/// <summary>
+	/// A MaterialValue that just outputs a constant value.
+	/// </summary>
 	public class MV_Constant : MaterialValue
 	{
 		public static MV_Constant MakeFloat(float f) { return new MV_Constant(false, new uint[] { 1 }, f); }
@@ -234,11 +274,11 @@ namespace RT
 		}
 		
 
-		protected override void DoGUI(float tabLevel)
+		protected override void DoGUI()
 		{
-			base.DoGUI(tabLevel);
+			base.DoGUI();
 
-			Value.DoGUI(tabLevel, Gui.Style_MaterialValue_Text, AllowableDimensions);
+			Value.DoGUI(Gui.Style_MaterialValue_Text, AllowableDimensions);
 		}
 
 		public override void SetMaterialParams(Material mat,
@@ -269,409 +309,5 @@ namespace RT
 			reader.ReadDataStructure(Value, "Value");
 			Value = reader.ReadVector3("Value");
 		}
-	}
-
-
-	public class MV_Tex2D : MaterialValue
-	{
-		private static Texture2D Load(string filePath)
-		{
-			if (!File.Exists(filePath))
-				return null;
-
-			Texture2D tex = null;
-
-			string ext = Path.GetExtension(filePath);
-			if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
-			{
-				tex = new Texture2D(1, 1);
-				tex.LoadImage(File.ReadAllBytes(filePath), true);
-			}
-
-			return tex;
-		}
-
-
-		public override string TypeName { get { return TypeName_Tex2D; } }
-		
-		public string TexturePath = null;
-
-		private Texture2D loadedTex = null;
-		private GUIUtil.FileBrowserData fileBrowser = null;
-
-
-		public MV_Tex2D(string texPath = null) : this(new MV_SurfUV(), texPath) { }
-		public MV_Tex2D(MaterialValue uv, string texPath = null)
-		{
-			AddChild(uv);
-			TexturePath = texPath;
-
-			loadedTex = Load(TexturePath);
-		}
-
-
-		protected override void DoGUI(float tabLevel)
-		{
-			base.DoGUI(tabLevel);
-
-			if (fileBrowser == null)
-			{
-				if (loadedTex != null)
-				{
-					GUILayout.Box(loadedTex, Gui.Style_MaterialValue_Texture,
-								  GUILayout.MaxWidth(Gui.MaxTexPreviewSize.x),
-								  GUILayout.MaxHeight(Gui.MaxTexPreviewSize.y));
-
-					if (GUILayout.Button("Reload", Gui.Style_MaterialValue_Button))
-						loadedTex = Load(TexturePath);
-				}
-
-				if (GUILayout.Button("Change"))
-				{
-					fileBrowser = new GUIUtil.FileBrowserData((TexturePath == null ?
-																Application.dataPath :
-																TexturePath),
-															  new Rect(),
-															  (fle) =>
-																  {
-																	  loadedTex = Load(fle.FullName);
-																	  fileBrowser = null;
-																  },
-															  Gui.Style_FileBrowser_Files,
-															  Gui.Style_FileBrowser_Buttons,
-															  ".png", ".jpg", ".jpeg");
-				}
-			}
-			else
-			{
-				GUILayout.Label("Waiting for file browser...", Gui.Style_MaterialValue_Text);
-				fileBrowser.CurrentWindowPos = GUILayout.Window(fileBrowser.ID,
-																fileBrowser.CurrentWindowPos,
-																GUIUtil.FileBrowserWindowCallback,
-																"Choose new texture file");
-			}
-		}
-		protected override string GetInputName(int index) { return "UV"; }
-
-		public override void SetMaterialParams(Material mat,
-											   string texParamName = null,
-											   string colorParamName = null)
-		{
-			if (colorParamName != null)
-				mat.SetColor(colorParamName, Color.white);
-			if (texParamName != null && loadedTex != null)
-				mat.SetTexture(texParamName, loadedTex);
-		}
-
-		public override void WriteData(RTSerializer.Writer writer)
-		{
-			base.WriteData(writer);
-
-			writer.WriteString(TexturePath, "FilePath");
-			writer.WriteString("Automatic", "FileType");
-
-			Write(GetChild(0), writer, "UVs");
-		}
-		public override void ReadData(RTSerializer.Reader reader)
-		{
-			base.ReadData(reader);
-
-			TexturePath = reader.ReadString("FilePath");
-			loadedTex = Load(TexturePath);
-
-			ClearChildren();
-			AddChild(Read(reader, "UVs"));
-		}
-	}
-
-
-	public class MV_PureNoise : MaterialValue
-	{
-		public byte NChannels;
-
-
-		public override string TypeName { get { return TypeName_PureNoise; } }
-
-
-		public MV_PureNoise(byte nChannels) { NChannels = nChannels; }
-
-
-		protected override void DoGUI(float tabLevel)
-		{
-			base.DoGUI(tabLevel);
-
-			GUILayout.BeginHorizontal();
-			GUILayout.Label("Number of Channels:", Gui.Style_MaterialValue_Text);
-			NChannels = (byte)GUILayout.HorizontalSlider((float)NChannels, 1.0f, 4.0f,
-														 Gui.Style_MaterialValue_Slider,
-														 Gui.Style_MaterialValue_SliderThumb);
-			GUILayout.EndHorizontal();
-		}
-
-		public override void WriteData(RTSerializer.Writer writer)
-		{
-			base.WriteData(writer);
-			writer.WriteByte(NChannels, "Dimensions");
-		}
-		public override void ReadData(RTSerializer.Reader reader)
-		{
-			base.ReadData(reader);
-			NChannels = reader.ReadByte("Dimensions");
-		}
-	}
-
-	
-	public abstract class MV_Simple1 : MaterialValue
-	{
-		public MV_Simple1(MaterialValue x) { AddChild(x); }
-
-		protected override string GetInputName(int index) { return "Input"; }
-		public override void WriteData(RTSerializer.Writer writer)
-		{
-			base.WriteData(writer);
-			Write(GetChild(0), writer, GetInputName(0));
-		}
-		public override void ReadData(RTSerializer.Reader reader)
-		{
-			base.ReadData(reader);
-			ClearChildren();
-			AddChild(Read(reader, GetInputName(0)));
-		}
-	}
-	public class MV_Sin : MV_Simple1
-	{
-		public override string TypeName { get { return TypeName_Sin; } }
-		public MV_Sin(MaterialValue x) : base(x) { }
-	}
-	public class MV_Cos : MV_Simple1
-	{
-		public override string TypeName { get { return TypeName_Cos; } }
-		public MV_Cos(MaterialValue x) : base(x) { }
-	}
-	public class MV_Tan : MV_Simple1
-	{
-		public override string TypeName { get { return TypeName_Tan; } }
-		public MV_Tan(MaterialValue x) : base(x) { }
-	}
-	public class MV_Asin: MV_Simple1
-	{
-		public override string TypeName { get { return TypeName_Asin; } }
-		public MV_Asin(MaterialValue x) : base(x) { }
-	}
-	public class MV_Acos: MV_Simple1
-	{
-		public override string TypeName { get { return TypeName_Acos; } }
-		public MV_Acos(MaterialValue x) : base(x) { }
-	}
-	public class MV_Atan: MV_Simple1
-	{
-		public override string TypeName { get { return TypeName_Atan; } }
-		public MV_Atan(MaterialValue x) : base(x) { }
-	}
-	public class MV_Smoothstep : MV_Simple1
-	{
-		public override string TypeName { get { return TypeName_Smoothstep; } }
-		public MV_Smoothstep(MaterialValue x) : base(x) { }
-		protected override string GetInputName(int index) { return "T"; }
-	}
-	public class MV_Smootherstep : MV_Simple1
-	{
-		public override string TypeName { get { return TypeName_Smootherstep; } }
-		public MV_Smootherstep(MaterialValue x) : base(x) { }
-		protected override string GetInputName(int index) { return "T"; }
-	}
-	public class MV_Floor : MV_Simple1
-	{
-		public override string TypeName { get { return TypeName_Floor; } }
-		public MV_Floor(MaterialValue x) : base(x) { }
-		protected override string GetInputName(int index) { return "X"; }
-	}
-	public class MV_Ceil : MV_Simple1
-	{
-		public override string TypeName { get { return TypeName_Ceil; } }
-		public MV_Ceil(MaterialValue x) : base(x) { }
-		protected override string GetInputName(int index) { return "X"; }
-	}
-	public class MV_Abs : MV_Simple1
-	{
-		public override string TypeName { get { return TypeName_Abs; } }
-		public MV_Abs(MaterialValue x) : base(x) { }
-		protected override string GetInputName(int index) { return "X"; }
-	}
-	public class MV_RayPos : MV_Simple1
-	{
-		public override string TypeName { get { return TypeName_RayPos; } }
-		public MV_RayPos(MaterialValue t) : base(t) { }
-		protected override string GetInputName(int index) { return "T"; }
-	}
-
-
-	public abstract class MV_Simple2 : MaterialValue
-	{
-		public MV_Simple2(MaterialValue a, MaterialValue b) { AddChild(a); AddChild(b); }
-
-		protected override string GetInputName(int index) { return (index == 0 ? "A" : "B"); }
-		public override void WriteData(RTSerializer.Writer writer)
-		{
-			base.WriteData(writer);
-			Write(GetChild(0), writer, GetInputName(0));
-			Write(GetChild(1), writer, GetInputName(1));
-		}
-		public override void ReadData(RTSerializer.Reader reader)
-		{
-			base.ReadData(reader);
-			ClearChildren();
-			AddChild(Read(reader, GetInputName(0)));
-			AddChild(Read(reader, GetInputName(1)));
-		}
-	}
-	public class MV_Atan2 : MV_Simple2
-	{
-		public override string TypeName { get { return TypeName_Atan2; } }
-		public MV_Atan2(MaterialValue y, MaterialValue x) : base(y, x) { }
-		protected override string GetInputName(int i) { return (i == 0 ? "Y" : "X"); }
-	}
-	public class MV_Step : MV_Simple2
-	{
-		public override string TypeName { get { return TypeName_Step; } }
-		public MV_Step(MaterialValue edge, MaterialValue x) : base(edge, x) { }
-		protected override string GetInputName(int i) { return (i == 0 ? "Edge" : "x"); }
-	}
-	
-
-	public abstract class MV_Simple3 : MaterialValue
-	{
-		public MV_Simple3(MaterialValue a, MaterialValue b, MaterialValue c) { AddChild(a); AddChild(b); AddChild(c); }
-
-		protected override string GetInputName(int index) { return (index == 0 ? "A" : (index == 1 ? "B" : "C")); }
-		public override void WriteData(RTSerializer.Writer writer)
-		{
-			base.WriteData(writer);
-			Write(GetChild(0), writer, GetInputName(0));
-			Write(GetChild(1), writer, GetInputName(1));
-			Write(GetChild(2), writer, GetInputName(2));
-		}
-		public override void ReadData(RTSerializer.Reader reader)
-		{
-			base.ReadData(reader);
-			ClearChildren();
-			AddChild(Read(reader, GetInputName(0)));
-			AddChild(Read(reader, GetInputName(1)));
-			AddChild(Read(reader, GetInputName(2)));
-		}
-	}
-	public class MV_Lerp : MV_Simple3
-	{
-		public override string TypeName { get { return TypeName_Lerp; } }
-		public MV_Lerp(MaterialValue a, MaterialValue b, MaterialValue t) : base(a, b, t) { }
-		protected override string GetInputName(int i) { return (i == 0 ? "A" : (i == 1 ? "B" : "T")); }
-	}
-	public class MV_Clamp : MV_Simple3
-	{
-		public override string TypeName { get { return TypeName_Clamp; } }
-		public MV_Clamp(MaterialValue min, MaterialValue max, MaterialValue x) : base(min, max, x) { }
-		protected override string GetInputName(int i) { return (i == 0 ? "Min" : (i == 1 ? "Max" : "X")); }
-	}
-
-
-	public class MV_SurfPos : MaterialValue
-	{
-		public override string TypeName { get { return TypeName_SurfPos; } }
-	}
-	public class MV_SurfNormal : MaterialValue
-	{
-		public override string TypeName { get { return TypeName_SurfNormal; } }
-	}
-	public class MV_SurfTangent : MaterialValue
-	{
-		public override string TypeName { get { return TypeName_SurfTangent; } }
-	}
-	public class MV_SurfBitangent : MaterialValue
-	{
-		public override string TypeName { get { return TypeName_SurfBitangent; } }
-	}
-	public class MV_SurfUV : MaterialValue
-	{
-		public override string TypeName { get { return TypeName_SurfUV; } }
-	}
-	public class MV_RayStartPos : MaterialValue
-	{
-		public override string TypeName { get { return TypeName_RayStartPos; } }
-	}
-	public class MV_RayDir : MaterialValue
-	{
-		public override string TypeName { get { return TypeName_RayDir; } }
-	}
-	public class MV_ShapePos : MaterialValue
-	{
-		public override string TypeName { get { return TypeName_ShapePos; } }
-	}
-	public class MV_ShapeScale : MaterialValue
-	{
-		public override string TypeName { get { return TypeName_ShapeScale; } }
-	}
-	public class MV_ShapeRot : MaterialValue
-	{
-		public override string TypeName { get { return TypeName_ShapeRot; } }
-	}
-
-
-	public abstract class MV_MultiType : MaterialValue
-	{
-		public override bool HasVariableNumberOfChildren { get { return true; } }
-		public override void WriteData(RTSerializer.Writer writer)
-		{
-			base.WriteData(writer);
-			writer.WriteList(GetChildrenCopy(), (mv, n, wr) => Write(mv, wr, n), "Items");
-		}
-		public override void ReadData(RTSerializer.Reader reader)
-		{
-			base.ReadData(reader);
-
-			List<MaterialValue> vals = new List<MaterialValue>();
-			reader.ReadList(vals, (n, rd) => Read(rd, n), "Items");
-
-			ClearChildren();
-			for (int i = 0; i < vals.Count; ++i)
-				AddChild(vals[i]);
-		}
-	}
-	public class MV_Add : MV_MultiType
-	{
-		public override string TypeName { get { return TypeName_Add; } }
-		public MV_Add(MaterialValue a, MaterialValue b) { AddChild(a); AddChild(b); }
-		public MV_Add(MaterialValue a, MaterialValue b, MaterialValue c) { AddChild(a); AddChild(b); AddChild(c); }
-		protected override MaterialValue MakeDefaultChild() { return new MV_Constant(false, new uint[] { 1 }, 0.0f); }
-	}
-	public class MV_Subtract: MV_MultiType
-	{
-		public override string TypeName { get { return TypeName_Subtract; } }
-		public MV_Subtract(MaterialValue a, MaterialValue b) { AddChild(a); AddChild(b); }
-		public MV_Subtract(MaterialValue a, MaterialValue b, MaterialValue c) { AddChild(a); AddChild(b); AddChild(c); }
-		protected override MaterialValue MakeDefaultChild() { return new MV_Constant(false, new uint[] { 1 }, 0.0f); }
-	}
-	public class MV_Multiply : MV_MultiType
-	{
-		public override string TypeName { get { return TypeName_Multiply; } }
-		public MV_Multiply(MaterialValue a, MaterialValue b) { AddChild(a); AddChild(b); }
-		public MV_Multiply(MaterialValue a, MaterialValue b, MaterialValue c) { AddChild(a); AddChild(b); AddChild(c); }
-		protected override MaterialValue MakeDefaultChild() { return new MV_Constant(false, new uint[] { 1 }, 1.0f); }
-	}
-	public class MV_Divide : MV_MultiType
-	{
-		public override string TypeName { get { return TypeName_Divide; } }
-		public MV_Divide(MaterialValue a, MaterialValue b) { AddChild(a); AddChild(b); }
-		public MV_Divide(MaterialValue a, MaterialValue b, MaterialValue c) { AddChild(a); AddChild(b); AddChild(c); }
-		protected override MaterialValue MakeDefaultChild() { return new MV_Constant(false, new uint[] { 1 }, 1.0f); }
-	}
-	public class MV_Min : MV_MultiType
-	{
-		public override string TypeName { get { return TypeName_Min; } }
-		public MV_Min(MaterialValue a, MaterialValue b) { AddChild(a); AddChild(b); }
-	}
-	public class MV_Max : MV_MultiType
-	{
-		public override string TypeName { get { return TypeName_Max; } }
-		public MV_Max(MaterialValue a, MaterialValue b) { AddChild(a); AddChild(b); }
 	}
 }

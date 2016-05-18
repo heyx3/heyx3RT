@@ -11,13 +11,13 @@ namespace RT
 		public override Material UnityMat { get { return RTSystem.Instance.SkyMat_SolidColor; } }
 
 
-		public MaterialValue Color = new MV_Constant(true, new uint[] { 1, 3 }, new Vector3(0.75f, 0.75f, 1.0f));
+		public MaterialValue Color = MV_Constant.MakeRGB(0.75f, 0.75f, 1.0f);
 
 
 		public override void DoGUI()
 		{
 			GUILayout.Label("Color");
-			Color.OnGUI(RTGui.Instance.MaterialValueTabSize);
+			Color.OnGUI();
 		}
 
 		public override void SetMaterialParams(Material m)

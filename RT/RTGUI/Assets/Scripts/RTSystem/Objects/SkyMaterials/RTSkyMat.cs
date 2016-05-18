@@ -6,6 +6,8 @@ using UnityEngine;
 namespace RT
 {
 	[DisallowMultipleComponent]
+	[RequireComponent(typeof(MeshFilter))]
+	[RequireComponent(typeof(MeshRenderer))]
 	public abstract class RTSkyMat : MonoBehaviour, RTSerializer.ISerializable
 	{
 		public static void Write(RTSkyMat mat, RTSerializer.Writer writer, string name)
@@ -61,6 +63,7 @@ namespace RT
 		private void Start()
 		{
 			Renderer.material = UnityMat;
+			GetComponent<MeshFilter>().mesh = RTSystem.Instance.SkySphere;
 		}
 		private void Update()
 		{

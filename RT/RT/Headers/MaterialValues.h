@@ -113,7 +113,7 @@ DEF_BASIC_MVAL(ShapePos, Three, AssertExists(shpe); return shpe->Tr.GetPos(); );
 //Gets the scale of the shape that was hit.
 DEF_BASIC_MVAL(ShapeScale, Three, AssertExists(shpe); return shpe->Tr.GetScale(); );
 //Gets the axis/angle rotation of the shape that was hit.
-//The X/Y/Z are the axis, and the W is the angle.
+//The X/Y/Z are the axis, and the W is the angle in radians.
 DEF_BASIC_MVAL(ShapeRot, Four, AssertExists(shpe); return shpe->Tr.GetRot().GetAxisAngle(); );
 
 #undef DEF_BASIC_MVAL
