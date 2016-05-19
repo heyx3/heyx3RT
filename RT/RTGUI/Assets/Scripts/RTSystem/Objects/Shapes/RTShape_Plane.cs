@@ -12,11 +12,11 @@ namespace RT
 		public bool IsOneSided = false;
 
 
-		protected override void DoGUI()
+		public override void DoGUI()
 		{
 			base.DoGUI();
 
-			IsOneSided = GUILayout.Toggle(IsOneSided, "Is one-sided?");
+			IsOneSided = GUILayout.Toggle(IsOneSided, "Is one-sided?", Gui.Style_Text);
 		}
 
 		public override void WriteData(RTSerializer.Writer writer)

@@ -15,17 +15,29 @@ namespace RT
 							 BottomColor = MV_Constant.MakeRGB(0.5f, 0.5f, 0.75f),
 							 SkyDir = MV_Constant.MakeVec3(Vector3.up);
 
+		private RTGui.MaterialValueGui topColorGUI, bottomColorGUI, skyDirGUI;
+
+
+		protected override void Start()
+		{
+			base.Start();
+
+			topColorGUI = new RTGui.MaterialValueGui("Top Color",
+													 RTGui.Gui.Instance.Style_Button,
+													 RTGui.Gui.Instance.Style_Text);
+			bottomColorGUI = new RTGui.MaterialValueGui("Bottom Color",
+														RTGui.Gui.Instance.Style_Button,
+														RTGui.Gui.Instance.Style_Text);
+			skyDirGUI = new RTGui.MaterialValueGui("Sky Direction",
+												   RTGui.Gui.Instance.Style_Button,
+												   RTGui.Gui.Instance.Style_Text);
+		}
 
 		public override void DoGUI()
 		{
-			GUILayout.Label("Top Color");
-			TopColor.OnGUI();
-
-			GUILayout.Label("Bottom Color");
-			BottomColor.OnGUI();
-
-			GUILayout.Label("Sky Direction");
-			SkyDir.OnGUI();
+			TopColor = topColorGUI.DoGUI(TopColor, false);
+			BottomColor = bottomColorGUI.DoGUI(BottomColor, false);
+			SkyDir = skyDirGUI.DoGUI(SkyDir, false);
 		}
 		public override void SetMaterialParams(Material m)
 		{

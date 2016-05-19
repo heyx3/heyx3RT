@@ -50,6 +50,14 @@ Vectorf Vectorf::operator/(const Vectorf& other) const
     return operator*(OperateOn([](float f) { return 1.0f / f; }));
 }
 
+float Vectorf::LengthSqr() const
+{
+    float f = 0.0f;
+    for (size_t i = 0; i < NValues; ++i)
+        f += (*this)[i];
+    return f;
+}
+
 void Vectorf_Writable::WriteData(DataWriter& writer) const
 {
     writer.WriteUInt((Dimensions)V.NValues, "Dimensions");

@@ -34,7 +34,7 @@ namespace RT
 				procMesh.uv = scene.Textures.Select(t => new Vector2(t.X, t.Y)).ToArray();
 				procMesh.normals = scene.Normals.Select(n => new Vector3(n.X, n.Y, n.Z)).ToArray();
 				procMesh.RecalculateBounds();
-				//TODO: Figure out how to set up triangles.
+				//TODO: Figure out how to set up triangles from LoadResult.
 				procMesh.UploadMeshData(true);
 
 				changed = false;
@@ -49,47 +49,39 @@ namespace RT
 		private Mesh procMesh = null;
 
 
-		//TODO: Use GUIUtil's file browser stuff instead.
-		private class FileWindowData
-		{
-			public string CurrentPath;
-			public DirectoryInfo CurrentDir;
-			public Rect CurrentWindowPos;
-			public int ID;
-		}
+		private RTGui.FileBrowser fileWindow = null;
 
-		private FileWindowData fileWindow = null;
-
-
-		protected override void DoGUI()
+		public override void DoGUI()
 		{
 			base.DoGUI();
 
-			GUILayout.Label("File path: " + MeshPath);
-			if (GUILayout.Button("Reload file"))
+			GUILayout.Label("File path: " + MeshPath, Gui.Style_Text);
+			if (GUILayout.Button("Reload file", Gui.Style_Button))
 			{
 				changed = true;
 				MeshFlt.mesh = UnityMesh;
 			}
-			if (fileWindow == null && GUILayout.Button("Change file"))
+			if (fileWindow == null && GUILayout.Button("Change file", Gui.Style_Button))
 			{
-				fileWindow = new FileWindowData();
-				fileWindow.CurrentPath = MeshPath;
-				fileWindow.CurrentDir = new DirectoryInfo(fileWindow.CurrentPath);
-				fileWindow.CurrentWindowPos = new Rect(Screen.width * 0.5f, Screen.height * 0.5f,
-													   200.0f, 400.0f);
-				fileWindow.ID = GetInstanceID();
+				fileWindow = new RTGui.FileBrowser(MeshPath,
+												   new Rect(Screen.width * 0.5f, Screen.height * 0.5f,
+															200.0f, 400.0f),
+												   new GUIContent("Choose mesh file"),
+												   (fle) =>
+												   {
+													   MeshPath = fle.FullName;
+													   changed = true;
+												   },
+												   Gui.Style_FileBrowser_Files,
+												   Gui.Style_FileBrowser_Buttons,
+												   Gui.Style_FileBrowser_Text,
+												   ".obj");
 			}
 
 			if (fileWindow != null)
 			{
-				fileWindow.CurrentWindowPos = GUILayout.Window(fileWindow.ID, fileWindow.CurrentWindowPos,
-															   GUIFileWindow, "Mesh");
+				fileWindow.DoGUI();
 			}
-		}
-		private void GUIFileWindow(int id)
-		{
-			//TODO: File window GUI.
 		}
 
 		public override void WriteData(RTSerializer.Writer writer)

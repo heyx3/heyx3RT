@@ -15,14 +15,25 @@ namespace RT
 		public MaterialValue Albedo = new MV_Constant(true, new uint[] { 1, 3 }, 1.0f);
 		public MaterialValue Roughness = new MV_Constant(true, new uint[] { 1 }, 0.2f);
 
+		private RTGui.MaterialValueGui albedoGUI, roughnessGUI;
+
+
+		protected override void Start()
+		{
+			base.Start();
+			
+			albedoGUI = new RTGui.MaterialValueGui("Albedo",
+												   RTGui.Gui.Instance.Style_Button,
+												   RTGui.Gui.Instance.Style_Text);
+			roughnessGUI = new RTGui.MaterialValueGui("Roughness",
+													  RTGui.Gui.Instance.Style_Button,
+													  RTGui.Gui.Instance.Style_Text);
+		}
 
 		public override void DoGUI()
 		{
-			GUILayout.Label("Albedo");
-			Albedo.OnGUI();
-
-			GUILayout.Label("Roughness");
-			Roughness.OnGUI();
+			Albedo = albedoGUI.DoGUI(Albedo, false);
+			Roughness = roughnessGUI.DoGUI(Roughness, false);
 		}
 
 		public override void SetMaterialParams(Material mat)

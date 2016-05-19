@@ -26,6 +26,10 @@ namespace RT
 				case TypeName_Add: mv = new MV_Add(null, null); break;
 				case TypeName_Subtract: mv = new MV_Subtract(null, null); break;
 				case TypeName_Divide: mv = new MV_Divide(null, null); break;
+				case TypeName_Normalize: mv = new MV_Normalize(null); break;
+				case TypeName_Length: mv = new MV_Length(null); break;
+				case TypeName_Distance: mv = new MV_Distance(null, null); break;
+				case TypeName_Sqrt: mv = new MV_Sqrt(null); break;
 				case TypeName_Sin: mv = new MV_Sin(null); break;
 				case TypeName_Cos: mv = new MV_Cos(null); break;
 				case TypeName_Tan: mv = new MV_Tan(null); break;
@@ -74,6 +78,10 @@ namespace RT
 							   TypeName_Subtract = "Subtract",
 							   TypeName_Multiply = "Multiply",
 							   TypeName_Divide = "Divide",
+							   TypeName_Normalize = "Normalize",
+							   TypeName_Length = "Length",
+							   TypeName_Distance = "Distance",
+							   TypeName_Sqrt = "Sqrt",
 							   TypeName_Sin = "Sin",
 							   TypeName_Cos = "Cos",
 							   TypeName_Tan = "Tan",
@@ -114,101 +122,34 @@ namespace RT
 
 
 		private List<MaterialValue> children = new List<MaterialValue>();
-
-		private RTGui.MaterialValueSelector childSelector = null;
-		private int childSelectorIndex = -1;
-
-		private Dictionary<MaterialValue, bool> isExpanded = new Dictionary<MaterialValue,bool>();
+		private List<RTGui.MaterialValueGui> childGUIs = new List<RTGui.MaterialValueGui>();
 
 
 		public void OnGUI()
 		{
 			DoGUI();
 
-			StartGUITab();
+			GUIUtil.StartTab(Gui.TabSize);
 
 			for (int i = 0; i < children.Count; ++i)
 			{
-				GUILayout.BeginHorizontal();
-
-					//Expand/collapse the child with a button.
-					if (GUILayout.Button(isExpanded[children[i]] ? "^" : "V",
-										 Gui.Style_MaterialValue_Button))
-					{
-						isExpanded[children[i]] = !isExpanded[children[i]];
-					}
-
-					//Display the child's name/type.
-					GUILayout.Label(GetInputName(i) + ": " + children[i].TypeName,
-									Gui.Style_MaterialValue_Text);
-
-
-					//Selector to change the child's type.
-					if (childSelector == null &&
-						GUILayout.Button("Change", Gui.Style_MaterialValue_Button))
-					{
-						childSelectorIndex = i;
-						childSelector =
-							new RTGui.MaterialValueSelector(new Rect(),
-															(mv) =>
-															{
-																isExpanded.Add(mv, isExpanded[children[childSelectorIndex]]);
-																isExpanded.Remove(children[childSelectorIndex]);
-																children[childSelectorIndex] = mv;
-																childSelector.Release();
-																childSelector = null;
-															},
-															Gui.Style_MaterialValue_Button,
-															new GUIContent("Choose New Type"),
-															children[i].GetType());
-					}
-					if (childSelector != null && i == childSelectorIndex)
-						childSelector.DoGUI();
-
-
-					//Delete the child with a button.
-					if (HasVariableNumberOfChildren)
-					{
-						GUILayout.FlexibleSpace();
-
-						if (GUILayout.Button("-", Gui.Style_MaterialValue_Button))
-						{
-							RemoveChild(i);
-							i -= 1;
-						}
-					}
-
-				GUILayout.EndHorizontal();
-
-				//If the child is expanded, show its gui.
-				if (isExpanded[children[i]])
+				MaterialValue newMV = childGUIs[i].DoGUI(children[i], HasVariableNumberOfChildren);
+				if (newMV == null)
 				{
-					StartGUITab();
-					children[i].OnGUI();
-					EndGUITab();
+					RemoveChild(i);
+					i -= 1;
 				}
 			}
 
 			if (HasVariableNumberOfChildren)
 			{
-				if (GUILayout.Button("+", Gui.Style_MaterialValue_Button))
+				if (GUILayout.Button("+", Gui.Style_Button))
 				{
 					AddChild(MakeDefaultChild());
 				}
 			}
 
-			EndGUITab();
-		}
-		protected void StartGUITab()
-		{
-			GUILayout.BeginHorizontal();
-			GUILayout.Space(Gui.MaterialValueTabSize);
-			GUILayout.BeginVertical();
-		}
-		protected void EndGUITab()
-		{
-			GUILayout.EndVertical();
-			GUILayout.EndHorizontal();
+			GUIUtil.EndTab();
 		}
 
 		protected virtual void DoGUI() { }
@@ -231,11 +172,16 @@ namespace RT
 		protected int GetNChildren() { return children.Count; }
 		protected MaterialValue GetChild(int i) { return children[i]; }
 
-		protected void ClearChildren() { children.Clear(); isExpanded.Clear(); }
+		protected void ClearChildren() { children.Clear(); childGUIs.Clear(); }
 
-		protected void AddChild(MaterialValue mv) { children.Add(mv); isExpanded.Add(mv, false); }
+		protected void AddChild(MaterialValue mv)
+		{
+			children.Add(mv);
+			childGUIs.Add(new RTGui.MaterialValueGui(GetInputName(children.Count - 1),
+													 Gui.Style_Button, Gui.Style_Text));
+		}
 		protected void RemoveChild(MaterialValue mv) { RemoveChild(children.IndexOf(mv)); }
-		protected void RemoveChild(int index) { isExpanded.Remove(children[index]); children.RemoveAt(index); }
+		protected void RemoveChild(int index) { children.RemoveAt(index); childGUIs.RemoveAt(index); }
 	}
 
 
@@ -278,7 +224,7 @@ namespace RT
 		{
 			base.DoGUI();
 
-			Value.DoGUI(Gui.Style_MaterialValue_Text, AllowableDimensions);
+			Value.DoGUI(Gui.Style_Text, Gui.Style_TextBox, Gui.Style_SelectionGrid, AllowableDimensions);
 		}
 
 		public override void SetMaterialParams(Material mat,

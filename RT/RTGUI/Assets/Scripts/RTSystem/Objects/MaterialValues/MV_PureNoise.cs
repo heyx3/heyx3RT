@@ -21,10 +21,10 @@ namespace RT
 			base.DoGUI();
 
 			GUILayout.BeginHorizontal();
-			GUILayout.Label("Number of Channels:", Gui.Style_MaterialValue_Text);
+			GUILayout.Label("Number of Channels:", Gui.Style_Text);
 			NChannels = (byte)GUILayout.HorizontalSlider((float)NChannels, 1.0f, 4.0f,
-														 Gui.Style_MaterialValue_Slider,
-														 Gui.Style_MaterialValue_SliderThumb);
+														 Gui.Style_Slider,
+														 Gui.Style_SliderThumb);
 			GUILayout.EndHorizontal();
 		}
 

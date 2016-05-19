@@ -105,47 +105,58 @@ namespace RT
 		/// Pass "null" if the number of components shouldn't be editable.
 		/// </param>
 		public void DoGUI(float sliderMin, float sliderMax,
+						  GUIStyle textStyle, GUIStyle selectionGridStyle,
 						  GUIStyle sliderBar, GUIStyle sliderThumb,
 						  uint[] allowedNValues = null)
 		{
-			DoGUI(allowedNValues,
+			DoGUI(textStyle, selectionGridStyle, allowedNValues,
 				  (i) =>
 				  {
 					  this[i] = GUILayout.HorizontalSlider(this[i], sliderMin, sliderMax,
 														   sliderBar, sliderThumb);
 				  });
 		}
+
+		private string[] currentValStrs = null;
 		/// <summary>
 		/// Shows the GUI for editing this Vectorf's component using text boxes.
 		/// </summary>
 		/// <param name="allowedNValues">
 		/// Pass "null" if the number of components shouldn't be editable.
 		/// </param>
-		public void DoGUI(GUIStyle style, uint[] allowedNValues = null)
+		public void DoGUI(GUIStyle textStyle, GUIStyle textBoxStyle, GUIStyle selectionGridStyle,
+						  uint[] allowedNValues = null)
 		{
-			DoGUI(allowedNValues,
+			if (currentValStrs == null)
+			{
+				currentValStrs = new string[4] { Value.x.ToString(), Value.y.ToString(), Value.z.ToString(), Value.w.ToString() };
+			}
+
+			DoGUI(textStyle, selectionGridStyle, allowedNValues,
 				  (i) =>
 				  {
-					  string str = GUILayout.TextField(this[i].ToString(), style);
+					  currentValStrs[i] = GUILayout.TextField(currentValStrs[i], textBoxStyle);
 					  float f;
-					  if (float.TryParse(str, out f))
+					  if (float.TryParse(currentValStrs[i], out f))
 						  this[i] = f;
 				  });
 		}
 
-		private void DoGUI(uint[] allowedNValues, Action<uint> doComponent)
+		private void DoGUI(GUIStyle textStyle, GUIStyle selectionGridStyle,
+						   uint[] allowedNValues, Action<uint> doComponent)
 		{
 			if (allowedNValues != null)
 			{
 				GUILayout.BeginHorizontal();
 				{
-					GUILayout.Label("N Dimensions:");
+					GUILayout.Label("N Dimensions:", textStyle);
 
 					int index = allowedNValues.IndexOf(NValues);
 					if (index > -1)
 					{
-						string[] content = allowedNValues.Select(u => ComponentStrings[u]).ToArray();
-						index = GUILayout.SelectionGrid(index, content, allowedNValues.Length);
+						string[] content = allowedNValues.Select(u => u.ToString()).ToArray();
+						index = GUILayout.SelectionGrid(index, content, allowedNValues.Length,
+														selectionGridStyle);
 						NValues = allowedNValues[index];
 					}
 				}
@@ -156,7 +167,7 @@ namespace RT
 			{
 				GUILayout.BeginHorizontal();
 				{
-					GUILayout.Label(ComponentStrings[i]);
+					GUILayout.Label(ComponentStrings[i], textStyle);
 					doComponent(i);
 				}
 				GUILayout.EndHorizontal();

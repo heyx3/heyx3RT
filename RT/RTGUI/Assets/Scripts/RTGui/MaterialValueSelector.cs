@@ -30,6 +30,8 @@ namespace RTGui
 				slc.OnNewMVChosen(null);
 			}
 			GUILayout.EndHorizontal();
+
+			GUI.DragWindow();
 		}
 
 
@@ -60,6 +62,10 @@ namespace RTGui
 			new Option("Add", typeof(MV_Add), () => new MV_Add(DefaultMV, DefaultMV)),
 			new Option("Subtract", typeof(MV_Subtract), () => new MV_Subtract(DefaultMV, DefaultMV)),
 			new Option("Multiply", typeof(MV_Multiply), () => new MV_Multiply(DefaultMV, DefaultMV)),
+			new Option("Normalize", typeof(MV_Normalize), () => new MV_Normalize(DefaultMV)),
+			new Option("Length", typeof(MV_Length), () => new MV_Length(DefaultMV)),
+			new Option("Distance", typeof(MV_Distance), () => new MV_Distance(DefaultMV, DefaultMV)),
+			new Option("Sqrt", typeof(MV_Sqrt), () => new MV_Sqrt(DefaultMV)),
 			new Option("Sin", typeof(MV_Sin), () => new MV_Sin(DefaultMV)),
 			new Option("Cos", typeof(MV_Cos), () => new MV_Cos(DefaultMV)),
 			new Option("Tan", typeof(MV_Tan), () => new MV_Tan(DefaultMV)),

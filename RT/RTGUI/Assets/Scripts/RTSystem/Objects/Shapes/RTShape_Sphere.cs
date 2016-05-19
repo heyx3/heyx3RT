@@ -16,13 +16,14 @@ namespace RT
 		public uint WrapAxis = 1;
 
 
-		protected override void DoGUI()
+		public override void DoGUI()
 		{
 			base.DoGUI();
 
 			GUILayout.BeginHorizontal();
-				GUILayout.Label("Wrap Axis");
-				WrapAxis = (uint)GUILayout.HorizontalSlider(WrapAxis, -0.5f, 2.5f);
+				GUILayout.Label("Wrap Axis", Gui.Style_Text);
+				WrapAxis = (uint)GUILayout.HorizontalSlider(WrapAxis, -0.5f, 2.5f,
+															Gui.Style_Slider, Gui.Style_SliderThumb);
 			GUILayout.EndHorizontal();
 		}
 

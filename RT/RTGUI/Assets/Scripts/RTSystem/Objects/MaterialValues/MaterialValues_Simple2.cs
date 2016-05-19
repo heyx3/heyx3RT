@@ -27,6 +27,12 @@ namespace RT
 	}
 
 
+	public class MV_Distance : MV_Simple2
+	{
+		public override string TypeName { get { return TypeName_Distance; } }
+		public MV_Distance(MaterialValue a, MaterialValue b) : base(a, b) { }
+		protected override string GetInputName(int i) { return (i == 0 ? "A" : "B"); }
+	}
 	public class MV_Atan2 : MV_Simple2
 	{
 		public override string TypeName { get { return TypeName_Atan2; } }

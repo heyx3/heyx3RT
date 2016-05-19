@@ -52,11 +52,11 @@ namespace RT
 			{
 				if (loadedTex != null)
 				{
-					GUILayout.Box(loadedTex, Gui.Style_MaterialValue_Texture,
+					GUILayout.Box(loadedTex, Gui.Style_MValTexture,
 								  GUILayout.MaxWidth(Gui.MaxTexPreviewSize.x),
 								  GUILayout.MaxHeight(Gui.MaxTexPreviewSize.y));
 
-					if (GUILayout.Button("Reload", Gui.Style_MaterialValue_Button))
+					if (GUILayout.Button("Reload", Gui.Style_Button))
 						loadedTex = Load(TexturePath);
 				}
 
@@ -83,7 +83,7 @@ namespace RT
 			}
 			else
 			{
-				GUILayout.Label("Waiting for file browser...", Gui.Style_MaterialValue_Text);
+				GUILayout.Label("Waiting for file browser...", Gui.Style_Text);
 				fileBrowser.DoGUI();
 			}
 		}

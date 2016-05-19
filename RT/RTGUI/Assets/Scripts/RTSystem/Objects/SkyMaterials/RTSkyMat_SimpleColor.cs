@@ -13,11 +13,21 @@ namespace RT
 
 		public MaterialValue Color = MV_Constant.MakeRGB(0.75f, 0.75f, 1.0f);
 
+		private RTGui.MaterialValueGui colorGUI;
+
+
+		protected override void Start()
+		{
+			base.Start();
+
+			colorGUI = new RTGui.MaterialValueGui("Color",
+												  RTGui.Gui.Instance.Style_Button,
+												  RTGui.Gui.Instance.Style_Text);
+		}
 
 		public override void DoGUI()
 		{
-			GUILayout.Label("Color");
-			Color.OnGUI();
+			Color = colorGUI.DoGUI(Color, false);
 		}
 
 		public override void SetMaterialParams(Material m)

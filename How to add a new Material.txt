@@ -1,0 +1,8 @@
+In RT:
+	1. Declare the material, making sure to call both reflection macros.
+
+In RTGUI:
+	1. In "RTMat.cs", add a TypeName_X declaration for the material alongside the others.
+	2. Define the material in a new file in the same folder as the others.
+	3. Back in "RTMat.cs", add a new clause to the "Read()" static method for this new material.
+	4. In "MaterialSelector.cs", add the new Option(s) for this material.

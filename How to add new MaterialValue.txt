@@ -1,0 +1,12 @@
+Given the new class "MV_X":
+
+In RT, in "MaterialValues.h":
+	1. Put the forward declaration near the top of the file.
+	2. Define the class towards the bottom of the file.
+
+In RTGUI:
+	1. Pick the best file to define the class in and define it.
+	2. In "MaterialValue.cs", do the following:
+		* Add the TypeName_X = "X" declaration alongside the others.
+		* Add a case for TypeName_X in the Read() static method.
+	3. In "MaterialValueSelector.cs", add the Option(s) for the new MaterialValue.

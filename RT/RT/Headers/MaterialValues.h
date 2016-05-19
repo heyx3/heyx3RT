@@ -20,6 +20,11 @@ class MV_Subtract;
 class MV_Multiply;
 class MV_Divide;
 
+class MV_Normalize;
+class MV_Length;
+class MV_Distance;
+
+class MV_Sqrt;
 class MV_Sin;
 class MV_Cos;
 class MV_Tan;
@@ -333,6 +338,11 @@ MAKE_MULTI_MV(Min, ToUse);
 MAKE_MULTI_MV(Max, ToUse);
 #pragma warning (default: 4251)
 
+MAKE_SIMPLE_FUNC1(Normalize, X);
+MAKE_SIMPLE_FUNC1(Length, X);
+MAKE_SIMPLE_FUNC2(Distance, A, B);
+
+MAKE_SIMPLE_FUNC1(Sqrt, X);
 MAKE_SIMPLE_FUNC1(Sin, Input); MAKE_SIMPLE_FUNC1(Cos, Input); MAKE_SIMPLE_FUNC1(Tan, Input);
 MAKE_SIMPLE_FUNC1(Asin, Input); MAKE_SIMPLE_FUNC1(Acos, Input); MAKE_SIMPLE_FUNC1(Atan, Input);
 MAKE_SIMPLE_FUNC2(Atan2, Y, X);
@@ -349,7 +359,9 @@ MAKE_SIMPLE_FUNC1(Abs, X);
 
 MAKE_SIMPLE_FUNC3(Clamp, Min, Max, X);
 
-//TODO: Add various other material values, including noise generation. MAKE SURE TO ADD THEM TO THE FORWARD DECLARATIONS AT THE TOP.
+//TODO: Reflection/refraction MV's.
+//TODO: "Average" MV.
+//TODO: Noise generation MV's.
 
 #undef MAKE_MULTI_MV
 #undef MAKE_SIMPLE_FUNC1

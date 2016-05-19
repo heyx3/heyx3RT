@@ -38,6 +38,8 @@ namespace RT
 			return shpe;
 		}
 
+		protected static RTGui.Gui Gui { get { return RTGui.Gui.Instance; } }
+
 
 		protected const string TypeName_Sphere = "Sphere",
 		                       TypeName_Plane = "Plane",
@@ -59,12 +61,47 @@ namespace RT
 		private void Start()
 		{
 			MeshFlt.mesh = UnityMesh;
+			AddCollider();
 		}
-		
-
-		protected virtual void DoGUI()
+		private void OnMouseDown()
 		{
-			//TODO: Editor for Transform properties.
+			RTLogic.Controller.Instance.OnShapeClicked(this);
+		}
+
+
+		protected virtual void AddCollider() { gameObject.AddComponent<MeshCollider>(); }
+
+		string posX = null, posY, posZ, scaleX, scaleY, scaleZ;
+		public virtual void DoGUI()
+		{
+			if (posX == null)
+			{
+				posX = Tr.position.x.ToString();
+				posY = Tr.position.y.ToString();
+				posZ = Tr.position.z.ToString();
+				scaleX = Tr.localScale.x.ToString();
+				scaleY = Tr.localScale.y.ToString();
+				scaleZ = Tr.localScale.z.ToString();
+			}
+
+
+			GUILayout.Label("Position", Gui.Style_Text);
+			GUIUtil.StartTab(Gui.TabSize);
+			Tr.position = GUIUtil.Vec3Editor(Tr.position, Gui.Style_Text, Gui.Style_TextBox,
+											 ref posX, ref posY, ref posZ);
+			GUIUtil.EndTab();
+
+			GUILayout.Label("Scale", Gui.Style_Text);
+			GUIUtil.StartTab(Gui.TabSize);
+			Tr.localScale = GUIUtil.Vec3Editor(Tr.localScale, Gui.Style_Text, Gui.Style_TextBox,
+											   ref scaleX, ref scaleY, ref scaleZ);
+			GUIUtil.EndTab();
+
+			GUILayout.Label("Rotation", Gui.Style_Text);
+			GUIUtil.StartTab(Gui.TabSize);
+			Tr.eulerAngles = GUIUtil.Vec3Editor(Tr.eulerAngles, -180.0f, 180.0f,
+												Gui.Style_Text, Gui.Style_Slider, Gui.Style_SliderThumb);
+			GUIUtil.EndTab();
 		}
 
 		public virtual void WriteData(RTSerializer.Writer writer)

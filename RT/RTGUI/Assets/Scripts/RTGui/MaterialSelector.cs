@@ -30,6 +30,8 @@ namespace RTGui
 				slc.OnRTMatChosen(null);
 			}
 			GUILayout.EndHorizontal();
+
+			GUI.DragWindow();
 		}
 
 

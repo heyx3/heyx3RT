@@ -58,7 +58,7 @@ namespace RT
 		{
 			Renderer = GetComponent<MeshRenderer>();
 		}
-		private void Start()
+		protected virtual void Start()
 		{
 			Renderer.material = UnityMat;
 		}

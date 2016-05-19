@@ -15,8 +15,8 @@ namespace RT
 		private static Tracer trcer = null;
 		
 
-		private static GameObject CreateObj() { return CreateObj(Vector3.zero, Vector3.one, Quaternion.identity); }
-		private static GameObject CreateObj(Vector3 pos, Vector3 scale, Quaternion rot)
+		public static GameObject CreateObj() { return CreateObj(Vector3.zero, Vector3.one, Quaternion.identity); }
+		public static GameObject CreateObj(Vector3 pos, Vector3 scale, Quaternion rot)
 		{
 			GameObject go = new GameObject("Object");
 			
@@ -32,9 +32,20 @@ namespace RT
 		}
 
 
-		public List<GameObject> Objects;
+		[NonSerialized]
+		public List<GameObject> Objects = new List<GameObject>();
+		[NonSerialized]
 		public RTSkyMat SkyMaterial;
 
+
+		private void Awake()
+		{
+			SkyMaterial = FindObjectOfType<RT.RTSkyMat>();
+			if (SkyMaterial == null)
+			{
+				Debug.LogError("No SkyMat found in scene!");
+			}
+		}
 
 		public void WriteData(RTSerializer.Writer writer)
 		{

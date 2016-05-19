@@ -254,6 +254,15 @@ IMPL_MULTI_MV(Max, ToUse, Vectorf(0.0f),
               val = GET_VAL(ToUse[i]).OperateOn(COMMA3(&GetMax<float>, val,
                                                        std::numeric_limits<float>::max())); );
 
+IMPL_SIMPLE_FUNC1(Normalize, return GET_VAL(X).Normalized(); );
+IMPL_SIMPLE_FUNC(Length,
+                 return GET_VAL(X).Length(); ,
+                 return One; );
+IMPL_SIMPLE_FUNC(Distance,
+                 return GET_VAL(A).Distance(GET_VAL(B)); ,
+                 return One; );
+
+IMPL_SIMPLE_FUNC1(Sqrt, return GET_VAL(X).OperateOn(&sqrtf); );
 IMPL_SIMPLE_FUNC1(Sin, return GET_VAL(Input).OperateOn(&sinf); );
 IMPL_SIMPLE_FUNC1(Cos, return GET_VAL(Input).OperateOn(&cosf); );
 IMPL_SIMPLE_FUNC1(Tan, return GET_VAL(Input).OperateOn(&tanf); );

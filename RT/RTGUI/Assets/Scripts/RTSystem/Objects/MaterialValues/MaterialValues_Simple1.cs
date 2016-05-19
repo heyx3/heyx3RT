@@ -23,8 +23,25 @@ namespace RT
 			AddChild(Read(reader, GetInputName(0)));
 		}
 	}
-
-
+	
+	public class MV_Normalize : MV_Simple1
+	{
+		public override string TypeName { get { return TypeName_Normalize; } }
+		public MV_Normalize(MaterialValue x) : base(x) { }
+		protected override string GetInputName(int index) { return "X"; }
+	}
+	public class MV_Length: MV_Simple1
+	{
+		public override string TypeName { get { return TypeName_Length; } }
+		public MV_Length(MaterialValue x) : base(x) { }
+		protected override string GetInputName(int index) { return "X"; }
+	}
+	public class MV_Sqrt : MV_Simple1
+	{
+		public override string TypeName { get { return TypeName_Sqrt; } }
+		public MV_Sqrt(MaterialValue x) : base(x) { }
+		protected override string GetInputName(int index) { return "X"; }
+	}
 	public class MV_Sin : MV_Simple1
 	{
 		public override string TypeName { get { return TypeName_Sin; } }

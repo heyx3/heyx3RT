@@ -14,15 +14,15 @@ namespace RTGui
 		}
 		private static Gui rtSys = null;
 
-		
-		public GUIStyle Style_MaterialValue_Text, Style_MaterialValue_Button,
-						Style_MaterialValue_Slider, Style_MaterialValue_SliderThumb,
-						Style_MaterialValue_Texture;
+
+		public GUIStyle Style_Text, Style_Button,
+						Style_Slider, Style_SliderThumb,
+					    Style_TextBox, Style_SelectionGrid;
+		public GUIStyle Style_MValTexture;
 		public GUIStyle Style_FileBrowser_Files, Style_FileBrowser_Buttons, Style_FileBrowser_Text;
-		public GUIStyle Style_RGB_Slider, Style_RGB_SliderThumb;
 
 		public Vector2 MaxTexPreviewSize = new Vector2(64.0f, 64.0f);
 
-		public float MaterialValueTabSize = 10.0f;
+		public float TabSize = 10.0f;
 	}
 }

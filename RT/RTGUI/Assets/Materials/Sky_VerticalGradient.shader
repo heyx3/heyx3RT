@@ -2,8 +2,8 @@
 {
 	Properties
 	{
-        _BottomCol ("Bottom Color", Color) = (1.0, 1.0, 1.0, 1.0)
-        _TopCol ("Top Color", Color) = (1.0, 1.0, 1.0, 1.0)
+        _BottomCol ("Bottom Color", Color) = (0.5, 0.5, 0.75, 1.0)
+        _TopCol ("Top Color", Color) = (0.75, 0.75, 1.0, 1.0)
 		_SkyDir ("Sky Dir", Vector) = (0.0, 1.0, 0.0, 0.0)
 	}
 	SubShader
@@ -26,7 +26,7 @@
 			struct v2f
 			{
 				float4 vertex : SV_POSITION;
-                float t : TEXCOORD0;
+                float3 localPos : TEXCOORD0;
 			};
 
             float4 _BottomCol, _TopCol;
@@ -36,13 +36,15 @@
 			{
 				v2f o;
 				o.vertex = mul(UNITY_MATRIX_MVP, v.vertex);
-                o.t = (0.5 + (0.5 * dot(v.vertex.xyz, normalize(_SkyDir.xyz))));
+                o.localPos = v.vertex.xyz;
 				return o;
 			}
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
-                return lerp(_BottomCol, _TopCol, i.t);
+				float t = dot(normalize(i.localPos), normalize(_SkyDir.xyz));
+				t = 0.5 + (0.5 * t);
+                return lerp(_BottomCol, _TopCol, t);
 			}
 			ENDCG
 		}
