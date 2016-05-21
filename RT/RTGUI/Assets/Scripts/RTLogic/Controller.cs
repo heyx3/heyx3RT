@@ -21,12 +21,15 @@ namespace RTLogic
 
 		public Camera Cam;
 		public UnityEngine.UI.Button Button_CreateSphere, Button_CreatePlane;
+		public UnityEngine.UI.Button Button_GenerateImage;
 
 
 		private int shapeIndex = -1;
 		private RT.RTShape selectedShape;
 		private RT.RTMat selectedMat;
 		private Rect shapeWindowPos;
+
+		private RTGui.ImageRenderWindow imgRenderer;
 
 
 		public void OnShapeClicked(RT.RTShape shpe)

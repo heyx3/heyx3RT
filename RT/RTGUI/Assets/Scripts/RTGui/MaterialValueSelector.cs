@@ -10,11 +10,11 @@ namespace RTGui
 	/// <summary>
 	/// A GUI window that allows the user to select a MaterialValue type.
 	/// </summary>
-	public class MaterialValueSelector
+	public class MaterialValueSelector : ManagedWindow
 	{
 		private static void GUIWindowCallback(int id)
 		{
-			MaterialValueSelector slc = selectors[id];
+			MaterialValueSelector slc = Get<MaterialValueSelector>(id);
 
 			slc.CurrentSelection = GUILayout.SelectionGrid(slc.CurrentSelection,
 														   slc.OptionsDisplay, 6);
@@ -33,11 +33,6 @@ namespace RTGui
 
 			GUI.DragWindow();
 		}
-
-
-		private static int nextID = 0;
-		private static Dictionary<int, MaterialValueSelector> selectors =
-			new Dictionary<int, MaterialValueSelector>();
 
 
 		#region Definition of Options
@@ -104,32 +99,23 @@ namespace RTGui
 		public Func<MaterialValue>[] OptionsFactory;
 		public int CurrentSelection = 0;
 
-		public Rect CurrentWindowPos;
-
 		/// <summary>
 		/// If nothing was chosen, "null" is passed.
 		/// </summary>
 		public Action<MaterialValue> OnNewMVChosen;
 
-		public GUIContent WindowContent;
 		public GUIStyle ButtonsStyle;
-
-		private int ID;
 
 
 		public MaterialValueSelector(Rect startWindowPos,
 									 Action<MaterialValue> onNewMVChosen,
 									 GUIStyle buttonsStyle,
-									 GUIContent windowContent,
+									 GUIContent windowTitle,
 									 params Type[] ignoreTypes)
+			: base(windowTitle, startWindowPos, GUIWindowCallback, true)
 		{
-			ID = nextID;
-			unchecked { nextID += 1; }
-
-			CurrentWindowPos = startWindowPos;
 			OnNewMVChosen = onNewMVChosen;
 			
-			WindowContent = windowContent;
 			ButtonsStyle = buttonsStyle;
 
 			//Build up the options.
@@ -142,19 +128,6 @@ namespace RTGui
 				OptionsDisplay[i] = new GUIContent(opts[i].GUIStr);
 				OptionsFactory[i] = opts[i].Factory;
 			}
-		}
-
-
-		public void Release()
-		{
-			bool b = selectors.Remove(ID);
-			UnityEngine.Assertions.Assert.IsTrue(b);
-		}
-
-		public void DoGUI()
-		{
-			CurrentWindowPos = GUILayout.Window(ID, CurrentWindowPos,
-												GUIWindowCallback, WindowContent);
 		}
 	}
 }

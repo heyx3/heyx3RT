@@ -31,7 +31,7 @@ namespace RT
 		public string TexturePath = null;
 
 		private Texture2D loadedTex = null;
-		private RTGui.FileBrowser fileBrowser = null;
+		private RTGui.OpenFileBrowser fileBrowser = null;
 
 
 		public MV_Tex2D(string texPath = null) : this(new MV_SurfUV(), texPath) { }
@@ -62,29 +62,25 @@ namespace RT
 
 				if (GUILayout.Button("Change"))
 				{
-					fileBrowser = new RTGui.FileBrowser((TexturePath == null ?
-															Application.dataPath :
-															TexturePath),
-														new Rect(),
-														new GUIContent("Choose new texture file"),
-														(fle) =>
-														{
-															loadedTex = (fle == null ?
-																			null :
-																			Load(fle.FullName));
-															fileBrowser.Release();
-															fileBrowser = null;
-														},
-														Gui.Style_FileBrowser_Files,
-														Gui.Style_FileBrowser_Buttons,
-														Gui.Style_FileBrowser_Text,
-														".png", ".jpg", ".jpeg");
+					fileBrowser = new RTGui.OpenFileBrowser((TexturePath == null ?
+																Application.dataPath :
+																TexturePath),
+															new Rect(),
+															new GUIContent("Choose new texture file"),
+															(fle) =>
+															{
+																loadedTex = (fle == null ?
+																				null :
+																				Load(fle.FullName));
+																fileBrowser.Release();
+																fileBrowser = null;
+															},
+															".png", ".jpg", ".jpeg");
 				}
 			}
 			else
 			{
 				GUILayout.Label("Waiting for file browser...", Gui.Style_Text);
-				fileBrowser.DoGUI();
 			}
 		}
 		protected override string GetInputName(int index) { return "UV"; }

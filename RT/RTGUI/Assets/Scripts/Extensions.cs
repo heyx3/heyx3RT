@@ -23,4 +23,12 @@ public static class RTExtensions
 				return i;
 		return -1;
 	}
+	public static int IndexOf<T>(this IList<T> list, Predicate<T> filter)
+	{
+		int i;
+		for (i = 0; i < list.Count; ++i)
+			if (filter(list[i]))
+				return i;
+		return -1;
+	}
 }

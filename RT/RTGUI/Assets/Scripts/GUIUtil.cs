@@ -7,6 +7,48 @@ using UnityEngine;
 
 public static class GUIUtil
 {
+	public static bool IsValidNumber(string str, bool signed, bool canHaveDecimal)
+	{
+		bool foundDecimal = false;
+		for (int i = 0; i < str.Length; ++i)
+		{
+			if (str[i] == '-')
+			{
+				if (!signed || i > 0)
+				{
+					return false;
+				}
+			}
+			else if (str[i] == '.')
+			{
+				if (foundDecimal || !canHaveDecimal)
+				{
+					return false;
+				}
+			}
+			else if (str[i] < '0' || str[i] > '9')
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+	
+
+	public static void StartTab(float space)
+	{
+		GUILayout.BeginHorizontal();
+		GUILayout.Space(space);
+		GUILayout.BeginVertical();
+	}
+	public static void EndTab()
+	{
+		GUILayout.EndVertical();
+		GUILayout.EndHorizontal();
+	}
+
+
 	public static Vector3 Vec3Editor(Vector3 current, float min, float max,
 									 GUIStyle labelStyle,
 									 GUIStyle sliderBarStyle, GUIStyle sliderThumbStyle,
@@ -51,45 +93,51 @@ public static class GUIUtil
 		GUILayout.BeginHorizontal();
 		{
 			GUILayout.Label(x, labelStyle);
-			current.x = FloatEditor(current.x, ref currentX, textBoxStyle);
+			current.x = TextEditor(current.x, ref currentX, textBoxStyle);
 		}
 		GUILayout.EndHorizontal();
 		GUILayout.BeginHorizontal();
 		{
 			GUILayout.Label(y, labelStyle);
-			current.y = FloatEditor(current.y, ref currentY, textBoxStyle);
+			current.y = TextEditor(current.y, ref currentY, textBoxStyle);
 		}
 		GUILayout.EndHorizontal();
 		GUILayout.BeginHorizontal();
 		{
 			GUILayout.Label(z, labelStyle);
-			current.z = FloatEditor(current.z, ref currentZ, textBoxStyle);
+			current.z = TextEditor(current.z, ref currentZ, textBoxStyle);
 		}
 		GUILayout.EndHorizontal();
 
 		return current;
 	}
 	
-	public static float FloatEditor(float current, ref string currentStr, GUIStyle textBoxStyle)
+
+	public static T TextEditor<T>(T current, ref string currentStr, GUIStyle textBoxStyle,
+								  Func<string, bool> isParsable, Func<string, T> parser)
 	{
 		currentStr = GUILayout.TextField(currentStr, textBoxStyle);
 
-		float temp;
-		if (float.TryParse(currentStr, out temp))
-			return temp;
+		T temp;
+		if (isParsable(currentStr))
+			return parser(currentStr);
 
 		return current;
 	}
-
-	public static void StartTab(float space)
+	
+	public static int TextEditor(int current, ref string currentStr, GUIStyle textBoxStyle)
 	{
-		GUILayout.BeginHorizontal();
-		GUILayout.Space(space);
-		GUILayout.BeginVertical();
+		return TextEditor(current, ref currentStr, textBoxStyle,
+						  (s) => IsValidNumber(s, true, false), int.Parse);
 	}
-	public static void EndTab()
+	public static uint TextEditor(uint current, ref string currentStr, GUIStyle textBoxStyle)
 	{
-		GUILayout.EndVertical();
-		GUILayout.EndHorizontal();
+		return TextEditor(current, ref currentStr, textBoxStyle,
+						  (s) => IsValidNumber(s, false, false), uint.Parse);
+	}
+	public static float TextEditor(float current, ref string currentStr, GUIStyle textBoxStyle)
+	{
+		return TextEditor(current, ref currentStr, textBoxStyle,
+						  (s) => IsValidNumber(s, true, true), float.Parse);
 	}
 }

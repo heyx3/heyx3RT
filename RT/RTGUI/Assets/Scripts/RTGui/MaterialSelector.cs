@@ -10,11 +10,11 @@ namespace RTGui
 	/// <summary>
 	/// A GUI window that allows the user to select a Material type.
 	/// </summary>
-	public class MaterialSelector
+	public class MaterialSelector : ManagedWindow
 	{
 		private static void GUIWindowCallback(int id)
 		{
-			MaterialSelector slc = selectors[id];
+			MaterialSelector slc = Get<MaterialSelector>(id);
 
 			slc.CurrentSelection = GUILayout.SelectionGrid(slc.CurrentSelection,
 														   slc.OptionsDisplay, 6);
@@ -33,11 +33,6 @@ namespace RTGui
 
 			GUI.DragWindow();
 		}
-
-
-		private static int nextID = 0;
-		private static Dictionary<int, MaterialSelector> selectors =
-			new Dictionary<int, MaterialSelector>();
 
 
 		#region Definition of Options
@@ -65,32 +60,23 @@ namespace RTGui
 		public Type[] OptionsTypes;
 		public int CurrentSelection = 0;
 
-		public Rect CurrentWindowPos;
-
 		/// <summary>
 		/// If nothing was chosen, "null" is passed.
 		/// </summary>
 		public Action<Type> OnRTMatChosen;
 
-		public GUIContent WindowContent;
 		public GUIStyle ButtonsStyle;
-
-		private int ID;
 
 
 		public MaterialSelector(Rect startWindowPos,
 								Action<Type> onRTMatChosen,
 								GUIStyle buttonsStyle,
-								GUIContent windowContent,
+								GUIContent windowTitle,
 								params Type[] ignoreTypes)
+			: base(windowTitle, startWindowPos, GUIWindowCallback, true)
 		{
-			ID = nextID;
-			unchecked { nextID += 1; }
-
-			CurrentWindowPos = startWindowPos;
 			OnRTMatChosen = onRTMatChosen;
 			
-			WindowContent = windowContent;
 			ButtonsStyle = buttonsStyle;
 
 			//Build up the options.
@@ -103,19 +89,6 @@ namespace RTGui
 				OptionsDisplay[i] = new GUIContent(opts[i].GUIStr);
 				OptionsTypes[i] = opts[i].TypeOf;
 			}
-		}
-
-
-		public void Release()
-		{
-			bool b = selectors.Remove(ID);
-			UnityEngine.Assertions.Assert.IsTrue(b);
-		}
-
-		public void DoGUI()
-		{
-			CurrentWindowPos = GUILayout.Window(ID, CurrentWindowPos,
-												GUIWindowCallback, WindowContent);
 		}
 	}
 }

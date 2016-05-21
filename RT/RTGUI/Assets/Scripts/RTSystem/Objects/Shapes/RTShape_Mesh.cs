@@ -49,7 +49,7 @@ namespace RT
 		private Mesh procMesh = null;
 
 
-		private RTGui.FileBrowser fileWindow = null;
+		private RTGui.OpenFileBrowser fileWindow = null;
 
 		public override void DoGUI()
 		{
@@ -63,24 +63,17 @@ namespace RT
 			}
 			if (fileWindow == null && GUILayout.Button("Change file", Gui.Style_Button))
 			{
-				fileWindow = new RTGui.FileBrowser(MeshPath,
-												   new Rect(Screen.width * 0.5f, Screen.height * 0.5f,
-															200.0f, 400.0f),
-												   new GUIContent("Choose mesh file"),
-												   (fle) =>
-												   {
-													   MeshPath = fle.FullName;
-													   changed = true;
-												   },
-												   Gui.Style_FileBrowser_Files,
-												   Gui.Style_FileBrowser_Buttons,
-												   Gui.Style_FileBrowser_Text,
-												   ".obj");
-			}
-
-			if (fileWindow != null)
-			{
-				fileWindow.DoGUI();
+				fileWindow = new RTGui.OpenFileBrowser(MeshPath,
+													   new Rect(),
+													   new GUIContent("Choose mesh file"),
+													   (fle) =>
+													   {
+														   MeshPath = fle.FullName;
+														   changed = true;
+														   fileWindow.Release();
+														   fileWindow = null;
+													   },
+													   ".obj");
 			}
 		}
 

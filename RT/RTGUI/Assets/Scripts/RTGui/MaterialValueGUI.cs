@@ -56,15 +56,13 @@ namespace RTGui
 														  (mv) =>
 														  {
 															  changeTo = mv;
+															  NewMVSelector.Release();
 															  NewMVSelector = null;
 														  },
 														  ButtonStyle,
 														  new GUIContent("Choose new type"),
 														  toReturn.GetType());
-			}
-			if (NewMVSelector != null)
-			{
-				NewMVSelector.DoGUI();
+				WindowHandler.Instance.AddWindow(NewMVSelector);
 			}
 
 			//Delete the child with a button.
