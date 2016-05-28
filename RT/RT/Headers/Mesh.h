@@ -13,7 +13,7 @@ EXPORT_STL_VECTOR(Vertex);
 #pragma warning (default: 4251)
 
 
-//TODO: Also provide "IndexedMesh" class.
+//TODO: Also provide "IndexedMesh" and "MeshFile" class.
 struct RT_API Mesh : public Shape
 {
 public:

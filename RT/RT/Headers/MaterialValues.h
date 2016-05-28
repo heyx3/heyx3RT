@@ -20,6 +20,11 @@ class MV_Subtract;
 class MV_Multiply;
 class MV_Divide;
 
+class MV_Normalize;
+class MV_Length;
+class MV_Distance;
+
+class MV_Sqrt;
 class MV_Sin;
 class MV_Cos;
 class MV_Tan;
@@ -59,6 +64,12 @@ class MV_PureNoise;
 class RT_API MV_Constant : public MaterialValue
 {
 public:
+
+    static Ptr Create(float x) { return new MV_Constant(x); }
+    static Ptr Create(float x, float y) { return new MV_Constant(Vector2f(x, y)); }
+    static Ptr Create(float x, float y, float z) { return new MV_Constant(Vector3f(x, y, z)); }
+    static Ptr Create(float x, float y, float z, float w) { return new MV_Constant(Vector4f(x, y, z, w)); }
+
 
     Vectorf Value;
 
@@ -113,7 +124,7 @@ DEF_BASIC_MVAL(ShapePos, Three, AssertExists(shpe); return shpe->Tr.GetPos(); );
 //Gets the scale of the shape that was hit.
 DEF_BASIC_MVAL(ShapeScale, Three, AssertExists(shpe); return shpe->Tr.GetScale(); );
 //Gets the axis/angle rotation of the shape that was hit.
-//The X/Y/Z are the axis, and the W is the angle.
+//The X/Y/Z are the axis, and the W is the angle in radians.
 DEF_BASIC_MVAL(ShapeRot, Four, AssertExists(shpe); return shpe->Tr.GetRot().GetAxisAngle(); );
 
 #undef DEF_BASIC_MVAL
@@ -130,6 +141,8 @@ public:
                              const Shape* shpe = nullptr,
                              const Vertex* surface = nullptr) const override
         { return ray.GetPos((float)T->GetValue(ray, prng, shpe, surface)); }
+    virtual void WriteData(DataWriter& writer) const override { WriteValue(T, writer, "T"); }
+    virtual void ReadData(DataReader& reader) override { ReadValue(T, reader, "T"); }
 private:
     MV_RayPos() { }
     ADD_MVAL_REFLECTION_DATA_H(MV_RayPos, RayPos);
@@ -253,7 +266,7 @@ private:
         ADD_MVAL_REFLECTION_DATA_H(MV_##name, name); \
     };
 
-#define MAKE_SIMPLE_FUNC1(name, paramName) \
+#define MAKE_COMPLEX_FUNC1(name, paramName, dimsCalc) \
     class RT_API MV_##name : public MaterialValue \
     { \
     public: \
@@ -262,7 +275,7 @@ private:
          \
         MV_##name(Ptr _##paramName) : paramName(_##paramName.Release()) { }; \
          \
-        virtual Dimensions GetNDims() const override { return paramName->GetNDims(); } \
+        virtual Dimensions GetNDims() const override { dimsCalc } \
         virtual Vectorf GetValue(const Ray& ray, FastRand& prng, \
                                  const Shape* shpe = nullptr, \
                                  const Vertex* surface = nullptr) const override; \
@@ -273,6 +286,8 @@ private:
         MV_##name() { } \
         ADD_MVAL_REFLECTION_DATA_H(MV_##name, name) \
     };
+#define MAKE_SIMPLE_FUNC1(name, paramName) MAKE_COMPLEX_FUNC1(name, paramName, return paramName->GetNDims(); )
+
 #define MAKE_SIMPLE_FUNC2(name, param1Name, param2Name) \
     class RT_API MV_##name : public MaterialValue \
     { \
@@ -331,6 +346,11 @@ MAKE_MULTI_MV(Min, ToUse);
 MAKE_MULTI_MV(Max, ToUse);
 #pragma warning (default: 4251)
 
+MAKE_SIMPLE_FUNC1(Normalize, X);
+MAKE_COMPLEX_FUNC1(Length, X, return One; );
+MAKE_SIMPLE_FUNC2(Distance, A, B);
+
+MAKE_SIMPLE_FUNC1(Sqrt, X);
 MAKE_SIMPLE_FUNC1(Sin, Input); MAKE_SIMPLE_FUNC1(Cos, Input); MAKE_SIMPLE_FUNC1(Tan, Input);
 MAKE_SIMPLE_FUNC1(Asin, Input); MAKE_SIMPLE_FUNC1(Acos, Input); MAKE_SIMPLE_FUNC1(Atan, Input);
 MAKE_SIMPLE_FUNC2(Atan2, Y, X);
@@ -347,9 +367,13 @@ MAKE_SIMPLE_FUNC1(Abs, X);
 
 MAKE_SIMPLE_FUNC3(Clamp, Min, Max, X);
 
-//TODO: Add various other material values, including noise generation. MAKE SURE TO ADD THEM TO THE FORWARD DECLARATIONS AT THE TOP.
+//TODO: Reflection/refraction MV's.
+//TODO: "Average" MV.
+//TODO: Noise generation MV's.
+//TODO: Append MV's.
 
 #undef MAKE_MULTI_MV
+#undef MAKE_COMPLEX_FUNC1
 #undef MAKE_SIMPLE_FUNC1
 #undef MAKE_SIMPLE_FUNC2
 #undef MAKE_SIMPLE_FUNC3

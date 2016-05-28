@@ -64,7 +64,7 @@ bool RT_API JsonSerialization::ToJSONString(const IWritable& toWrite, bool compa
     }
 }
 bool RT_API JsonSerialization::FromJSONFile(const std::string& filePath, IReadable& toRead,
-                                            std::string& outErrorMsg)
+                                            const std::string& rootObjectName, std::string& outErrorMsg)
 {
     JsonReader reader(filePath);
 
@@ -77,7 +77,7 @@ bool RT_API JsonSerialization::FromJSONFile(const std::string& filePath, IReadab
 
     try
     {
-        reader.ReadDataStructure(toRead, "data");
+        reader.ReadDataStructure(toRead, rootObjectName);
         return true;
     }
     catch (int i)
@@ -121,7 +121,7 @@ void JsonWriter::WriteInt(int value, const std::string& name)
 {
     GetToUse()[name] = value;
 }
-void JsonWriter::WriteUInt(unsigned int value, const std::string& name)
+void JsonWriter::WriteUInt(size_t value, const std::string& name)
 {
     GetToUse()[name] = value;
 }
@@ -135,6 +135,17 @@ void JsonWriter::WriteDouble(double value, const std::string& name)
 }
 void JsonWriter::WriteString(const std::string& value, const std::string& name)
 {
+    //Escape special characters.
+    std::string newVal = value;
+    for (size_t i = 0; i < newVal.size(); ++i)
+    {
+        if (newVal[i] == '"' || newVal[i] == '\\')
+        {
+            newVal.insert(newVal.begin() + i, '\\');
+            i += 1;
+        }
+    }
+
     GetToUse()[name] = value;
 }
 void JsonWriter::WriteBytes(const unsigned char* bytes, size_t nBytes, const std::string& name)
@@ -205,7 +216,7 @@ void JsonReader::ReadByte(unsigned char& outB, const std::string& name)
 {
     auto& element = GetItem(name);
     Assert(element->is_number_unsigned(), "Expected a byte but got something else");
-    outB = (unsigned char)element->get<unsigned int>();
+    outB = (unsigned char)element->get<size_t>();
 }
 void JsonReader::ReadInt(int& outI, const std::string& name)
 {
@@ -213,11 +224,11 @@ void JsonReader::ReadInt(int& outI, const std::string& name)
     Assert(element->is_number_integer(), "Expected an integer but got something else");
     outI = element->get<int>();
 }
-void JsonReader::ReadUInt(unsigned int& outU, const std::string& name)
+void JsonReader::ReadUInt(size_t& outU, const std::string& name)
 {
     auto& element = GetItem(name);
     Assert(element->is_number_unsigned(), "Expected an unsigned integer but got something else");
-    outU = element->get<unsigned int>();
+    outU = element->get<size_t>();
 }
 void JsonReader::ReadFloat(float& outF, const std::string& name)
 {
@@ -247,6 +258,17 @@ void JsonReader::ReadString(std::string& outStr, const std::string& name)
     Assert(element->is_string(), "Expected a string but got something else");
 
     outStr = element->get<std::string>();
+
+    //Fix escaped characters.
+    for (size_t i = 0; i < outStr.size(); ++i)
+    {
+        if (outStr[i] == '\\')
+        {
+            outStr.erase(outStr.begin() + i);
+            //Normally we would subtract 1 from "i" here, but we *want* to skip the next character --
+            //    it's the one being escaped.
+        }
+    }
 }
 void JsonReader::ReadBytes(std::vector<unsigned char>& outBytes, const std::string& name)
 {

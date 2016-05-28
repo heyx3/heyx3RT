@@ -1,1 +1,1 @@
-RTCmd.exe -nThreads 8 -cPos 0 0 5 -cForward 1 1 0.25 -cUp 0 0 1 -gamma 2.2 -nSamples 500 -nBounces 50 -outputPath "Img.png" -outputSize 300 300 -scene Test.json
+RTCmd.exe -nThreads 8 -cPos 0 0 5 -cForward 1 1 0.25 -cUp 0 0 1 -gamma 2.2 -fovScale 2.2 -nSamples 500 -nBounces 50 -outputPath "Img.png" -outputSize 300 300 -scene SampleScene.json -sceneRoot "data"

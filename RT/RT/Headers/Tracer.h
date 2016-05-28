@@ -11,7 +11,6 @@
 
 
 //A shape and its material.
-//Note that deserializing this class will result in an unmanaged, heap-allocated shape and material.
 struct RT_API ShapeAndMat : public ISerializable
 {
 public:
@@ -32,7 +31,7 @@ EXPORT_STL_VECTOR(ShapeAndMat);
 #pragma warning(default: 4251)
 
 
-//A ray-tracer.
+//A ray-tracer/scene.
 class RT_API Tracer : public ISerializable
 {
 public:
@@ -60,14 +59,16 @@ public:
                   Vector3f& outColor, Vertex& outHit, float& outDist) const;
 
     //Renders this scene into the given horizontal chunk of the given texture.
-    void TraceImage(const Camera& cam, Texture2D& outTex, size_t startY, size_t endY, size_t maxBounces,
+    void TraceImage(const Camera& cam, Texture2D& outTex,
+                    size_t startY, size_t endY, size_t maxBounces, float fovScale,
                     float gamma = 2.0f, size_t samplesPerPixel = 100) const;
 
     //Renders this scene into the given image,
     //    splitting the work across the given number of threads.
     //Blocks this thread until finished.
     //Note that passing 1 for the number of threads means that no extra threads will be created.
-    void TraceFullImage(const Camera& cam, Texture2D& outTex, size_t nThreads, size_t maxBounces,
+    void TraceFullImage(const Camera& cam, Texture2D& outTex,
+                        size_t nThreads, size_t maxBounces, float fovScale,
                         float gamma = 2.0f, size_t samplesPerPixel = 100) const;
 
 

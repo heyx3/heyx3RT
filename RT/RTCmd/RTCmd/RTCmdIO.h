@@ -80,8 +80,9 @@ namespace RTCmdIO
     //Returns whether the parsing was successful.
     //If it wasn't successful, an error message will have been printed to cout.
     bool ParseArgs(size_t nArgs, const char* args[],
-                   Camera& cam, float& gamma, size_t& nSamples, size_t& nBounces,
-                   std::string& outputFilePath, std::string& sceneFilePath,
+                   Camera& cam, float& gamma, float& fovScale,
+                   size_t& nSamples, size_t& nBounces,
+                   std::string& outputFilePath, std::string& sceneFilePath, std::string& jsonRootName,
                    size_t& outputFileWidth, size_t& outputFileHeight, size_t& nThreads)
     {
         //Skip the first argument, which is the program path.
@@ -116,6 +117,11 @@ namespace RTCmdIO
                 TryParse(args[i + 1], gamma);
                 i += 1;
             }
+            else if (IS_STR("-fovScale"))
+            {
+                TryParse(args[i + 1], fovScale);
+                i += 1;
+            }
             else if (IS_STR("-nSamples"))
             {
                 TryParse(args[i + 1], nSamples);
@@ -141,6 +147,11 @@ namespace RTCmdIO
             else if (IS_STR("-scene"))
             {
                 sceneFilePath = args[i + 1];
+                i += 1;
+            }
+            else if (IS_STR("-sceneRoot"))
+            {
+                jsonRootName = args[i + 1];
                 i += 1;
             }
             else if (IS_STR("-nThreads"))

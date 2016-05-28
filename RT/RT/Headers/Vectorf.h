@@ -39,6 +39,14 @@ public:
 
     Vectorf Reciprocal() const { return Vectorf(1.0f / x, 1.0f / y, 1.0f / z, 1.0f / w, NValues); }
 
+    float LengthSqr() const;
+    float Length() const { return sqrtf(LengthSqr()); }
+
+    float DistanceSqr(const Vectorf& other) const { return (other - *this).LengthSqr(); }
+    float Distance(const Vectorf& other) const { return (other - *this).Length(); }
+
+    Vectorf Normalized() const { return *this / Length(); }
+
 
     //"Func" is of the type "float f(float myF, float otherF)".
     template<typename Func>
