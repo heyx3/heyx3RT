@@ -13,7 +13,9 @@ public:
     bool IsOneSided;
 
 
-    Plane(bool isOneSided = false) : IsOneSided(isOneSided) { }
+    Plane() { }
+    Plane(Vector3f pos, float size, bool isOneSided = false)
+        : Shape(pos, size), IsOneSided(isOneSided) { }
 
 
     virtual void PrecalcData() override;
