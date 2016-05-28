@@ -28,7 +28,7 @@ namespace
         const Tracer* tracer;
         const Camera* cam;
         Texture2D* tex;
-        float gamma;
+        float gamma, fovScale;
         size_t samples, bounces;
         
         size_t startY, endY;
@@ -42,7 +42,8 @@ namespace
     {
 #endif
         ThreadDat& d = *(ThreadDat*)pDat;
-        d.tracer->TraceImage(*d.cam, *d.tex, d.startY, d.endY, d.bounces, d.gamma, d.samples);
+        d.tracer->TraceImage(*d.cam, *d.tex, d.startY, d.endY, d.bounces,
+                             d.fovScale, d.gamma, d.samples);
         return 0;
     }
 }
@@ -130,13 +131,14 @@ bool Tracer::TraceRay(size_t bounce, size_t maxBounces,
 }
 
 void Tracer::TraceImage(const Camera& cam, Texture2D& tex,
-                        size_t startY, size_t endY, size_t maxBounces,
+                        size_t startY, size_t endY, size_t maxBounces, float fovScale,
                         float gamma, size_t nSamples) const
 {
     float invSamples = 1.0f / (float)nSamples,
           invWidth = 1.0f / (float)(tex.GetWidth() - 1),
           invHeight = 1.0f / (float)(tex.GetHeight() - 1);
     float gammaPow = 1.0f / gamma;
+    Vector3f forward = cam.GetForward() / fovScale;
 
     for (size_t y = startY; y <= endY; ++y)
     {
@@ -157,7 +159,7 @@ void Tracer::TraceImage(const Camera& cam, Texture2D& tex,
                 float cX = fX + (fr.NextFloat() * invWidth),
                       cY = fY + (fr.NextFloat() * invHeight);
                 Vector3f pixelPos = cam.Pos +
-                                    (cam.GetForward() * 1.0f) +
+                                    forward +
                                     (cam.GetSideways() * cX) +
                                     (cam.GetUpward() * cY);
                 Ray r(pixelPos, (pixelPos - cam.Pos).Normalize());
@@ -182,7 +184,7 @@ void Tracer::TraceImage(const Camera& cam, Texture2D& tex,
 }
 
 void Tracer::TraceFullImage(const Camera& cam, Texture2D& tex,
-                            size_t nThreads, size_t maxBounces,
+                            size_t nThreads, size_t maxBounces, float fovScale,
                             float gamma, size_t nSamples) const
 {
     nThreads = (nThreads > 1 ? nThreads : 1);
@@ -193,6 +195,7 @@ void Tracer::TraceFullImage(const Camera& cam, Texture2D& tex,
     dat.tex = &tex;
     dat.tracer = this;
     dat.gamma = gamma;
+    dat.fovScale = fovScale;
     dat.bounces = maxBounces;
     dat.samples = nSamples;
     

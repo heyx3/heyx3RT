@@ -59,7 +59,7 @@ public:
     virtual void WriteBool(bool value, const std::string& name) = 0;
     virtual void WriteByte(unsigned char value, const std::string& name) = 0;
     virtual void WriteInt(int value, const std::string& name) = 0;
-    virtual void WriteUInt(unsigned int value, const std::string& name) = 0;
+    virtual void WriteUInt(size_t value, const std::string& name) = 0;
     virtual void WriteFloat(float value, const std::string& name) = 0;
     virtual void WriteDouble(double value, const std::string& name) = 0;
     virtual void WriteString(const std::string& value, const std::string& name) = 0;
@@ -142,7 +142,7 @@ public:
     virtual void ReadBool(bool& outB, const std::string& name) = 0;
     virtual void ReadByte(unsigned char& outB, const std::string& name) = 0;
     virtual void ReadInt(int& outI, const std::string& name) = 0;
-    virtual void ReadUInt(unsigned int& outU, const std::string& name) = 0;
+    virtual void ReadUInt(size_t& outU, const std::string& name) = 0;
     virtual void ReadFloat(float& outF, const std::string& name) = 0;
     virtual void ReadDouble(double& outD, const std::string& name) = 0;
     virtual void ReadString(std::string& outStr, const std::string& name) = 0;

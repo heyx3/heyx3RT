@@ -65,6 +65,12 @@ class RT_API MV_Constant : public MaterialValue
 {
 public:
 
+    static Ptr Create(float x) { return new MV_Constant(x); }
+    static Ptr Create(float x, float y) { return new MV_Constant(Vector2f(x, y)); }
+    static Ptr Create(float x, float y, float z) { return new MV_Constant(Vector3f(x, y, z)); }
+    static Ptr Create(float x, float y, float z, float w) { return new MV_Constant(Vector4f(x, y, z, w)); }
+
+
     Vectorf Value;
 
     
@@ -260,7 +266,7 @@ private:
         ADD_MVAL_REFLECTION_DATA_H(MV_##name, name); \
     };
 
-#define MAKE_SIMPLE_FUNC1(name, paramName) \
+#define MAKE_COMPLEX_FUNC1(name, paramName, dimsCalc) \
     class RT_API MV_##name : public MaterialValue \
     { \
     public: \
@@ -269,7 +275,7 @@ private:
          \
         MV_##name(Ptr _##paramName) : paramName(_##paramName.Release()) { }; \
          \
-        virtual Dimensions GetNDims() const override { return paramName->GetNDims(); } \
+        virtual Dimensions GetNDims() const override { dimsCalc } \
         virtual Vectorf GetValue(const Ray& ray, FastRand& prng, \
                                  const Shape* shpe = nullptr, \
                                  const Vertex* surface = nullptr) const override; \
@@ -280,6 +286,8 @@ private:
         MV_##name() { } \
         ADD_MVAL_REFLECTION_DATA_H(MV_##name, name) \
     };
+#define MAKE_SIMPLE_FUNC1(name, paramName) MAKE_COMPLEX_FUNC1(name, paramName, return paramName->GetNDims(); )
+
 #define MAKE_SIMPLE_FUNC2(name, param1Name, param2Name) \
     class RT_API MV_##name : public MaterialValue \
     { \
@@ -339,7 +347,7 @@ MAKE_MULTI_MV(Max, ToUse);
 #pragma warning (default: 4251)
 
 MAKE_SIMPLE_FUNC1(Normalize, X);
-MAKE_SIMPLE_FUNC1(Length, X);
+MAKE_COMPLEX_FUNC1(Length, X, return One; );
 MAKE_SIMPLE_FUNC2(Distance, A, B);
 
 MAKE_SIMPLE_FUNC1(Sqrt, X);
@@ -362,8 +370,10 @@ MAKE_SIMPLE_FUNC3(Clamp, Min, Max, X);
 //TODO: Reflection/refraction MV's.
 //TODO: "Average" MV.
 //TODO: Noise generation MV's.
+//TODO: Append MV's.
 
 #undef MAKE_MULTI_MV
+#undef MAKE_COMPLEX_FUNC1
 #undef MAKE_SIMPLE_FUNC1
 #undef MAKE_SIMPLE_FUNC2
 #undef MAKE_SIMPLE_FUNC3

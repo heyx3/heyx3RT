@@ -255,9 +255,7 @@ IMPL_MULTI_MV(Max, ToUse, Vectorf(0.0f),
                                                        std::numeric_limits<float>::max())); );
 
 IMPL_SIMPLE_FUNC1(Normalize, return GET_VAL(X).Normalized(); );
-IMPL_SIMPLE_FUNC(Length,
-                 return GET_VAL(X).Length(); ,
-                 return One; );
+IMPL_SIMPLE_FUNC1(Length, return GET_VAL(X).Length(););
 IMPL_SIMPLE_FUNC(Distance,
                  return GET_VAL(A).Distance(GET_VAL(B)); ,
                  return One; );

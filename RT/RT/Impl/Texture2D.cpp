@@ -69,8 +69,8 @@ std::string Texture2D::Reload(const std::string& filePath, SupportedFileTypes fi
         case PNG: {
 
             std::vector<unsigned char> bytes;
-            unsigned int width, height;
-            unsigned int errCode = lodepng::decode(bytes, width, height, filePath);
+            unsigned width, height;
+            unsigned errCode = lodepng::decode(bytes, width, height, filePath);
             if (errCode != 0)
             {
                 return std::string("Error reading the PNG file: ") + lodepng_error_text(errCode);
@@ -167,7 +167,7 @@ std::string Texture2D::SavePNG(const std::string& path) const
         }
     }
 
-    unsigned int errCode = lodepng::encode(path, data, width, height);
+    unsigned errCode = lodepng::encode(path, data, (unsigned)width, (unsigned)height);
     if (errCode != 0)
     {
         return std::string("LodePNG error: ") + lodepng_error_text(errCode);
@@ -194,8 +194,11 @@ std::string Texture2D::SaveBMP(const std::string& path) const
         }
     }
 
-    if (bmp_24_write(path.c_str(), width, height, reds.data(), greens.data(), blues.data()))
+    if (bmp_24_write(path.c_str(), (unsigned long)width, (long)height,
+                     reds.data(), greens.data(), blues.data()))
+    {
         return "error writing BMP file";
+    }
 
     return "";
 }

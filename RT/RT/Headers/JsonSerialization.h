@@ -22,7 +22,8 @@ namespace JsonSerialization
     //Reads the given item from a JSON file.
     //Returns an error message, or the empty string if everything went fine.
     //Otherwise, returns true.
-    bool RT_API FromJSONFile(const std::string& filePath, IReadable& toRead, std::string& outErrorMsg);
+    bool RT_API FromJSONFile(const std::string& filePath, IReadable& toRead,
+                             const std::string& rootObjectName, std::string& outErrorMsg);
 }
 
 #pragma warning(disable: 4251)
@@ -49,7 +50,7 @@ public:
     virtual void WriteBool(bool value, const std::string& name) override;
     virtual void WriteByte(unsigned char value, const std::string& name) override;
     virtual void WriteInt(int value, const std::string& name) override;
-    virtual void WriteUInt(unsigned int value, const std::string& name) override;
+    virtual void WriteUInt(size_t value, const std::string& name) override;
     virtual void WriteFloat(float value, const std::string& name) override;
     virtual void WriteDouble(double value, const std::string& name) override;
     virtual void WriteString(const std::string& value, const std::string& name) override;
@@ -90,7 +91,7 @@ public:
     virtual void ReadBool(bool& outB, const std::string& name) override;
     virtual void ReadByte(unsigned char& outB, const std::string& name) override;
     virtual void ReadInt(int& outI, const std::string& name) override;
-    virtual void ReadUInt(unsigned int& outU, const std::string& name) override;
+    virtual void ReadUInt(size_t& outU, const std::string& name) override;
     virtual void ReadFloat(float& outF, const std::string& name) override;
     virtual void ReadDouble(double& outD, const std::string& name) override;
     virtual void ReadString(std::string& outStr, const std::string& name) override;

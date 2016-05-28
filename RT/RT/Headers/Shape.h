@@ -36,6 +36,11 @@ public:
     Transform Tr;
 
 
+    Shape() { }
+    Shape(Vector3f pos, float scale) : Tr(pos, Quaternion(), Vector3f(scale, scale, scale)) { }
+    Shape(Vector3f pos, Vector3f scale) : Tr(pos, Quaternion(), scale) { }
+
+
     virtual void PrecalcData() { }
 
     virtual void GetBoundingBox(BoundingBox& outBox) const = 0;
