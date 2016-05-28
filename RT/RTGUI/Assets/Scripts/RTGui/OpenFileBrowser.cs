@@ -12,10 +12,15 @@ namespace RTGui
 		private static void GUIWindowCallback(int id)
 		{
 			OpenFileBrowser data = Get<OpenFileBrowser>(id);
+
+			GUILayout.Label("Folder: " + data.CurrentDir.FullName,
+							Gui.Instance.Style_Text);
+
+			GUILayout.Space(10.0f);
 		
 			//Show the "parent directory" button.
 			if (data.CurrentDir.Parent != null &&
-				GUILayout.Button("..", Gui.Instance.Style_FileBrowser_Files))
+				GUILayout.Button("..", Gui.Instance.Style_Text))
 			{
 				data.CurrentFile = null;
 				data.CurrentDir = data.CurrentDir.Parent;
@@ -25,24 +30,29 @@ namespace RTGui
 			for (int i = 0; i < data.ChoosableFilesInDir.Count; ++i)
 			{
 				if (GUILayout.Button(data.ChoosableFilesInDir[i].Name,
-									 Gui.Instance.Style_FileBrowser_Files))
+									 Gui.Instance.Style_Text))
 				{
 					data.CurrentFile = data.ChoosableFilesInDir[i];
 				}
 			}
 
+			GUILayout.Space(10.0f);
+
 			GUILayout.Label("Current file: " + data.CurrentFile.Name,
-							Gui.Instance.Style_FileBrowser_Text);
+							Gui.Instance.Style_Text);
+
+			GUILayout.Space(10.0f);
 
 			//Cancel/Select buttons.
 			GUILayout.BeginHorizontal();
 			if (Input.GetKeyDown(KeyCode.Escape) ||
-				GUILayout.Button("Cancel", Gui.Instance.Style_FileBrowser_Buttons))
+				GUILayout.Button("Cancel", Gui.Instance.Style_Button))
 			{
 				data.OnFileChosen(null);
 			}
+			GUILayout.FlexibleSpace();
 			if (data.CurrentFile != null &&
-				GUILayout.Button("Select", Gui.Instance.Style_FileBrowser_Buttons))
+				GUILayout.Button("Select", Gui.Instance.Style_Button))
 			{
 				data.OnFileChosen(data.CurrentFile);
 			}

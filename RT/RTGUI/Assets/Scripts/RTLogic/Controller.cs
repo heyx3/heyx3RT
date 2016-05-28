@@ -38,12 +38,14 @@ namespace RTLogic
 
 			Button_CreateSphere.enabled = false;
 			Button_CreatePlane.enabled = false;
+			Button_GenerateImage.enabled = false;
 
 			shapeIndex = Scene.Objects.IndexOf(shpe.gameObject);
 			shapeWindowPos = new Rect();
 			selectedShape = shpe;
 			selectedMat = shpe.GetComponent<RT.RTMat>();
 		}
+
 
 		private RT.RTShape CreateObj(Type shapeType, Type matType)
 		{
@@ -70,18 +72,39 @@ namespace RTLogic
 				{
 					CreateObj(typeof(RT.RTShape_Plane), typeof(RT.RTMat_Lambert));
 				});
+			Button_GenerateImage.onClick.AddListener(() =>
+				{
+					imgRenderer = new RTGui.ImageRenderWindow(new Rect(), new GUIContent("Render"),
+															  () => { imgRenderer.Release(); imgRenderer = null; });
+				});
 		}
 		private void OnGUI()
 		{
 			if (shapeIndex >= 0)
 			{
 				shapeWindowPos = GUILayout.Window(shapeIndex, shapeWindowPos,
-												  ObjWindowCallback, "Selected Object");
+												  ObjWindowCallback, "Selected Object",
+												  RTGui.Gui.Instance.Style_Window);
 			}
 		}
 		private void ObjWindowCallback(int id)
 		{
+			if (GUILayout.Button("Delete", RTGui.Gui.Instance.Style_Button))
+			{
+				Scene.Objects.RemoveAt(shapeIndex);
+				Destroy(selectedShape.gameObject);
+				selectedShape = null;
+				selectedMat = null;
+				shapeIndex = -1;
+				return;
+			}
+
+			GUILayout.Space(10.0f);
+
 			selectedShape.DoGUI();
+
+			GUILayout.Space(10.0f);
+
 			selectedMat.DoGUI();
 
 			GUI.DragWindow();

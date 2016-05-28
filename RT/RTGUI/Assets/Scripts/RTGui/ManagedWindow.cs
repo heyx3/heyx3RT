@@ -39,6 +39,7 @@ namespace RTGui
 
 			ID = nextID;
 			unchecked { nextID += 1; }
+			windowLookup.Add(ID, this);
 
 			WindowHandler.Instance.AddWindow(this);
 		}
@@ -47,9 +48,15 @@ namespace RTGui
 		public void DoGUI()
 		{
 			if (IsLayout)
-				WindowPos = GUILayout.Window(ID, WindowPos, windowFunc, Title);
+				WindowPos = GUILayout.Window(ID, WindowPos, windowFunc,
+											 Title, RTGui.Gui.Instance.Style_Window);
 			else
-				WindowPos = GUI.Window(ID, WindowPos, windowFunc, Title);
+				WindowPos = GUI.Window(ID, WindowPos, windowFunc,
+									   Title, RTGui.Gui.Instance.Style_Window);
+
+			//Make sure the window is wide enough for the window content,
+			float minWidth = RTGui.Gui.Instance.Style_Window.CalcSize(Title).x;
+			WindowPos.width = Math.Max(minWidth, WindowPos.width);
 		}
 		public virtual void Release()
 		{

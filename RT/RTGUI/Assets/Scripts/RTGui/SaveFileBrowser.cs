@@ -12,10 +12,15 @@ namespace RTGui
 		private static void GUIWindowCallback(int id)
 		{
 			SaveFileBrowser data = Get<SaveFileBrowser>(id);
+
+			GUILayout.Label("Folder: " + data.CurrentDir.FullName,
+							Gui.Instance.Style_Text);
+
+			GUILayout.Space(10.0f);
 		
 			//Show the "parent directory" button.
 			if (data.CurrentDir.Parent != null &&
-				GUILayout.Button("..", Gui.Instance.Style_FileBrowser_Files))
+				GUILayout.Button("..", Gui.Instance.Style_Text))
 			{
 				data.CurrentDir = data.CurrentDir.Parent;
 			}
@@ -24,27 +29,34 @@ namespace RTGui
 			for (int i = 0; i < data.FilesInDir.Count; ++i)
 			{
 				if (GUILayout.Button(data.FilesInDir[i].Name,
-									 Gui.Instance.Style_FileBrowser_Files))
+									 Gui.Instance.Style_Text))
 				{
 					data.FileName = data.FilesInDir[i].Name;
 				}
 			}
 
+			GUILayout.Space(10.0f);
+
 			data.FileName = GUILayout.TextField(data.FileName,
-												Gui.Instance.Style_FileBrowser_TextBox);
+												Gui.Instance.Style_TextBox);
+
+			GUILayout.Space(10.0f);
 
 			//Cancel/Select buttons.
 			GUILayout.BeginHorizontal();
 			if (Input.GetKeyDown(KeyCode.Escape) ||
-				GUILayout.Button("Cancel", Gui.Instance.Style_FileBrowser_Buttons))
+				GUILayout.Button("Cancel", Gui.Instance.Style_Button))
 			{
 				data.OnFileChosen(null);
 			}
-			if (GUILayout.Button("Select", Gui.Instance.Style_FileBrowser_Buttons))
+			GUILayout.FlexibleSpace();
+			if (GUILayout.Button("Select", Gui.Instance.Style_Button))
 			{
 				data.OnFileChosen(new FileInfo(Path.Combine(data.CurrentDir.FullName, data.FileName)));
 			}
 			GUILayout.EndHorizontal();
+
+			GUI.DragWindow();
 		}
 
 

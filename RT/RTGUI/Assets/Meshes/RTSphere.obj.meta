@@ -1,17 +1,17 @@
 fileFormatVersion: 2
-guid: f0070c21a1cb1884e8dbede366f2df80
-timeCreated: 1463618590
+guid: 821c7cdd1a280c147bdf5015b542fb91
+timeCreated: 1459635864
 licenseType: Free
 ModelImporter:
   serializedVersion: 19
   fileIDToRecycleName:
-    100000: pCube1
+    100000: pSphere1
     100002: //RootNode
-    400000: pCube1
+    400000: pSphere1
     400002: //RootNode
-    2300000: pCube1
-    3300000: pCube1
-    4300000: pCube1
+    2300000: pSphere1
+    3300000: pSphere1
+    4300000: pSphere1
   materials:
     importMaterials: 0
     materialName: 0
@@ -33,7 +33,7 @@ ModelImporter:
     animationWrapMode: 0
     extraExposedTransformPaths: []
     clipAnimations: []
-    isReadable: 1
+    isReadable: 0
   meshes:
     lODScreenPercentages: []
     globalScale: 1
@@ -55,7 +55,7 @@ ModelImporter:
     normalSmoothAngle: 60
     normalImportMode: 0
     tangentImportMode: 3
-  importAnimation: 0
+  importAnimation: 1
   copyAvatar: 0
   humanDescription:
     human: []

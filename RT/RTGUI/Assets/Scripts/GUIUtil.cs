@@ -32,7 +32,7 @@ public static class GUIUtil
 			}
 		}
 
-		return true;
+		return str.Length > 0;
 	}
 	
 
@@ -116,9 +116,8 @@ public static class GUIUtil
 	public static T TextEditor<T>(T current, ref string currentStr, GUIStyle textBoxStyle,
 								  Func<string, bool> isParsable, Func<string, T> parser)
 	{
-		currentStr = GUILayout.TextField(currentStr, textBoxStyle);
+		currentStr = GUILayout.TextField(currentStr, textBoxStyle, GUILayout.MinWidth(45.0f));
 
-		T temp;
 		if (isParsable(currentStr))
 			return parser(currentStr);
 

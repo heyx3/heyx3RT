@@ -18,9 +18,8 @@ namespace RTGui
 		public GUIStyle Style_Text, Style_Button,
 						Style_Slider, Style_SliderThumb,
 					    Style_TextBox, Style_SelectionGrid;
+		public GUIStyle Style_Window;
 		public GUIStyle Style_MValTexture;
-		public GUIStyle Style_FileBrowser_Files, Style_FileBrowser_Buttons,
-						Style_FileBrowser_Text, Style_FileBrowser_TextBox;
 
 		public Vector2 MaxTexPreviewSize = new Vector2(64.0f, 64.0f);
 
