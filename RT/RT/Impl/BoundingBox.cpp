@@ -1,5 +1,7 @@
 #include "../Headers/BoundingBox.h"
 
+using namespace RT;
+
 
 namespace
 {

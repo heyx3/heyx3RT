@@ -14,6 +14,8 @@
 #endif
 
 
+using namespace RT;
+
 namespace
 {
     float max(float f1, float f2) { return (f1 > f2) ? f1 : f2; }
@@ -66,26 +68,18 @@ void ShapeAndMat::ReadData(DataReader& reader)
 }
 
 
-Tracer::Tracer(SkyMaterial* skyMat, const std::vector<ShapeAndMat>& objects)
+Tracer::Tracer(SkyMaterial* skyMat, const List<ShapeAndMat>& objects)
     : Objects(objects), SkyMat(skyMat)
 {
 }
 
-bool Tracer::TraceRay(size_t bounce, size_t maxBounces,
-                      Ray& ray, FastRand& prng,
-                      Vector3f& outColor, Vertex& outHit, float& outDist) const
+const ShapeAndMat* Tracer::TraceRay(const Ray& ray, Vertex& outHit, float& outDist) const
 {
-    if (bounce >= maxBounces)
-    {
-        outColor = SkyMat->GetColor(ray, prng);
-        return false;
-    }
-
     outDist = std::numeric_limits<float>().infinity();
     int closestShape = -1;
 
     //Get the closest intersection with a shape.
-    for (size_t i = 0; i < Objects.size(); ++i)
+    for (size_t i = 0; i < Objects.GetSize(); ++i)
     {
         float tempDist;
         Vertex tempHit;
@@ -101,13 +95,29 @@ bool Tracer::TraceRay(size_t bounce, size_t maxBounces,
         }
     }
 
+    if (closestShape < 0)
+        return nullptr;
+    else
+        return &Objects[closestShape];
+}
+bool Tracer::TraceRay(size_t bounce, size_t maxBounces,
+                      Ray& ray, FastRand& prng,
+                      Vector3f& outColor, Vertex& outHit, float& outDist) const
+{
+    if (bounce >= maxBounces)
+    {
+        outColor = SkyMat->GetColor(ray, prng);
+        return false;
+    }
+
+    const ShapeAndMat* hit = TraceRay(ray, outHit, outDist);
+
     //Get the color of the shape's surface.
-    if (closestShape != -1)
+    if (hit != nullptr)
     {
         Ray newR;
         Vector3f atten;
-        bool scattered = Objects[closestShape].Mat->Scatter(ray, outHit, *Objects[closestShape].Shpe,
-                                                            prng, atten, newR);
+        bool scattered = hit->Mat->Scatter(ray, outHit, *hit->Shpe, prng, atten, newR);
         if (scattered)
         {
             Vector3f bounceCol;
@@ -257,8 +267,8 @@ void Tracer::TraceFullImage(const Camera& cam, Texture2D& tex,
 void Tracer::WriteData(DataWriter& writer) const
 {
     SkyMaterial::WriteValue(*SkyMat, writer, "SkyMaterial");
-    writer.WriteList<ShapeAndMat>(Objects.data(), Objects.size(),
-                                  [](DataWriter& writer, const ShapeAndMat& o, const std::string& name)
+    writer.WriteList<ShapeAndMat>(Objects.GetData(), Objects.GetSize(),
+                                  [](DataWriter& writer, const ShapeAndMat& o, const String& name)
                                     { writer.WriteDataStructure(o, name); },
                                   "Objects");
 }
@@ -271,7 +281,7 @@ void Tracer::ReadData(DataReader& reader)
     reader.ReadList<ShapeAndMat>(&Objects,
                                  [](void* pList, size_t nElements)
                                     { ((std::vector<ShapeAndMat>*)pList)->resize(nElements); },
-                                 [](DataReader& rd, void* pList, size_t i, const std::string& name)
+                                 [](DataReader& rd, void* pList, size_t i, const String& name)
                                     { rd.ReadDataStructure((*((std::vector<ShapeAndMat>*)pList))[i], name); },
                                  "Objects");
 }

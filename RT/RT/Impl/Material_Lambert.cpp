@@ -1,5 +1,7 @@
 #include "../Headers/Material_Lambert.h"
 
+using namespace RT;
+
 
 ADD_MATERIAL_REFLECTION_DATA_CPP(Material_Lambert);
 

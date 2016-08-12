@@ -1,5 +1,7 @@
 #include "../Headers/Sphere.h"
 
+using namespace RT;
+
 
 ADD_SHAPE_REFLECTION_DATA_CPP(Sphere);
 
@@ -139,7 +141,7 @@ void Sphere::ReadData(DataReader& reader)
     if (WrapAxis > 2)
     {
         reader.ErrorMessage = "Sphere wrap axis should be [0, 2] but it was ";
-        reader.ErrorMessage += std::to_string(WrapAxis);
+        reader.ErrorMessage += String(WrapAxis);
         throw DataReader::EXCEPTION_FAILURE;
     }
 }

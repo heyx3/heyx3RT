@@ -1,5 +1,7 @@
 #include "../Headers/Triangle.h"
 
+using namespace RT;
+
 
 namespace
 {

@@ -1,6 +1,8 @@
 #pragma once
 
 
+#include "List.h"
+
 #include "Material.h"
 #include "SkyMaterial.h"
 
@@ -10,68 +12,83 @@
 #include "DataSerialization.h"
 
 
-//A shape and its material.
-struct RT_API ShapeAndMat : public ISerializable
+namespace RT
 {
-public:
+    EXPORT_SHAREDPTR(Shape);
+    EXPORT_SHAREDPTR(Material);
 
-    SharedPtr<Shape> Shpe;
-    SharedPtr<Material> Mat;
+    //A shape and its material.
+    struct RT_API ShapeAndMat : public ISerializable
+    {
+    public:
 
-    ShapeAndMat() : Shpe(nullptr), Mat(nullptr) { }
-    ShapeAndMat(SharedPtr<Shape> shpe, SharedPtr<Material> mat) : Shpe(shpe), Mat(mat) { }
+        SharedPtr<Shape> Shpe;
+        SharedPtr<Material> Mat;
 
-    virtual void WriteData(DataWriter& writer) const override;
-    virtual void ReadData(DataReader& reader) override;
-};
+        ShapeAndMat() : Shpe(nullptr), Mat(nullptr) { }
+        ShapeAndMat(SharedPtr<Shape> shpe, SharedPtr<Material> mat) : Shpe(shpe), Mat(mat) { }
 
+        virtual void WriteData(DataWriter& writer) const override;
+        virtual void ReadData(DataReader& reader) override;
+    };
 
-#pragma warning(disable: 4251)
-EXPORT_STL_VECTOR(ShapeAndMat);
-#pragma warning(default: 4251)
+    EXPORT_RT_LIST(ShapeAndMat);
+}
 
-
-//A ray-tracer/scene.
-class RT_API Tracer : public ISerializable
+namespace RT
 {
-public:
+    EXPORT_SHAREDPTR(SkyMaterial);
+
+    //A ray-tracer/scene.
+    class RT_API Tracer : public ISerializable
+    {
+    public:
 
 
-    //Used to get the color when a ray doesn't hit anything.
-    SharedPtr<SkyMaterial> SkyMat;
+        //Used to get the color when a ray doesn't hit anything.
+        SharedPtr<SkyMaterial> SkyMat;
     
-    //The shapes in the scene, with their corresponding materials.
-    std::vector<ShapeAndMat> Objects;
+        //The shapes in the scene, with their corresponding materials.
+        List<ShapeAndMat> Objects;
 
 
-    Tracer() { }
-    Tracer(SkyMaterial* skyMat, const std::vector<ShapeAndMat>& objects);
+        Tracer() { }
+        Tracer(SkyMaterial* skyMat, const List<ShapeAndMat>& objects);
 
 
-    //Precomputes some data for all the shapes in this tracer.
-    //Call this after all scene objects are finalized and before any tracing is done.
-    void PrecalcData() { for (auto& sm : Objects) sm.Shpe->PrecalcData(); }
+        //Precomputes some data for all the shapes in this tracer.
+        //Call this after all scene objects are finalized and before any tracing is done.
+        void PrecalcData() { for (size_t i = 0; i < Objects.GetSize(); ++i) Objects[i].Shpe->PrecalcData(); }
 
-    //Traces the given ray through the scene to see what it hits.
-    //Returns whether the ray hit anything.
-    //Note that the ray may be redirected as it hits certain kinds of objects.
-    bool TraceRay(size_t bounce, size_t maxBounces, Ray& ray, FastRand& prng,
-                  Vector3f& outColor, Vertex& outHit, float& outDist) const;
+        //Traces the given ray through the scene to see what it hits.
+        //Returns the shape that was hit, or null if nothing was hit.
+        const ShapeAndMat* TraceRay(const Ray& ray, Vertex& outHit, float& outDist) const;
+        //Traces the given ray through the scene to see what it hits.
+        //Returns the shape that was hit, or null if nothing was hit.
+        ShapeAndMat* TraceRay(const Ray& ray, Vertex& outHit, float& outDist)
+            { return (ShapeAndMat*)((const Tracer*)this)->TraceRay(ray, outHit, outDist); }
 
-    //Renders this scene into the given horizontal chunk of the given texture.
-    void TraceImage(const Camera& cam, Texture2D& outTex,
-                    size_t startY, size_t endY, size_t maxBounces, float fovScale,
-                    float gamma = 2.0f, size_t samplesPerPixel = 100) const;
+        //Traces the given ray through the scene to see what it hits.
+        //Returns whether the ray hit anything.
+        //Note that the ray may be redirected as it hits certain kinds of objects.
+        bool TraceRay(size_t bounce, size_t maxBounces, Ray& ray, FastRand& prng,
+                      Vector3f& outColor, Vertex& outHit, float& outDist) const;
 
-    //Renders this scene into the given image,
-    //    splitting the work across the given number of threads.
-    //Blocks this thread until finished.
-    //Note that passing 1 for the number of threads means that no extra threads will be created.
-    void TraceFullImage(const Camera& cam, Texture2D& outTex,
-                        size_t nThreads, size_t maxBounces, float fovScale,
+        //Renders this scene into the given horizontal chunk of the given texture.
+        void TraceImage(const Camera& cam, Texture2D& outTex,
+                        size_t startY, size_t endY, size_t maxBounces, float fovScale,
                         float gamma = 2.0f, size_t samplesPerPixel = 100) const;
 
+        //Renders this scene into the given image,
+        //    splitting the work across the given number of threads.
+        //Blocks this thread until finished.
+        //Note that passing 1 for the number of threads means that no extra threads will be created.
+        void TraceFullImage(const Camera& cam, Texture2D& outTex,
+                            size_t nThreads, size_t maxBounces, float fovScale,
+                            float gamma = 2.0f, size_t samplesPerPixel = 100) const;
 
-    virtual void ReadData(DataReader& data) override;
-    virtual void WriteData(DataWriter& data) const override;
-};
+
+        virtual void ReadData(DataReader& data) override;
+        virtual void WriteData(DataWriter& data) const override;
+    };
+}

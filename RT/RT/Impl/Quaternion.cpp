@@ -1,5 +1,7 @@
 #include "../Headers/Quaternion.h"
 
+using namespace RT;
+
 
 
 Quaternion::Quaternion(const Vector3f& axis, float angleRadians)

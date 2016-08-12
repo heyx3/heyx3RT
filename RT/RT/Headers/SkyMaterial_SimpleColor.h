@@ -4,23 +4,26 @@
 #include "MaterialValues.h"
 
 
-class RT_API SkyMaterial_SimpleColor : public SkyMaterial
+namespace RT
 {
-public:
+    class RT_API SkyMaterial_SimpleColor : public SkyMaterial
+    {
+    public:
 
-    MaterialValue::Ptr Color;
-
-
-    SkyMaterial_SimpleColor(MaterialValue::Ptr col = new MV_Constant(Vector3f(0.5f, 0.5f, 1.0f)))
-        : Color(col.Release()) { }
+        MaterialValue::Ptr Color;
 
 
-    virtual Vector3f GetColor(const Ray& ray, FastRand& prng) const override;
+        SkyMaterial_SimpleColor(MaterialValue::Ptr col = new MV_Constant(Vector3f(0.5f, 0.5f, 1.0f)))
+            : Color(col.Release()) { }
 
 
-    virtual void WriteData(DataWriter& writer) const override;
-    virtual void ReadData(DataReader& reader) override;
+        virtual Vector3f GetColor(const Ray& ray, FastRand& prng) const override;
 
 
-    ADD_SKYMAT_REFLECTION_DATA_H(SkyMaterial_SimpleColor, SimpleColor);
-};
+        virtual void WriteData(DataWriter& writer) const override;
+        virtual void ReadData(DataReader& reader) override;
+
+
+        ADD_SKYMAT_REFLECTION_DATA_H(SkyMaterial_SimpleColor, SimpleColor);
+    };
+}

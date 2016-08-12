@@ -6,16 +6,18 @@
 #include <assert.h>
 #include <iostream>
 
+using namespace RT;
+
 
 namespace
 {
     struct MVFact
     {
     public:
-        std::string TypeName;
+        String TypeName;
         MaterialValue*(*Factory)();
 
-        MVFact(const std::string& typeName, MaterialValue*(*factory)())
+        MVFact(const String& typeName, MaterialValue*(*factory)())
             : TypeName(typeName), Factory(factory) { }
     };
 
@@ -31,7 +33,7 @@ namespace
     }
 }
 
-void MaterialValue::AddReflectionData(const std::string& typeName, MVFactory factory)
+void MaterialValue::AddReflectionData(const String& typeName, MVFactory factory)
 {
     std::lock_guard<std::mutex> lock(GetVectorMutex());
 
@@ -47,7 +49,7 @@ void MaterialValue::AddReflectionData(const std::string& typeName, MVFactory fac
 
     factories.push_back(MVFact(typeName, factory));
 }
-MaterialValue::MVFactory MaterialValue::GetFactory(const std::string& typeName)
+MaterialValue::MVFactory MaterialValue::GetFactory(const String& typeName)
 {
     std::lock_guard<std::mutex> lock(GetVectorMutex());
 
@@ -72,7 +74,7 @@ void MaterialValue::AssertExists(const Shape* shpe) const
 {
     if (shpe == nullptr)
     {
-        std::cout << "\nERROR: MaterialValue \"" << GetTypeName() <<
+        std::cout << "\nERROR: MaterialValue \"" << GetTypeName().CStr() <<
                      "\" requires a Shape to compute value, but it doesn't exist in this context!\n\n";
         char dummy;
         std::cin >> dummy;
@@ -82,7 +84,7 @@ void MaterialValue::AssertExists(const Vertex* surface) const
 {
     if (surface == nullptr)
     {
-        std::cout << "\nERROR: MaterialValue \"" << GetTypeName() <<
+        std::cout << "\nERROR: MaterialValue \"" << GetTypeName().CStr() <<
                      "\" requires a Vertex to compute value, but it doesn't exist in this context!\n\n";
         char dummy;
         std::cin >> dummy;

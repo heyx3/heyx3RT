@@ -28,6 +28,9 @@
     <Filter Include="Headers\Materials\MaterialValue">
       <UniqueIdentifier>{8db67d7f-afe6-4992-91e0-29e0d5e5f728}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Headers\Wrappers">
+      <UniqueIdentifier>{cb0a7a80-a530-456c-aba6-edf541cd1d2a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\Camera.h">
@@ -120,9 +123,6 @@
     <ClInclude Include="Headers\Vectorf.h">
       <Filter>Headers\Materials\MaterialValue</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\SmartPtrs.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
     <ClInclude Include="Headers\Material.h">
       <Filter>Headers\Materials</Filter>
     </ClInclude>
@@ -137,6 +137,15 @@
     </ClInclude>
     <ClInclude Include="Headers\RT_C.h">
       <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\SmartPtrs.h">
+      <Filter>Headers\Wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\List.h">
+      <Filter>Headers\Wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\RTString.h">
+      <Filter>Headers\Wrappers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -222,6 +231,9 @@
       <Filter>Impl</Filter>
     </ClCompile>
     <ClCompile Include="Impl\RT_C.cpp">
+      <Filter>Impl</Filter>
+    </ClCompile>
+    <ClCompile Include="Impl\String.cpp">
       <Filter>Impl</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,5 +1,7 @@
 #include "../Headers/Transform.h"
 
+using namespace RT;
+
 
 Transform::Transform(Vector3f _pos, Quaternion _rot, Vector3f _scale)
     : pos(_pos), scale(_scale), rot(_rot)

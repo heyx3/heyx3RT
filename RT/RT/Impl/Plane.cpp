@@ -1,5 +1,7 @@
 #include "../Headers/Plane.h"
 
+using namespace RT;
+
 
 ADD_SHAPE_REFLECTION_DATA_CPP(Plane);
 

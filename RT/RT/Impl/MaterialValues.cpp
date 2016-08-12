@@ -3,6 +3,8 @@
 #include "../Headers/ThirdParty/bmp_io.hpp"
 #include "../Headers/ThirdParty/lodepng.h"
 
+using namespace RT;
+
 
 
 ADD_MVAL_REFLECTION_DATA_CPP(MV_Constant);
@@ -44,22 +46,22 @@ void MV_Constant::ReadData(DataReader& reader)
 }
 
 
-MV_Tex2D::MV_Tex2D(const std::string& _filePath, std::string& errMsg,
+MV_Tex2D::MV_Tex2D(const String& _filePath, String& errMsg,
                    Ptr uv, Texture2D::SupportedFileTypes type)
     : UV(uv.Release())
 {
     errMsg = Reload(_filePath, type);
 }
 
-std::string MV_Tex2D::Reload(const std::string& _filePath,
-                             Texture2D::SupportedFileTypes type)
+String MV_Tex2D::Reload(const String& _filePath,
+                        Texture2D::SupportedFileTypes type)
 {
     filePath = _filePath;
     fileType = type;
 
     if (Tex.Get() == nullptr)
     {
-        std::string errMsg = "";
+        String errMsg = "";
         Tex = new Texture2D(filePath, errMsg, type);
         return errMsg;
     }
@@ -86,7 +88,7 @@ void MV_Tex2D::WriteData(DataWriter& writer) const
             break;
         default:
             writer.ErrorMessage = "Unknown Texture2D-supported file-type: ";
-            writer.ErrorMessage += std::to_string(fileType);
+            writer.ErrorMessage += String(fileType);
             throw DataWriter::EXCEPTION_FAILURE;
     }
     WriteValue(UV, writer, "UVs");
@@ -96,7 +98,7 @@ void MV_Tex2D::ReadData(DataReader& reader)
     MaterialValue::ReadData(reader);
     reader.ReadString(filePath, "FilePath");
 
-    std::string typeStr;
+    String typeStr;
     reader.ReadString(typeStr, "FileType");
 
     if (typeStr == "BMP")
@@ -121,10 +123,10 @@ void MV_Tex2D::ReadData(DataReader& reader)
     ReadValue(UV, reader, "UVs");
 
     //Try loading the texture.
-    std::string err = Reload();
-    if (err.size() > 0)
+    String err = Reload();
+    if (err.GetSize() > 0)
     {
-        reader.ErrorMessage = std::string("Couldn't load tex file '") + filePath + "': " + err;
+        reader.ErrorMessage = String("Couldn't load tex file '") + filePath + "': " + err;
         throw DataReader::EXCEPTION_FAILURE;
     }
 }
@@ -201,7 +203,7 @@ void MV_PureNoise::ReadData(DataReader& reader)
     { \
         MaterialValue::WriteData(writer); \
         writer.WriteList<Ptr>(listParamName.data(), listParamName.size(), \
-                              [](DataWriter& wr, const Ptr& p, const std::string& n) \
+                              [](DataWriter& wr, const Ptr& p, const String& n) \
                               { wr.WriteString(p->GetTypeName(), n + "Type"); \
                                 wr.WriteDataStructure(*p, n + "Value"); }, \
                               "Items"); \
@@ -212,10 +214,10 @@ void MV_PureNoise::ReadData(DataReader& reader)
         reader.ReadList<Ptr>(&listParamName, \
                              [](void* pList, size_t nElements) \
                                 { ((std::vector<Ptr>*)pList)->resize(nElements); }, \
-                             [](DataReader& rdr, void* pList, size_t listIndex, const std::string& n) \
+                             [](DataReader& rdr, void* pList, size_t listIndex, const String& n) \
                              { \
                                  std::vector<Ptr>& list = *(std::vector<Ptr>*)pList; \
-                                 std::string typeName; \
+                                 String typeName; \
                                  rdr.ReadString(typeName, n + "Type"); \
                                  list.push_back(Create(typeName)); \
                                  rdr.ReadDataStructure(*list[list.size() - 1], n + "Value"); \

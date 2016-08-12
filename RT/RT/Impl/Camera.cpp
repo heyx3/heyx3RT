@@ -1,5 +1,7 @@
 #include "../Headers/Camera.h"
 
+using namespace RT;
+
 
 Camera::Camera(const Vector3f& pos, const Vector3f& _forward, const Vector3f& _upward,
                float widthOverHeight, bool lockUp, float closestDotVariance)

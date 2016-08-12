@@ -18,9 +18,6 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IOHelper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RTCmdIO.h">
       <Filter>Header Files</Filter>
     </ClInclude>

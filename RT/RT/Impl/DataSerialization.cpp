@@ -2,6 +2,8 @@
 
 #include "../Headers/Quaternion.h"
 
+using namespace RT;
+
 
 namespace
 {
@@ -66,36 +68,36 @@ namespace
 }
 
 
-void DataWriter::WriteVec2f(const Vector2f& v, const std::string& name)
+void DataWriter::WriteVec2f(const Vector2f& v, const String& name)
 {
     WriteDataStructure(Vector2f_Writable(v), name);
 }
-void DataWriter::WriteVec3f(const Vector3f& v, const std::string& name)
+void DataWriter::WriteVec3f(const Vector3f& v, const String& name)
 {
     WriteDataStructure(Vector3f_Writable(v), name);
 }
-void DataWriter::WriteVec4f(const Vector4f& v, const std::string& name)
+void DataWriter::WriteVec4f(const Vector4f& v, const String& name)
 {
     WriteDataStructure(Vector4f_Writable(v), name);
 }
-void DataWriter::WriteQuaternion(const Quaternion& q, const std::string& name)
+void DataWriter::WriteQuaternion(const Quaternion& q, const String& name)
 {
     WriteDataStructure(Quaternion_Writable(q), name);
 }
 
-void DataReader::ReadVec2f(Vector2f& v, const std::string& name)
+void DataReader::ReadVec2f(Vector2f& v, const String& name)
 {
     ReadDataStructure(Vector2f_Readable(v), name);
 }
-void DataReader::ReadVec3f(Vector3f& v, const std::string& name)
+void DataReader::ReadVec3f(Vector3f& v, const String& name)
 {
     ReadDataStructure(Vector3f_Readable(v), name);
 }
-void DataReader::ReadVec4f(Vector4f& v, const std::string& name)
+void DataReader::ReadVec4f(Vector4f& v, const String& name)
 {
     ReadDataStructure(Vector4f_Readable(v), name);
 }
-void DataReader::ReadQuaternion(Quaternion& q, const std::string& name)
+void DataReader::ReadQuaternion(Quaternion& q, const String& name)
 {
     ReadDataStructure(Quaternion_Readable(q), name);
 }

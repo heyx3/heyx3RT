@@ -1,5 +1,7 @@
 #include "../Headers/Vectorf.h"
 
+using namespace RT;
+
 
 Vectorf::operator Vector2f() const
 {

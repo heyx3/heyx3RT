@@ -1,5 +1,7 @@
 #include "../Headers/Matrix4f.h"
 
+using namespace RT;
+
 
 namespace TEMP_MATS
 {

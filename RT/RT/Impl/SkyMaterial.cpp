@@ -5,16 +5,18 @@
 #include <thread>
 #include <mutex>
 
+using namespace RT;
+
 
 namespace
 {
     struct SMatFact
     {
     public:
-        std::string TypeName;
+        String TypeName;
         SkyMaterial*(*Factory)();
 
-        SMatFact(const std::string& typeName, SkyMaterial*(*factory)())
+        SMatFact(const String& typeName, SkyMaterial*(*factory)())
             : TypeName(typeName), Factory(factory) { }
     };
 
@@ -30,7 +32,7 @@ namespace
     }
 }
 
-void SkyMaterial::AddReflectionData(const std::string& typeName, SkyMatFactory factory)
+void SkyMaterial::AddReflectionData(const String& typeName, SkyMatFactory factory)
 {
     std::lock_guard<std::mutex> lock(GetVectorMutex());
 
@@ -46,7 +48,7 @@ void SkyMaterial::AddReflectionData(const std::string& typeName, SkyMatFactory f
 
     factories.push_back(SMatFact(typeName, factory));
 }
-SkyMaterial::SkyMatFactory SkyMaterial::GetFactory(const std::string& typeName)
+SkyMaterial::SkyMatFactory SkyMaterial::GetFactory(const String& typeName)
 {
     std::lock_guard<std::mutex> lock(GetVectorMutex());
 

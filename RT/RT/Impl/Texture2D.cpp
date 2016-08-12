@@ -4,6 +4,8 @@
 #include "../Headers/ThirdParty/bmp_io.hpp"
 #include "../Headers/ThirdParty/lodepng.h"
 
+using namespace RT;
+
 
 namespace
 {
@@ -12,20 +14,20 @@ namespace
 }
 
 
-Texture2D::Texture2D(const std::string& filePath, std::string& errMsg, SupportedFileTypes fileType)
+Texture2D::Texture2D(const String& filePath, String& errMsg, SupportedFileTypes fileType)
     : colors(nullptr)
 {
     errMsg = Reload(filePath, fileType);
 }
 
-std::string Texture2D::Reload(const std::string& filePath, SupportedFileTypes fileType)
+String Texture2D::Reload(const String& filePath, SupportedFileTypes fileType)
 {
     if (fileType == UNKNOWN)
     {
-        if (filePath.size() < 4)
+        if (filePath.GetSize() < 4)
             return "File-name was too short to infer a type";
 
-        std::string extension = filePath.substr(filePath.size() - 4, 4);
+        String extension = filePath.SubStr(filePath.GetSize() - 4, 4);
 
         if (extension == ".png")
             fileType = PNG;
@@ -44,7 +46,7 @@ std::string Texture2D::Reload(const std::string& filePath, SupportedFileTypes fi
             unsigned char *reds,
                           *greens,
                           *blues;
-            if (bmp_read(filePath.c_str(), &width, &height, &reds, &greens, &blues))
+            if (bmp_read(filePath.CStr(), &width, &height, &reds, &greens, &blues))
             {
                 return "Error reading the BMP file";
             }
@@ -70,10 +72,10 @@ std::string Texture2D::Reload(const std::string& filePath, SupportedFileTypes fi
 
             std::vector<unsigned char> bytes;
             unsigned width, height;
-            unsigned errCode = lodepng::decode(bytes, width, height, filePath);
+            unsigned errCode = lodepng::decode(bytes, width, height, filePath.CStr());
             if (errCode != 0)
             {
-                return std::string("Error reading the PNG file: ") + lodepng_error_text(errCode);
+                return String("Error reading the PNG file: ") + lodepng_error_text(errCode);
             }
 
             Resize(width, height);
@@ -97,7 +99,7 @@ std::string Texture2D::Reload(const std::string& filePath, SupportedFileTypes fi
             } break;
 
         default:
-            return std::string("Unexpected file type enum value: ") + std::to_string(fileType);
+            return String("Unexpected file type enum value: ") + String(fileType);
     }
 
     return "";
@@ -149,7 +151,7 @@ void Texture2D::Fill(const Vector3f& col)
         colors[i] = col;
 }
 
-std::string Texture2D::SavePNG(const std::string& path) const
+String Texture2D::SavePNG(const String& path) const
 {
     std::vector<unsigned char> data;
     data.reserve(height * width * 4);
@@ -167,15 +169,15 @@ std::string Texture2D::SavePNG(const std::string& path) const
         }
     }
 
-    unsigned errCode = lodepng::encode(path, data, (unsigned)width, (unsigned)height);
+    unsigned errCode = lodepng::encode(path.CStr(), data, (unsigned)width, (unsigned)height);
     if (errCode != 0)
     {
-        return std::string("LodePNG error: ") + lodepng_error_text(errCode);
+        return String("LodePNG error: ") + lodepng_error_text(errCode);
     }
     
     return "";
 }
-std::string Texture2D::SaveBMP(const std::string& path) const
+String Texture2D::SaveBMP(const String& path) const
 {
     std::vector<unsigned char> reds, greens, blues;
     reds.resize(width * height);
@@ -194,7 +196,7 @@ std::string Texture2D::SaveBMP(const std::string& path) const
         }
     }
 
-    if (bmp_24_write(path.c_str(), (unsigned long)width, (long)height,
+    if (bmp_24_write(path.CStr(), (unsigned long)width, (long)height,
                      reds.data(), greens.data(), blues.data()))
     {
         return "error writing BMP file";

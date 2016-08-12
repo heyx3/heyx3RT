@@ -4,7 +4,6 @@
 
 
 //The below code provides a C interface for the most common use-case of RT.
-//TODO: Push into .cpp, change this to .h.
 
 #define C_RT_API extern "C" __declspec(dllexport)
 
@@ -24,34 +23,34 @@
 //"camUpX/Y/Z" are the upward axis of the camera. This does not have to be normalized.
 //"sceneJSONPath" is the path to the Tracer object serialized as a JSON file.
 //"rootJSONObjName" is the name of the root object in the JSON file.
-C_RT_API float* GenerateImage(unsigned int imgWidth, unsigned int imgHeight, unsigned int samplesPerPixel,
-                              unsigned int maxBounces, unsigned int nThreads,
-                              float fovScale, float gamma,
-                              float camPosX, float camPosY, float camPosZ,
-                              float camForwardX, float camForwardY, float camForwardZ,
-                              float camUpX, float camUpY, float camUpZ,
-                              const char* sceneJSONPath, const char* rootJSONObjName);
+C_RT_API float* rt_GenerateImage(unsigned int imgWidth, unsigned int imgHeight, unsigned int samplesPerPixel,
+                                 unsigned int maxBounces, unsigned int nThreads,
+                                 float fovScale, float gamma,
+                                 float camPosX, float camPosY, float camPosZ,
+                                 float camForwardX, float camForwardY, float camForwardZ,
+                                 float camUpX, float camUpY, float camUpZ,
+                                 const char* sceneJSONPath, const char* rootJSONObjName);
 //Frees up the data returned by "GenerateImage()".
 //Failing to call this when finished with the data results in a memory leak.
-C_RT_API void ReleaseImage(float* img);
+C_RT_API void rt_ReleaseImage(float* img);
 
 
 //The code that represents "everything was successful!"
-C_RT_API unsigned char ERRORCODE_SUCCESS();
+C_RT_API unsigned char rt_ERRORCODE_SUCCESS();
 //The code that represents "The texture is not large enough to be traced successfully".
 //This can happen if the width is 0 or the height is less than the number of threads to use.
-C_RT_API unsigned char ERRORCODE_BAD_SIZE();
+C_RT_API unsigned char rt_ERRORCODE_BAD_SIZE();
 //'nThreads' or 'samplesPerPixel' is 0, or 'fovScale' is non-positive.
-C_RT_API unsigned char ERRORCODE_BAD_VALUE();
+C_RT_API unsigned char rt_ERRORCODE_BAD_VALUE();
 //The code that represents "Couldn't parse the JSON file correctly".
-C_RT_API unsigned char ERRORCODE_BAD_JSON();
+C_RT_API unsigned char rt_ERRORCODE_BAD_JSON();
 
 //Has the same signature as "GenerateImage()".
 //Checks over the inputs for any possible errors and returns an error code.
-C_RT_API unsigned char GetError(unsigned int imgWidth, unsigned int imgHeight, unsigned int samplesPerPixel,
-                                unsigned int maxBounces, unsigned int nThreads,
-                                float fovScale, float gamma,
-                                float camPosX, float camPosY, float camPosZ,
-                                float camForwardX, float camForwardY, float camForwardZ,
-                                float camUpX, float camUpY, float camUpZ,
-                                const char* sceneJSONPath, const char* rootJSONObjName);
+C_RT_API unsigned char rt_GetError(unsigned int imgWidth, unsigned int imgHeight, unsigned int samplesPerPixel,
+                                   unsigned int maxBounces, unsigned int nThreads,
+                                   float fovScale, float gamma,
+                                   float camPosX, float camPosY, float camPosZ,
+                                   float camForwardX, float camForwardY, float camForwardZ,
+                                   float camUpX, float camUpY, float camUpZ,
+                                   const char* sceneJSONPath, const char* rootJSONObjName);

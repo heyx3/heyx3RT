@@ -1,5 +1,7 @@
 #include "../Headers/SkyMaterial_SimpleColor.h"
 
+using namespace RT;
+
 
 ADD_SKYMAT_REFLECTION_DATA_CPP(SkyMaterial_SimpleColor);
 

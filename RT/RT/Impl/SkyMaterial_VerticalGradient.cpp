@@ -2,6 +2,8 @@
 
 #include "../Headers/Mathf.h"
 
+using namespace RT;
+
 
 ADD_SKYMAT_REFLECTION_DATA_CPP(SkyMaterial_VerticalGradient);
 

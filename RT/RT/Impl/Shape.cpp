@@ -6,16 +6,18 @@
 #include <thread>
 #include <mutex>
 
+using namespace RT;
+
 
 namespace
 {
     struct ShapeFact
     {
     public:
-        std::string TypeName;
+        String TypeName;
         Shape*(*Factory)();
 
-        ShapeFact(const std::string& typeName, Shape*(*factory)())
+        ShapeFact(const String& typeName, Shape*(*factory)())
             : TypeName(typeName), Factory(factory)
         { }
     };
@@ -33,7 +35,7 @@ namespace
     }
 }
 
-void Shape::AddReflectionData(const std::string& typeName, ShapeFactory factory)
+void Shape::AddReflectionData(const String& typeName, ShapeFactory factory)
 {
     std::lock_guard<std::mutex> lock(GetVectorMutex());
 
@@ -49,7 +51,7 @@ void Shape::AddReflectionData(const std::string& typeName, ShapeFactory factory)
 
     factories.push_back(ShapeFact(typeName, factory));
 }
-Shape::ShapeFactory Shape::GetFactory(const std::string& typeName)
+Shape::ShapeFactory Shape::GetFactory(const String& typeName)
 {
     std::lock_guard<std::mutex> lock(GetVectorMutex());
 

@@ -43,6 +43,7 @@
     <ClInclude Include="Headers\Sphere.h" />
     <ClInclude Include="Headers\MaterialValue.h" />
     <ClInclude Include="Headers\MaterialValues.h" />
+    <ClInclude Include="Headers\RTString.h" />
     <ClInclude Include="Headers\Texture2D.h" />
     <ClInclude Include="Headers\ThirdParty\base64.h" />
     <ClInclude Include="Headers\ThirdParty\bmp_io.hpp" />
@@ -52,6 +53,7 @@
     <ClInclude Include="Headers\Transform.h" />
     <ClInclude Include="Headers\Triangle.h" />
     <ClInclude Include="Headers\SmartPtrs.h" />
+    <ClInclude Include="Headers\List.h" />
     <ClInclude Include="Headers\Vectorf.h" />
     <ClInclude Include="Headers\Vectors.h" />
     <ClInclude Include="Headers\Vertex.h" />
@@ -77,6 +79,7 @@
     <ClCompile Include="Impl\SkyMaterial_SimpleColor.cpp" />
     <ClCompile Include="Impl\SkyMaterial_VerticalGradient.cpp" />
     <ClCompile Include="Impl\Sphere.cpp" />
+    <ClCompile Include="Impl\String.cpp" />
     <ClCompile Include="Impl\Texture2D.cpp" />
     <ClCompile Include="Impl\ThirdParty\base64.cpp" />
     <ClCompile Include="Impl\ThirdParty\bmp_io.cpp" />
@@ -136,25 +139,25 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <TargetExt>.dll</TargetExt>
-    <OutDir>$(SolutionDir)\$(ProjectName)\Build\$(Configuration)\$(Platform)\</OutDir>
-    <IntDir>$(SolutionDir)\$(ProjectName)\Build\temp\$(Configuration)\$(Platform)\</IntDir>
+    <OutDir>$(SolutionDir)$(ProjectName)\Build\$(Configuration)\$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)$(ProjectName)\Build\temp\$(Configuration)\$(Platform)\</IntDir>
     <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>$(ProjectName)</TargetName>
     <TargetExt>.dll</TargetExt>
-    <OutDir>$(SolutionDir)\$(ProjectName)\Build\$(Configuration)\$(Platform)\</OutDir>
-    <IntDir>$(SolutionDir)\$(ProjectName)\Build\temp\$(Configuration)\$(Platform)\</IntDir>
+    <OutDir>$(SolutionDir)$(ProjectName)\Build\$(Configuration)\$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)$(ProjectName)\Build\temp\$(Configuration)\$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <TargetExt>.dll</TargetExt>
-    <OutDir>$(SolutionDir)\$(ProjectName)\Build\$(Configuration)\$(Platform)\</OutDir>
-    <IntDir>$(SolutionDir)\$(ProjectName)\Build\temp\$(Configuration)\$(Platform)\</IntDir>
+    <OutDir>$(SolutionDir)$(ProjectName)\Build\$(Configuration)\$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)$(ProjectName)\Build\temp\$(Configuration)\$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetExt>.dll</TargetExt>
-    <OutDir>$(SolutionDir)\$(ProjectName)\Build\$(Configuration)\$(Platform)\</OutDir>
-    <IntDir>$(SolutionDir)\$(ProjectName)\Build\temp\$(Configuration)\$(Platform)\</IntDir>
+    <OutDir>$(SolutionDir)$(ProjectName)\Build\$(Configuration)\$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)$(ProjectName)\Build\temp\$(Configuration)\$(Platform)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

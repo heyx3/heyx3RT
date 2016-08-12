@@ -3,22 +3,24 @@
 #include "../Headers/ThirdParty/base64.h"
 #include <fstream>
 
+using namespace RT;
+
 
 #pragma warning( disable : 4996 )
 
 
-bool RT_API JsonSerialization::ToJSONFile(const std::string& filePath, const IWritable& toWrite,
-                                          bool compact, std::string& outErrorMsg)
+bool RT_API JsonSerialization::ToJSONFile(const String& filePath, const IWritable& toWrite,
+                                          bool compact, String& outErrorMsg)
 {
     JsonWriter writer;
-    std::string trying = "UNKNOWN";
+    String trying = "UNKNOWN";
     try
     {
         trying = "serializing data";
         writer.WriteDataStructure(toWrite, "data");
         trying = "writing data to file";
         outErrorMsg = writer.SaveData(filePath, compact);
-        if (!outErrorMsg.empty())
+        if (!outErrorMsg.IsEmpty())
         {
             return false;
         }
@@ -29,20 +31,20 @@ bool RT_API JsonSerialization::ToJSONFile(const std::string& filePath, const IWr
     {
         if (i == DataWriter::EXCEPTION_FAILURE)
         {
-            outErrorMsg = std::string("Error while ") + trying + ": " + writer.ErrorMessage;
+            outErrorMsg = String("Error while ") + trying + ": " + writer.ErrorMessage;
         }
         else
         {
-            outErrorMsg = "Unknown error code while " + trying + ": " + std::to_string(i);
+            outErrorMsg = String("Unknown error code while ") + trying + ": " + String(i);
         }
         return false;
     }
 }
 bool RT_API JsonSerialization::ToJSONString(const IWritable& toWrite, bool compact,
-                                            std::string& outJSON, std::string& outErrorMsg)
+                                            String& outJSON, String& outErrorMsg)
 {
     JsonWriter writer;
-    std::string trying = "UNKNOWN";
+    String trying = "UNKNOWN";
     try
     {
         trying = "serializing data";
@@ -54,24 +56,24 @@ bool RT_API JsonSerialization::ToJSONString(const IWritable& toWrite, bool compa
     {
         if (i == DataWriter::EXCEPTION_FAILURE)
         {
-            outErrorMsg = std::string("Error while ") + trying + ": " + writer.ErrorMessage;
+            outErrorMsg = String("Error while ") + trying + ": " + writer.ErrorMessage;
         }
         else
         {
-            outErrorMsg = "Unknown error code while " + trying + ": " + std::to_string(i);
+            outErrorMsg = String("Unknown error code while ") + trying + ": " + String(i);
         }
         return false;
     }
 }
-bool RT_API JsonSerialization::FromJSONFile(const std::string& filePath, IReadable& toRead,
-                                            const std::string& rootObjectName, std::string& outErrorMsg)
+bool RT_API JsonSerialization::FromJSONFile(const String& filePath, IReadable& toRead,
+                                            const String& rootObjectName, String& outErrorMsg)
 {
     JsonReader reader(filePath);
 
     //If we had an error reading the file, stop.
-    if (reader.ErrorMessage.size() > 0)
+    if (reader.ErrorMessage.GetSize() > 0)
     {
-        outErrorMsg = std::string("Error reading file: ") + reader.ErrorMessage;
+        outErrorMsg = String("Error reading file: ") + reader.ErrorMessage;
         return false;
     }
 
@@ -84,20 +86,20 @@ bool RT_API JsonSerialization::FromJSONFile(const std::string& filePath, IReadab
     {
         if (i == DataReader::EXCEPTION_FAILURE)
         {
-            outErrorMsg = std::string("Error reading data: ") + reader.ErrorMessage;
+            outErrorMsg = String("Error reading data: ") + reader.ErrorMessage;
         }
         else
         {
-            outErrorMsg = "Unknown error code: " + std::to_string(i);
+            outErrorMsg = String("Unknown error code: ") + String(i);
         }
         return false;
     }
 }
 
 
-std::string JsonWriter::SaveData(const std::string& path, bool compact)
+String JsonWriter::SaveData(const String& path, bool compact)
 {
-    std::ofstream file(path, std::ios_base::trunc);
+    std::ofstream file(path.CStr(), std::ios_base::trunc);
     if (file.is_open())
     {
         file << doc.dump(compact ? -1 : 4);
@@ -109,68 +111,68 @@ std::string JsonWriter::SaveData(const std::string& path, bool compact)
 
     return "";
 }
-void JsonWriter::WriteBool(bool value, const std::string& name)
+void JsonWriter::WriteBool(bool value, const String& name)
 {
-    GetToUse()[name] = value;
+    GetToUse()[name.CStr()] = value;
 }
-void JsonWriter::WriteByte(unsigned char value, const std::string& name)
+void JsonWriter::WriteByte(unsigned char value, const String& name)
 {
-    GetToUse()[name] = value;
+    GetToUse()[name.CStr()] = value;
 }
-void JsonWriter::WriteInt(int value, const std::string& name)
+void JsonWriter::WriteInt(int value, const String& name)
 {
-    GetToUse()[name] = value;
+    GetToUse()[name.CStr()] = value;
 }
-void JsonWriter::WriteUInt(size_t value, const std::string& name)
+void JsonWriter::WriteUInt(size_t value, const String& name)
 {
-    GetToUse()[name] = value;
+    GetToUse()[name.CStr()] = value;
 }
-void JsonWriter::WriteFloat(float value, const std::string& name)
+void JsonWriter::WriteFloat(float value, const String& name)
 {
-    GetToUse()[name] = value;
+    GetToUse()[name.CStr()] = value;
 }
-void JsonWriter::WriteDouble(double value, const std::string& name)
+void JsonWriter::WriteDouble(double value, const String& name)
 {
-    GetToUse()[name] = value;
+    GetToUse()[name.CStr()] = value;
 }
-void JsonWriter::WriteString(const std::string& value, const std::string& name)
+void JsonWriter::WriteString(const String& value, const String& name)
 {
     //Escape special characters.
-    std::string newVal = value;
-    for (size_t i = 0; i < newVal.size(); ++i)
+    String newVal = value;
+    for (size_t i = 0; i < newVal.GetSize(); ++i)
     {
         if (newVal[i] == '"' || newVal[i] == '\\')
         {
-            newVal.insert(newVal.begin() + i, '\\');
+            newVal.Insert(i, '\\');
             i += 1;
         }
     }
 
-    GetToUse()[name] = value;
+    GetToUse()[name.CStr()] = value.CStr();
 }
-void JsonWriter::WriteBytes(const unsigned char* bytes, size_t nBytes, const std::string& name)
+void JsonWriter::WriteBytes(const unsigned char* bytes, size_t nBytes, const String& name)
 {
-    std::string str = base64::encode(bytes, nBytes);
+    String str = base64::encode(bytes, nBytes).c_str();
     WriteString(str, name);
 }
-void JsonWriter::WriteDataStructure(const IWritable& toSerialize, const std::string& name)
+void JsonWriter::WriteDataStructure(const IWritable& toSerialize, const String& name)
 {
-    GetToUse()[name] = nlohmann::json::object();
-    JsonWriter subWriter(&GetToUse()[name]);
+    GetToUse()[name.CStr()] = nlohmann::json::object();
+    JsonWriter subWriter(&GetToUse()[name.CStr()]);
     toSerialize.WriteData(subWriter);
 }
 
 
-JsonReader::JsonReader(const std::string& filePath)
+JsonReader::JsonReader(const String& filePath)
 {
     ErrorMessage = Reload(filePath);
 }
 
-std::string JsonReader::Reload(const std::string& filePath)
+String JsonReader::Reload(const String& filePath)
 {
     subDoc = nullptr;
 
-    std::ifstream fileS(filePath);
+    std::ifstream fileS(filePath.CStr());
     if (!fileS.is_open())
     {
         return "Couldn't open the file";
@@ -189,7 +191,7 @@ std::string JsonReader::Reload(const std::string& filePath)
     return "";
 }
 
-void JsonReader::Assert(bool expr, const std::string& errorMsg)
+void JsonReader::Assert(bool expr, const String& errorMsg)
 {
     if (!expr)
     {
@@ -197,40 +199,40 @@ void JsonReader::Assert(bool expr, const std::string& errorMsg)
         throw EXCEPTION_FAILURE;
     }
 }
-nlohmann::json::const_iterator JsonReader::GetItem(const std::string& name)
+nlohmann::json::const_iterator JsonReader::GetItem(const String& name)
 {
     const nlohmann::json& jsn = GetToUse();
-    auto element = jsn.find(name);
+    auto element = jsn.find(name.CStr());
     Assert(element != jsn.end(),
            "Couldn't find the element.");
     return element;
 }
 
-void JsonReader::ReadBool(bool& outB, const std::string& name)
+void JsonReader::ReadBool(bool& outB, const String& name)
 {
     auto& element = GetItem(name);
     Assert(element->is_boolean(), "Expected a boolean but got something else");
     outB = element->get<bool>();
 }
-void JsonReader::ReadByte(unsigned char& outB, const std::string& name)
+void JsonReader::ReadByte(unsigned char& outB, const String& name)
 {
     auto& element = GetItem(name);
     Assert(element->is_number_unsigned(), "Expected a byte but got something else");
     outB = (unsigned char)element->get<size_t>();
 }
-void JsonReader::ReadInt(int& outI, const std::string& name)
+void JsonReader::ReadInt(int& outI, const String& name)
 {
     auto& element = GetItem(name);
     Assert(element->is_number_integer(), "Expected an integer but got something else");
     outI = element->get<int>();
 }
-void JsonReader::ReadUInt(size_t& outU, const std::string& name)
+void JsonReader::ReadUInt(size_t& outU, const String& name)
 {
     auto& element = GetItem(name);
     Assert(element->is_number_unsigned(), "Expected an unsigned integer but got something else");
     outU = element->get<size_t>();
 }
-void JsonReader::ReadFloat(float& outF, const std::string& name)
+void JsonReader::ReadFloat(float& outF, const String& name)
 {
     //Note that integers make valid floats.
     auto& element = GetItem(name);
@@ -241,7 +243,7 @@ void JsonReader::ReadFloat(float& outF, const std::string& name)
     else
         outF = (float)element->get<int>();
 }
-void JsonReader::ReadDouble(double& outD, const std::string& name)
+void JsonReader::ReadDouble(double& outD, const String& name)
 {
     //Note that integers make valid doubles.
     auto& element = GetItem(name);
@@ -252,32 +254,37 @@ void JsonReader::ReadDouble(double& outD, const std::string& name)
     else
         outD = (double)element->get<int>();
 }
-void JsonReader::ReadString(std::string& outStr, const std::string& name)
+void JsonReader::ReadString(String& outStr, const String& name)
 {
     auto& element = GetItem(name);
     Assert(element->is_string(), "Expected a string but got something else");
 
-    outStr = element->get<std::string>();
+    outStr = element->get<std::string>().c_str();
 
     //Fix escaped characters.
-    for (size_t i = 0; i < outStr.size(); ++i)
+    for (size_t i = 0; i < outStr.GetSize(); ++i)
     {
         if (outStr[i] == '\\')
         {
-            outStr.erase(outStr.begin() + i);
+            outStr.Erase(i);
             //Normally we would subtract 1 from "i" here, but we *want* to skip the next character --
             //    it's the one being escaped.
         }
     }
 }
-void JsonReader::ReadBytes(std::vector<unsigned char>& outBytes, const std::string& name)
+void JsonReader::ReadBytes(List<unsigned char>& outBytes, const String& name)
 {
-    std::string str;
+    String str;
     ReadString(str, name);
 
-    base64::decode(str, outBytes);
+    std::vector<unsigned char> _outBytes;
+    base64::decode(str.CStr(), _outBytes);
+
+    outBytes.Resize(_outBytes.size());
+    memcpy_s(outBytes.GetData(), outBytes.GetSize(),
+             _outBytes.data(), _outBytes.size());
 }
-void JsonReader::ReadDataStructure(IReadable& outData, const std::string& name)
+void JsonReader::ReadDataStructure(IReadable& outData, const String& name)
 {
     auto& element = GetItem(name);
     Assert(element->is_object(), "Expected a data structure but got something else");
