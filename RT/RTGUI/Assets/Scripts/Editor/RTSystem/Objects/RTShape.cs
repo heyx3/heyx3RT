@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace RT
 {
-	//TODO: Add custom inspectors?
+	//TODO: Add custom inspectors as necessary (button for material editor).
 
 	[ExecuteInEditMode]
 	public abstract class RTShape : MonoBehaviour, Serialization.ISerializableRT
@@ -17,16 +17,18 @@ namespace RT
 		                       TypeName_Mesh = "Mesh";
 
 
-		public static void Serialize(Serialization.DataWriter writer)
+		public static void Serialize(RTShape shpe, string name, Serialization.DataWriter writer)
 		{
-
+			writer.String(shpe.TypeName, name + "Type");
+			writer.Structure(shpe, name + "Value");
 		}
 		public static RTShape Deserialize(GameObject toAttachTo, Serialization.DataReader reader, string name)
 		{
-			RTShape shpe = null;
+			RTShape shpe = toAttachTo.GetComponent<RTShape>();
+			if (shpe != null)
+				DestroyImmediate(shpe);
 
 			string typeName = reader.String(name + "Type");
-
 			switch (typeName)
 			{
 				case TypeName_Sphere:
