@@ -11,6 +11,7 @@
 //Generates a ray-traced image and returns the image data. Returns null if there was an error.
 //The data is organized into RGB floats from left to right, then bottom to top.
 //NOTE: The image memory is allocated on the heap and must be freed by calling "ReleaseImage()"!
+//NOTE: The size of the output image array is imgWidth * imgHeight * 3. It is ordered in rows.
 //The arguments are as follows:
 //"imgWidth" and "imgHeight" are the size of the output image.
 //"samplesPerPixel" is the number of rays used per pixel. Higher values yields better quality.
