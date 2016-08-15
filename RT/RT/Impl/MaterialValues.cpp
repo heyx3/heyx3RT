@@ -91,7 +91,7 @@ void MV_Tex2D::WriteData(DataWriter& writer) const
             writer.ErrorMessage += String(fileType);
             throw DataWriter::EXCEPTION_FAILURE;
     }
-    WriteValue(UV, writer, "UVs");
+    WriteValue(UV, writer, "UV");
 }
 void MV_Tex2D::ReadData(DataReader& reader)
 {
@@ -120,7 +120,7 @@ void MV_Tex2D::ReadData(DataReader& reader)
         throw DataReader::EXCEPTION_FAILURE;
     }
 
-    ReadValue(UV, reader, "UVs");
+    ReadValue(UV, reader, "UV");
 
     //Try loading the texture.
     String err = Reload();

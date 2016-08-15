@@ -93,13 +93,30 @@ namespace RT
 											  float camUpX, float camUpY, float camUpZ,
 											  string sceneJSONPath, string rootJSONObjName);
 
-		public static void rt_GenerateImage(uint imgWidth, uint imgHeight, uint samplesPerPixel,
-											uint maxBounces, uint nThreads,
-											float fovScale, float gamma,
-											Vector3 camPos, Vector3 camForward, Vector3 camUp,
-											string sceneJSONPath, string rootJSONObjName,
-											Texture2D outTex)
+		/// <summary>
+		/// Returns an error message, or an empty string if everything went fine.S
+		/// </summary>
+		public static string rt_GenerateImage(uint imgWidth, uint imgHeight, uint samplesPerPixel,
+							  				  uint maxBounces, uint nThreads,
+											  float fovScale, float gamma,
+											  Vector3 camPos, Vector3 camForward, Vector3 camUp,
+											  string sceneJSONPath, string rootJSONObjName,
+											  Texture2D outTex)
 		{
+			//Error-checking.
+			byte err = rt_GetError(imgWidth, imgHeight, samplesPerPixel, maxBounces, nThreads,
+								   fovScale, gamma, camPos.x, camPos.y, camPos.z,
+								   camForward.x, camForward.y, camForward.z,
+								   camUp.x, camUp.y, camUp.z, sceneJSONPath, rootJSONObjName);
+			if (err == rt_ERRORCODE_BAD_JSON())
+				return "Badly-forced JSON in " + sceneJSONPath;
+			else if (err == rt_ERRORCODE_BAD_SIZE())
+				return "Image size is too small to render";
+			else if (err == rt_ERRORCODE_BAD_VALUE())
+				return "Make sure samplesPerPixel and nThreads are greater than 0, and fovScale is positive";
+			else if (err != rt_ERRORCODE_SUCCESS())
+				return "Unknown error " + err;
+
 			//Do the ray-tracing.
 			IntPtr arrayPtr = rt_GenerateImage(imgWidth, imgHeight, samplesPerPixel,
 											   maxBounces, nThreads, fovScale, gamma,
@@ -123,6 +140,8 @@ namespace RT
 			//Output the color array into a texture.
 			outTex.Resize((int)imgWidth, (int)imgHeight);
 			outTex.SetPixels(cols);
+
+			return "";
 		}
 		[DllImport("RT")]
 		private static extern IntPtr rt_GenerateImage(uint imgWidth, uint imgHeight, uint samplesPerPixel,

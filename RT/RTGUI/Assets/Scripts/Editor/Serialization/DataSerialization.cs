@@ -33,6 +33,7 @@ namespace RT.Serialization
 
 		public abstract void Structure(ISerializableRT value, string name);
 		
+
 		public virtual void Vec2f(UnityEngine.Vector2 v, string name)
 		{
 			FloatSerializerWrapper floats = new FloatSerializerWrapper();
@@ -66,6 +67,15 @@ namespace RT.Serialization
 			floats.Add("w", q.w);
 			Structure(floats, name);
 		}
+		public virtual void Rect(UnityEngine.Rect r, string name)
+		{
+			FloatSerializerWrapper floats = new FloatSerializerWrapper();
+			floats.Add("x", r.x);
+			floats.Add("y", r.y);
+			floats.Add("width", r.width);
+			floats.Add("height", r.height);
+			Structure(floats, name);
+		}
 
 		public delegate void ListElementWriter<T>(DataWriter w, T outVal, string name);
 		public virtual void List<T>(List<T> data, string name, ListElementWriter<T> writeElementWithName)
@@ -96,6 +106,7 @@ namespace RT.Serialization
 
 		public abstract void Structure(ISerializableRT outValue, string name);
 		
+
 		public virtual UnityEngine.Vector2 Vec2f(string name)
 		{
 			FloatSerializerWrapper floats = new FloatSerializerWrapper();
@@ -142,6 +153,18 @@ namespace RT.Serialization
 											  floats.ValuesByName[2].Value,
 											  floats.ValuesByName[3].Value);
 		}
+		public virtual UnityEngine.Rect Rect(string name)
+		{
+			FloatSerializerWrapper floats = new FloatSerializerWrapper();
+			floats.Add("x", 0.0f);
+			floats.Add("y", 0.0f);
+			floats.Add("width", 0.0f);
+			floats.Add("height", 0.0f);
+			Structure(floats, name);
+
+			return new UnityEngine.Rect(floats.ValuesByName[0].Value, floats.ValuesByName[1].Value,
+										floats.ValuesByName[2].Value, floats.ValuesByName[3].Value);
+		}
 
 		public delegate void ListElementReader<T>(DataReader r, ref T outVal, string name);
 		public virtual List<T> List<T>(string name, ListElementReader<T> readElementWithName)
@@ -155,7 +178,10 @@ namespace RT.Serialization
 
 	
 	#region Helpers for reading/writing special types.
-	private class FloatSerializerWrapper : ISerializableRT
+	/// <summary>
+	/// Helper class for DataReader/DataWriter. Please ignore.
+	/// </summary>
+	public class FloatSerializerWrapper : ISerializableRT
 	{
 		public List<KeyValuePair<string, float>> ValuesByName = new List<KeyValuePair<string, float>>();
 		public void Add(string name, float val) { ValuesByName.Add(new KeyValuePair<string, float>(name, val)); }
@@ -173,7 +199,10 @@ namespace RT.Serialization
 				writer.Float(kvp.Value, kvp.Key);
 		}
 	}
-	private class ListSerializerWrapper<T> : ISerializableRT
+	/// <summary>
+	/// Helper class for DataReader/DataWriter. Please ignore.
+	/// </summary>
+	public class ListSerializerWrapper<T> : ISerializableRT
 	{
 		public List<T> Data = null;
 		public DataWriter.ListElementWriter<T> ElementWriter = null;
