@@ -6,8 +6,10 @@ using UnityEditor;
 
 namespace RT.MaterialValue
 {
+	[Serializable]
 	public class MV_PureNoise : MV_Base
 	{
+		[SerializeField]
 		public byte NChannels;
 
 
@@ -47,7 +49,6 @@ namespace RT.MaterialValue
 
 
 		public MV_PureNoise(byte nChannels) { NChannels = nChannels; }
-		public MV_PureNoise(byte nChannels, uint guid) : base(guid) { NChannels = nChannels; }
 
 
 		public override void Emit(System.Text.StringBuilder shaderlabProperties,
@@ -66,6 +67,7 @@ namespace RT.MaterialValue
 				cgDefinitions.AppendLine(";");
 			}
 
+			//Combine various data to create the UV's to sample the noise texture with.
 			fragmentShaderBody.Append(OutputSize.ToHLSLType());
 			fragmentShaderBody.Append(" ");
 			fragmentShaderBody.Append(ShaderValueName);
@@ -79,7 +81,7 @@ namespace RT.MaterialValue
 			fragmentShaderBody.Append(RTSystem.Input_UV);
 			fragmentShaderBody.Append("));");
 		}
-		public override void SetParams(Material unityMat)
+		public override void SetParams(Transform tr, Material unityMat)
 		{
 			unityMat.SetTexture(RTSystem.Param_PureNoiseTex, RTSystem.Instance.PureNoiseTex);
 		}

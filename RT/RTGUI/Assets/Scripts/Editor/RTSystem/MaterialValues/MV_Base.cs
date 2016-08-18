@@ -30,43 +30,43 @@ namespace RT.MaterialValue
 
 			switch (typeName)
 			{
-				case TypeName_Constant: mv = new MV_Constant(false, null, new Vectorf()); break;
+				case TypeName_Constant: mv = MV_Constant.MakeFloat(0.0f); break;
 				case TypeName_Tex2D: mv = new MV_Tex2D(); break;
 				case TypeName_Add: mv = new MV_Add(null, null); break;
 				case TypeName_Subtract: mv = new MV_Subtract(null, null); break;
 				case TypeName_Divide: mv = new MV_Divide(null, null); break;
-				case TypeName_Normalize: mv = new MV_Normalize(null); break;
-				case TypeName_Length: mv = new MV_Length(null); break;
-				case TypeName_Distance: mv = new MV_Distance(null, null); break;
-				case TypeName_Sqrt: mv = new MV_Sqrt(null); break;
-				case TypeName_Sin: mv = new MV_Sin(null); break;
-				case TypeName_Cos: mv = new MV_Cos(null); break;
-				case TypeName_Tan: mv = new MV_Tan(null); break;
-				case TypeName_Asin: mv = new MV_Asin(null); break;
-				case TypeName_Acos: mv = new MV_Acos(null); break;
-				case TypeName_Atan: mv = new MV_Atan(null); break;
-				case TypeName_Atan2: mv = new MV_Atan2(null, null); break;
-				case TypeName_Step: mv = new MV_Step(null, null); break;
+				case TypeName_Normalize: mv = MV_Simple1.Normalize(null); break;
+				case TypeName_Length: mv = MV_Simple1.Length(null); break;
+				case TypeName_Distance: mv = MV_Simple2.Distance(null, null); break;
+				case TypeName_Sqrt: mv = MV_Simple1.Sqrt(null); break;
+				case TypeName_Sin: mv = MV_Simple1.Sin(null); break;
+				case TypeName_Cos: mv = MV_Simple1.Cos(null); break;
+				case TypeName_Tan: mv = MV_Simple1.Tan(null); break;
+				case TypeName_Asin: mv = MV_Simple1.Asin(null); break;
+				case TypeName_Acos: mv = MV_Simple1.Acos(null); break;
+				case TypeName_Atan: mv = MV_Simple1.Atan(null); break;
+				case TypeName_Atan2: mv = MV_Simple2.Atan2(null, null); break;
+				case TypeName_Step: mv = MV_Simple2.Step(null, null); break;
 				case TypeName_Lerp: mv = new MV_Lerp(null, null, null); break;
-				case TypeName_Smoothstep: mv = new MV_Smoothstep(null); break;
-				case TypeName_Smootherstep: mv = new MV_Smootherstep(null); break;
+				case TypeName_Smoothstep: mv = MV_Simple1.Smoothstep(null); break;
+				case TypeName_Smootherstep: mv = MV_Simple1.Smootherstep(null); break;
 				case TypeName_Clamp: mv = new MV_Clamp(null, null, null); break;
-				case TypeName_Floor: mv = new MV_Floor(null); break;
-				case TypeName_Ceil: mv = new MV_Ceil(null); break;
-				case TypeName_Abs: mv = new MV_Abs(null); break;
+				case TypeName_Floor: mv = MV_Simple1.Floor(null); break;
+				case TypeName_Ceil: mv = MV_Simple1.Ceil(null); break;
+				case TypeName_Abs: mv = MV_Simple1.Abs(null); break;
 				case TypeName_Min: mv = new MV_Min(null, null); break;
 				case TypeName_Max: mv = new MV_Max(null, null); break;
-				case TypeName_SurfUV: mv = new MV_SurfUV(); break;
-				case TypeName_SurfPos: mv = new MV_SurfPos(); break;
-				case TypeName_SurfNormal: mv = new MV_SurfNormal(); break;
-				case TypeName_SurfTangent: mv = new MV_SurfTangent(); break;
-				case TypeName_SurfBitangent: mv = new MV_SurfBitangent(); break;
-				case TypeName_RayStartPos: mv = new MV_RayStartPos(); break;
-				case TypeName_RayDir: mv = new MV_RayDir(); break;
+				case TypeName_SurfUV: mv = MV_Inputs.SurfaceUV; break;
+				case TypeName_SurfPos: mv = MV_Inputs.SurfacePos; break;
+				case TypeName_SurfNormal: mv = MV_Inputs.SurfaceNormal; break;
+				case TypeName_SurfTangent: mv = MV_Inputs.SurfaceTangent; break;
+				case TypeName_SurfBitangent: mv = MV_Inputs.SurfaceBitangent; break;
+				case TypeName_RayStartPos: mv = MV_Inputs.RayStart; break;
+				case TypeName_RayDir: mv = MV_Inputs.RayDir; break;
 				case TypeName_RayPos: mv = new MV_RayPos(null); break;
-				case TypeName_ShapePos: mv = new MV_ShapePos(); break;
-				case TypeName_ShapeScale: mv = new MV_ShapeScale(); break;
-				case TypeName_ShapeRot: mv = new MV_ShapeRot(); break;
+				case TypeName_ShapePos: mv = MV_Inputs.ShapePos; break;
+				case TypeName_ShapeScale: mv = MV_Inputs.ShapeScale; break;
+				case TypeName_ShapeRot: mv = MV_Inputs.ShapeRot; break;
 				case TypeName_PureNoise: mv = new MV_PureNoise(1); break;
 
 				default:
@@ -128,7 +128,7 @@ namespace RT.MaterialValue
 		[SerializeField]
 		private uint guid;
 
-		[Serializable]
+		[SerializeField]
 		private Rect pos;
 
 		[SerializeField]
@@ -140,6 +140,7 @@ namespace RT.MaterialValue
 
 		public IEnumerable<MV_Base> Inputs { get { return inputs; } }
 		
+
 		public virtual bool HasVariableNumberOfChildren { get { return false; } }
 
 		public abstract string TypeName { get; }
@@ -150,10 +151,10 @@ namespace RT.MaterialValue
 		public abstract string PrettyName { get; }
 		public virtual Color GUIColor { get { return Color.white; } }
 
-		public MV_Base() : this(guidToValue.Max((kvp) => kvp.Key) + 1) { }
-		public MV_Base(uint _guid)
+
+		public MV_Base()
 		{
-			guid = _guid;
+			guid = guidToValue.Max((kvp) => kvp.Key) + 1;
 			guidToValue.Add(guid, this);
 
 			//Double-check that this sub-class is serializable.
@@ -175,14 +176,62 @@ namespace RT.MaterialValue
 
 		protected void AddInput(MV_Base v) { inputs.Add(v); }
 		protected void RemoveInput(MV_Base v) { inputs.Remove(v); }
+		protected void RemoveInput(int i) { inputs.RemoveAt(i); }
 		protected void InsertInput(MV_Base v, int i) { inputs.Insert(i, v); }
 		protected void ClearInput() { inputs.Clear(); }
+
+		/// <summary>
+		/// Gets the shader expression for the given input's value,
+		/// scaled up/down to have the given number of dimensions.
+		/// </summary>
+		/// <param name="alsoAllow1D">
+		/// If true, a size of One is acceptable along with the target size.
+		/// </param>
+		public string GetInputValue(int i, OutputSizes targetSize, bool alsoAllow1D = false)
+		{
+			string val = GetInput(i).ShaderValueName;
+			OutputSizes valSize = GetInput(i).OutputSize;
+
+			if (valSize == targetSize || (alsoAllow1D && valSize == OutputSizes.One))
+				return val;
+			
+			switch (targetSize)
+			{
+				case OutputSizes.One:
+					return "(" + val + ".x" + ")";
+
+				case OutputSizes.Two:
+					if (valSize == OutputSizes.One)
+						return "float2(" + val + ", " + val + ")";
+					else
+						return "(" + val + ".xy" + ")";
+
+				case OutputSizes.Three:
+					if (valSize == OutputSizes.One)
+						return "float3(" + val + ", " + val + ", " + val + ")";
+					else if (valSize == OutputSizes.Two)
+						return "float3(" + val + ".xy, 0.0)";
+					else
+						return "(" + val + ".xyz" + ")";
+
+				case OutputSizes.Four:
+					if (valSize == OutputSizes.One)
+						return "float4(" + val + ", " + val + ", " + val + ", " + val + ")";
+					else if (valSize == OutputSizes.Two)
+						return "float4(" + val + ", " + val + ", 0.0, 1.0)";
+					else
+						return "float4(" + val + ".xyz, 1.0)";
+
+				default:
+					throw new NotImplementedException(valSize.ToString());
+			}
+		}
 		
 
 		public abstract void Emit(StringBuilder shaderlabProperties,
 								  StringBuilder cgDefinitions,
 								  StringBuilder fragmentShaderBody);
-		public virtual void SetParams(Material unityMat) { }
+		public virtual void SetParams(Transform shapeTr, Material unityMat) { }
 
 		/// <summary>
 		/// Gets a valid default input for the given input index.
@@ -202,20 +251,42 @@ namespace RT.MaterialValue
 			writer.UInt(guid, "GUID");
 			writer.Rect(pos, "Pos");
 
-			writer.Int(inputs.Count, "NChildren");
-			for (int i = 0; i < inputs.Count; ++i)
-				Serialize(inputs[i], GetInputName(i), writer);
+			if (HasVariableNumberOfChildren)
+			{
+				writer.List(inputs, "Items",
+							(Serialization.DataWriter wr, MV_Base val, string name) =>
+							{
+								Serialize(val, name, wr);
+							});
+			}
+			else
+			{
+				writer.Int(inputs.Count, "NChildren");
+				for (int i = 0; i < inputs.Count; ++i)
+					Serialize(inputs[i], GetInputName(i), writer);
+			}
 		}
 		public virtual void ReadData(Serialization.DataReader reader)
 		{
 			GUID = reader.UInt("GUID");
 			pos = reader.Rect("Pos");
-			
-			int nChildren = reader.Int("NChildren");
-			inputs.Clear();
-			inputs.Capacity = nChildren;
-			for (int i = 0; i < nChildren; ++i)
-				inputs.Add(Deserialize(GetInputName(i), reader));
+
+			if (HasVariableNumberOfChildren)
+			{
+				inputs = reader.List("Items",
+									 (Serialization.DataReader rd, ref MV_Base outVal, string name) =>
+									 {
+									     outVal = Deserialize(name, rd);
+									 });
+			}
+			else
+			{
+				int nChildren = reader.Int("NChildren");
+				inputs.Clear();
+				inputs.Capacity = nChildren;
+				for (int i = 0; i < nChildren; ++i)
+					inputs.Add(Deserialize(GetInputName(i), reader));
+			}
 		}
 
 
@@ -270,9 +341,9 @@ namespace RT.MaterialValue
 				GUILayout.Label(GetInputName(i));
 
 				//Button to select input.
-				string buttStr = "X";
+				string buttStr = "O";
 				if (outputTo != null && outputTo_Index == i)
-					buttStr = "x";
+					buttStr = "o";
 				if (GUILayout.Button(buttStr))
 				{
 					if (inputFrom != null)
@@ -314,7 +385,25 @@ namespace RT.MaterialValue
 					}
 				}
 
+				//A button to remove this input.
+				if (HasVariableNumberOfChildren)
+				{
+					if (GUILayout.Button("X"))
+					{
+						result = GUIResults.Other;
+						RemoveInput(i);
+						i -= 1;
+					}
+				}
+
 				GUILayout.EndHorizontal();
+			}
+
+			//A button to add a new input.
+			if (HasVariableNumberOfChildren)
+			{
+				if (GUILayout.Button("Add input"))
+					AddInput(GetDefaultInput(inputs.Count));
 			}
 
 			GUIResults subResult = DoCustomGUI();

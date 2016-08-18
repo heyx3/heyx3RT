@@ -23,7 +23,6 @@ namespace RT.MaterialValue
 
 
 		public MV_Tex2D(Texture2D tex = null) { Tex = tex; }
-		public MV_Tex2D(uint guid, Texture2D tex = null) : base(guid) { Tex = tex; }
 
 
 		public override void Emit(StringBuilder shaderlabProperties,
@@ -47,16 +46,16 @@ namespace RT.MaterialValue
 			fragmentShaderBody.Append(" = tex2D(");
 			fragmentShaderBody.Append(texName);
 			fragmentShaderBody.Append(", ");
-			fragmentShaderBody.Append(GetInput(0).ShaderValueName);
+			fragmentShaderBody.Append(GetInputValue(0, OutputSizes.Two));
 			fragmentShaderBody.AppendLine(");");
 		}
-		public override void SetParams(Material unityMat)
+		public override void SetParams(Transform shapeTr, Material unityMat)
 		{
 			unityMat.SetTexture("_tex" + GUID, Tex);
 		}
 
 		public override MV_Base GetDefaultInput(int inputIndex) { return MV_Constant.MakeVec2(0.0f, 0.0f); }
-		protected override string GetInputName(int index) { return "UV"; }
+		public override string GetInputName(int index) { return "UV"; }
 
 		public override void WriteData(Serialization.DataWriter writer)
 		{
@@ -95,7 +94,7 @@ namespace RT.MaterialValue
 			Tex = AssetDatabase.LoadAssetAtPath<Texture2D>(texPath);
 		}
 
-		protected override MV_Base.GUIResults DoCustomGUI()
+		protected override GUIResults DoCustomGUI()
 		{
 			GUIResults results = GUIResults.Nothing;
 

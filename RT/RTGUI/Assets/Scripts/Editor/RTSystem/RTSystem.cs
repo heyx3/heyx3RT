@@ -14,13 +14,18 @@ namespace RT
 		private static RTSystem rtSys = null;
 
 
-		public static readonly string Param_PureNoiseTex = "_PureNoise";
+		public static readonly string Param_PureNoiseTex = "_PureNoise",
+									  Param_ShapePos = "_ShapePos",
+									  Param_ShapeScale = "_ShapeScale",
+									  Param_ShapeRot = "_ShapeRot";
 		public static readonly string Input_WorldPos = "IN.worldPos",
 									  Input_ScreenPos = "IN.screenPos",
 									  Input_UV = "IN.uv",
 									  Input_WorldNormal = "IN.worldNorm",
 									  Input_Tangent = "IN.tangent",
-									  Input_Bitangent = "IN.bitangent";
+									  Input_Bitangent = "IN.bitangent",
+									  Input_CamPos = "_WorldSpaceCameraPos",
+									  Input_RayDir = "normalize(IN.worldPos - _WorldSpaceCameraPos)";
 
 
 		public Mesh Shape_Sphere, Shape_Plane,

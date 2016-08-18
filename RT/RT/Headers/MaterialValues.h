@@ -14,6 +14,8 @@ namespace RT
     //Below is a forward declaration of every MaterialValue defined in this file,
     //    so that you don't have to go hunting through it.
 
+    //All trig functions use radians.
+
     class MV_Constant;
     class MV_Tex2D;
 
@@ -372,8 +374,8 @@ namespace RT
     MAKE_SIMPLE_FUNC2(Distance, A, B);
 
     MAKE_SIMPLE_FUNC1(Sqrt, X);
-    MAKE_SIMPLE_FUNC1(Sin, Input); MAKE_SIMPLE_FUNC1(Cos, Input); MAKE_SIMPLE_FUNC1(Tan, Input);
-    MAKE_SIMPLE_FUNC1(Asin, Input); MAKE_SIMPLE_FUNC1(Acos, Input); MAKE_SIMPLE_FUNC1(Atan, Input);
+    MAKE_SIMPLE_FUNC1(Sin, X); MAKE_SIMPLE_FUNC1(Cos, X); MAKE_SIMPLE_FUNC1(Tan, X);
+    MAKE_SIMPLE_FUNC1(Asin, X); MAKE_SIMPLE_FUNC1(Acos, X); MAKE_SIMPLE_FUNC1(Atan, X);
     MAKE_SIMPLE_FUNC2(Atan2, Y, X);
 
     //Returns 0.0 if "X" is less than "Edge", or 1.0 if it isn't.
@@ -391,7 +393,7 @@ namespace RT
     //TODO: Reflection/refraction MV's.
     //TODO: "Average" MV.
     //TODO: Noise generation MV's.
-    //TODO: Append MV's.
+    //TODO: Append/Component MV's.
     //TODO: Pow MV.
 
 #undef MAKE_MULTI_MV

@@ -67,6 +67,18 @@ namespace RT.MaterialValue
 		public static OutputSizes Intersection(this OutputSizes o, OutputSizes o2) { return o & o2; }
 		public static OutputSizes Union(this OutputSizes o, OutputSizes o2) { return o | o2; }
 		public static OutputSizes Remove(this OutputSizes o, OutputSizes o2) { return o & ~o2; }
+		
+		public static OutputSizes Max(this OutputSizes o, OutputSizes o2) { return (OutputSizes)Math.Max((int)o, (int)o2); }
+		public static OutputSizes Min(this OutputSizes o, OutputSizes o2) { return (OutputSizes)Math.Min((int)o, (int)o2); }
+		public static OutputSizes MinIgnoring1D(this OutputSizes o, OutputSizes o2)
+		{
+			if (o == OutputSizes.One)
+				return o2;
+			else if (o2 == OutputSizes.One)
+				return o;
+			else
+				return o.Min(o2);
+		}
 
 		public static IEnumerable<OutputSizes> GetSingleOptions(this OutputSizes o)
 		{
@@ -82,6 +94,7 @@ namespace RT.MaterialValue
 	}
 
 
+	[Serializable]
 	public class Vectorf : Serialization.ISerializableRT
 	{
 		public static readonly string[] ComponentStrings = { "x", "y", "z", "w" };

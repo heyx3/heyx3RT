@@ -263,12 +263,12 @@ IMPL_SIMPLE_FUNC(Distance,
                  return One; );
 
 IMPL_SIMPLE_FUNC1(Sqrt, return GET_VAL(X).OperateOn(&sqrtf); );
-IMPL_SIMPLE_FUNC1(Sin, return GET_VAL(Input).OperateOn(&sinf); );
-IMPL_SIMPLE_FUNC1(Cos, return GET_VAL(Input).OperateOn(&cosf); );
-IMPL_SIMPLE_FUNC1(Tan, return GET_VAL(Input).OperateOn(&tanf); );
-IMPL_SIMPLE_FUNC1(Asin, return GET_VAL(Input).OperateOn(&asinf); );
-IMPL_SIMPLE_FUNC1(Acos, return GET_VAL(Input).OperateOn(&acosf); );
-IMPL_SIMPLE_FUNC1(Atan, return GET_VAL(Input).OperateOn(&atanf); );
+IMPL_SIMPLE_FUNC1(Sin, return GET_VAL(X).OperateOn(&sinf); );
+IMPL_SIMPLE_FUNC1(Cos, return GET_VAL(X).OperateOn(&cosf); );
+IMPL_SIMPLE_FUNC1(Tan, return GET_VAL(X).OperateOn(&tanf); );
+IMPL_SIMPLE_FUNC1(Asin, return GET_VAL(X).OperateOn(&asinf); );
+IMPL_SIMPLE_FUNC1(Acos, return GET_VAL(X).OperateOn(&acosf); );
+IMPL_SIMPLE_FUNC1(Atan, return GET_VAL(X).OperateOn(&atanf); );
 IMPL_SIMPLE_FUNC(Atan2,
                  return GET_VAL(Y).OperateOn(COMMA([](COMMA(float y, float x)) { return atan2f(COMMA(y, x)); },
                                                     GET_VAL(X))); ,
