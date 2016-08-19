@@ -70,7 +70,7 @@ namespace RT
 
 
 //Put this in a Material sub-class's .h file to allow it to work with the serialization system.
-//The extra arguments after "className" are the arguments to construct an instance of the class.
+//The extra arguments after "typeName" are the arguments to construct an instance of the class.
 //The actual value of the constructor arguments isn't important.
 #define ADD_MATERIAL_REFLECTION_DATA_H(className, typeName, ...) \
     public: \
