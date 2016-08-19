@@ -393,8 +393,12 @@ namespace RT
     //TODO: Reflection/refraction MV's.
     //TODO: "Average" MV.
     //TODO: Noise generation MV's.
-    //TODO: Append/Component MV's.
-    //TODO: Pow MV.
+    //TODO: Append/Component/Swizzle MV's.
+    //TODO: Pow/Exp/Exp2/Log2/LogN MV's.
+    //TODO: Modulo MV's.
+    //TODO: Cross/Dot MV's.
+    //TODO: Fract/Int MV's.
+    //TODO: Branch MV's.
 
 #undef MAKE_MULTI_MV
 #undef MAKE_COMPLEX_FUNC1
