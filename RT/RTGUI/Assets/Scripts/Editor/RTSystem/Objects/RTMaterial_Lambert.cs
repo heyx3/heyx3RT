@@ -1,11 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml;
 using UnityEngine;
-
-#if UNITY_EDITOR
 using UnityEditor;
-#endif
 
 
 namespace RT
@@ -15,44 +12,27 @@ namespace RT
 		public override string TypeName { get { return TypeName_Lambert; } }
 
 
-		public Vector3 Albedo = Vector3.one;
+		public MaterialValue.MV_Base Albedo = MaterialValue.MV_Constant.MakeFloat(1.0f);
 
 
-		public override void DoGUI()
+		protected override void GetUnityMaterialOutputs(out MaterialValue.MV_Base albedo,
+														out MaterialValue.MV_Base metallic,
+														out MaterialValue.MV_Base smoothness)
 		{
-#if UNITY_EDITOR
-			Albedo = EditorGUILayout.ColorField(Albedo.ToCol()).ToV3();
-#endif
-		}
-		
-		public override Material GetUnityMat()
-		{
-			return RTSystem.Instance.Mat_Lambert;
-		}
-		public override void SetUnityMatParams(Material m)
-		{
-			m.color = Albedo.ToCol();
+			albedo = Albedo;
+			metallic = MaterialValue.MV_Constant.MakeFloat(0.0f);
+			smoothness = MaterialValue.MV_Constant.MakeFloat(0.5f);
 		}
 
-		protected override void ReadCustomData (XmlElement parentNode)
+		public override void WriteData(Serialization.DataWriter writer)
 		{
-			foreach (XmlElement el in parentNode.ChildNodes.OfType<XmlElement>())
-			{
-				if (el.Name == "Albedo")
-				{
-					if (!XmlUtil.FromString(el.GetAttribute("Value"), ref Albedo))
-					{
-						Debug.LogError("Couldn't parse albedo for Lambert mat");
-					}
-				}
-			}
+			base.WriteData(writer);
+			MaterialValue.MV_Base.Serialize(Albedo, "Color", writer);
 		}
-		protected override void WriteCustomData (XmlElement parentNode)
+		public override void ReadData(Serialization.DataReader reader)
 		{
-			XmlElement albedoEl = parentNode.OwnerDocument.CreateElement("Albedo");
-			XmlUtil.SetAttr(albedoEl, "Value", XmlUtil.ToString(Albedo));
-			
-			parentNode.AppendChild(albedoEl);
+			base.ReadData(reader);
+			Albedo = MaterialValue.MV_Base.Deserialize("Color", reader);
 		}
 	}
 }

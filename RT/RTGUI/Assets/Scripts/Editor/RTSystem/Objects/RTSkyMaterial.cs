@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace RT
 {
+	//TODO: Fix SkyMaterial and its children.
+
+
 	[DisallowMultipleComponent]
 	public abstract class RTSkyMaterial : MonoBehaviour
 	{

@@ -71,12 +71,12 @@ namespace RT
 			Shapes.Remove(this);
 		}
 		
-		protected virtual void WriteData(Serialization.DataWriter writer)
+		public virtual void WriteData(Serialization.DataWriter writer)
 		{
 			TransformSerializationWrapper trnsf = new TransformSerializationWrapper(transform);
 			writer.Structure(trnsf, "Transform");
 		}
-		protected virtual void ReadData(Serialization.DataReader reader)
+		public virtual void ReadData(Serialization.DataReader reader)
 		{
 			TransformSerializationWrapper trnsf = new TransformSerializationWrapper(transform);
 			reader.Structure(trnsf, "Transform");

@@ -83,7 +83,7 @@ namespace RT.MaterialValue
 
 		public override void Emit(StringBuilder shaderlabProperties,
 								  StringBuilder cgDefinitions,
-								  StringBuilder fragmentShaderBody)
+								  StringBuilder cgFunctionBody)
 		{
 			//If the shape data params haven't been defined yet, define them.
 			if (!shaderlabProperties.ToString().Contains(RTSystem.Param_ShapePos))

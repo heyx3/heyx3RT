@@ -31,7 +31,7 @@ namespace RT
 			GetComponent<MeshFilter>().sharedMesh = myMesh;
 		}
 
-		protected override void WriteData(Serialization.DataWriter writer)
+		public override void WriteData(Serialization.DataWriter writer)
 		{
 			base.WriteData(writer);
 
@@ -65,7 +65,7 @@ namespace RT
 			//Write out the vertices.
 			writer.List(verts, "Vertices", (wr, vert, name) => wr.Structure(vert, name));
 		}
-		protected override void ReadData(Serialization.DataReader reader)
+		public override void ReadData(Serialization.DataReader reader)
 		{
 			base.ReadData(reader);
 

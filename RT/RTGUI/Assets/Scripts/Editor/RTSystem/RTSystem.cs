@@ -19,11 +19,11 @@ namespace RT
 									  Param_ShapeScale = "_ShapeScale",
 									  Param_ShapeRot = "_ShapeRot";
 		public static readonly string Input_WorldPos = "IN.worldPos",
-									  Input_ScreenPos = "IN.screenPos",
-									  Input_UV = "IN.uv",
-									  Input_WorldNormal = "IN.worldNorm",
-									  Input_Tangent = "IN.tangent",
-									  Input_Bitangent = "IN.bitangent",
+									  Input_ScreenPos = "(IN.screenPos.xy)",
+									  Input_UV = "(IN.screenPos.zw)",
+									  Input_WorldNormal = "IN.worldNormal",
+									  Input_Tangent = "(IN.tangent.xyz)",
+									  Input_Bitangent = "(cross(IN.worldNormal, IN.tangent.xyz) * IN.tangent.w)",
 									  Input_CamPos = "_WorldSpaceCameraPos",
 									  Input_RayDir = "normalize(IN.worldPos - _WorldSpaceCameraPos)";
 

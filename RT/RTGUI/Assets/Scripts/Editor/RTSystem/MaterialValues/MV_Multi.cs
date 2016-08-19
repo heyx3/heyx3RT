@@ -74,25 +74,27 @@ namespace RT.MaterialValue
 													   false, OutputSizes.All,
 													   float.NegativeInfinity, float.PositiveInfinity));
 		}
-		public override void Emit(StringBuilder shaderlabProperties, StringBuilder cgDefinitions, StringBuilder fragmentShaderBody)
+		public override void Emit(StringBuilder shaderlabProperties,
+								  StringBuilder cgDefinitions,
+								  StringBuilder cgFunctionBody)
 		{
 			OutputSizes outSize = OutputSize;
 
-			fragmentShaderBody.Append(outSize.ToHLSLType());
-			fragmentShaderBody.Append(" ");
-			fragmentShaderBody.Append(ShaderValueName);
-			fragmentShaderBody.Append(" = ");
+			cgFunctionBody.Append(outSize.ToHLSLType());
+			cgFunctionBody.Append(" ");
+			cgFunctionBody.Append(ShaderValueName);
+			cgFunctionBody.Append(" = ");
 			for (int i = 0; i < GetNInputs(); ++i)
 			{
 				if (i > 0)
 				{
-					fragmentShaderBody.Append(" ");
-					fragmentShaderBody.Append(symbol);
-					fragmentShaderBody.Append(" ");
+					cgFunctionBody.Append(" ");
+					cgFunctionBody.Append(symbol);
+					cgFunctionBody.Append(" ");
 				}
-				fragmentShaderBody.Append(GetInputValue(i, outSize, canAlwaysUse1DInputs));
+				cgFunctionBody.Append(GetInput(i).GetShaderValue(outSize, canAlwaysUse1DInputs));
 			}
-			fragmentShaderBody.AppendLine(";");
+			cgFunctionBody.AppendLine(";");
 		}
 	}
 
@@ -122,38 +124,40 @@ namespace RT.MaterialValue
 													   false, OutputSizes.All,
 													   float.NegativeInfinity, float.PositiveInfinity));
 		}
-		public override void Emit(StringBuilder shaderlabProperties, StringBuilder cgDefinitions, StringBuilder fragmentShaderBody)
+		public override void Emit(StringBuilder shaderlabProperties,
+								  StringBuilder cgDefinitions,
+								  StringBuilder cgFunctionBody)
 		{
 			OutputSizes outSize = OutputSize;
 
-			fragmentShaderBody.Append(outSize.ToHLSLType());
-			fragmentShaderBody.Append(" ");
-			fragmentShaderBody.Append(ShaderValueName);
-			fragmentShaderBody.Append(" = ");
+			cgFunctionBody.Append(outSize.ToHLSLType());
+			cgFunctionBody.Append(" ");
+			cgFunctionBody.Append(ShaderValueName);
+			cgFunctionBody.Append(" = ");
 
 			if (GetNInputs() == 0)
-				fragmentShaderBody.Append(0.0f);
+				cgFunctionBody.Append(0.0f);
 			else if (GetNInputs() == 1)
-				fragmentShaderBody.Append(GetInput(0).ShaderValueName);
+				cgFunctionBody.Append(GetInput(0).ShaderValueName);
 			else
 			{
 				for (int i = 0; i < GetNInputs(); ++i)
 				{
 					if (i > 0)
-						fragmentShaderBody.Append(", ");
+						cgFunctionBody.Append(", ");
 					if (i < GetNInputs() - 1)
 					{
-						fragmentShaderBody.Append(isMin ? "min" : "max");
-						fragmentShaderBody.Append("(");
+						cgFunctionBody.Append(isMin ? "min" : "max");
+						cgFunctionBody.Append("(");
 					}
 
-					fragmentShaderBody.Append(GetInputValue(i, outSize, false));
+					cgFunctionBody.Append(GetInput(i).GetShaderValue(outSize, false));
 				}
 				for (int i = 0; i < GetNInputs() - 1; ++i)
-					fragmentShaderBody.Append(")");
+					cgFunctionBody.Append(")");
 			}
 
-			fragmentShaderBody.AppendLine(";");
+			cgFunctionBody.AppendLine(";");
 		}
 	}
 }

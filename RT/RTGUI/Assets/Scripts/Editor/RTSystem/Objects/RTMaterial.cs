@@ -7,12 +7,9 @@ using UnityEditor;
 
 namespace RT
 {
-	//TODO: Fix Material/SkyMaterial.
-
 	public abstract class RTMaterial : MonoBehaviour, Serialization.ISerializableRT
 	{
-		public static List<RTMaterial> Materials = new List<RTMaterial>();
-
+		public static HashSet<RTMaterial> Materials = new HashSet<RTMaterial>();
 
 		protected const string TypeName_Lambert = "Lambert",
 		                       TypeName_Metal = "Metal";
@@ -59,10 +56,10 @@ namespace RT
 		}
 
 		
-		[Serializable]
+		[SerializeField]
 		[HideInInspector]
 		private Material myMat = null;
-		[Serializable]
+		[SerializeField]
 		[HideInInspector]
 		private Shader myShader = null;
 
@@ -74,56 +71,77 @@ namespace RT
 		{
 			Materials.Add(this);
 
-			//Load the shader/material.
-			{
-				string shaderFile = "";
-				try
-				{
-					shaderFile = GetNewGeneratedFileName("Shad", ".shader");
-					File.WriteAllText(shaderFile, GenerateUnityShader());
-					AssetDatabase.ImportAsset(shaderFile);
-					myShader = AssetDatabase.LoadAssetAtPath<Shader>(shaderFile);
-				}
-				catch (Exception e)
-				{
-					Debug.LogError("Unable to create shader file \"" + shaderFile + "\": " + e.Message);
-				}
-			}
-			{
-				string matFile = "";
-				try
-				{
-					matFile = GetNewGeneratedFileName("Mat", ".material");
-					Material m = new Material(myShader);
-					SetUnityMatParams(m);
-					AssetDatabase.CreateAsset(m, matFile);
-					myMat = AssetDatabase.LoadAssetAtPath<Material>(matFile);
-				}
-				catch (Exception e)
-				{
-					Debug.LogError("Unable to create material file \"" + matFile + "\": " + e.Message);
-				}
-			}
-
 			//Create/update the mesh renderer.
 			MeshRenderer mr = GetComponent<MeshRenderer>();
 			if (mr == null)
 				mr = gameObject.AddComponent<MeshRenderer>();
-			mr.sharedMaterial = myMat;
+			RegenerateMaterial(mr);
 		}
 		protected virtual void OnDestroy()
 		{
 			Materials.Remove(this);
 			
 			AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myMat));
-			myMat = null;
-
 			AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myShader));
-			myShader = null;
 		}
 
-		public abstract string GenerateUnityShader();
-		public abstract void SetUnityMatParams(Material m);
+		public void RegenerateMaterial(MeshRenderer mr)
+		{
+			//Clear out the old shader/material if they exist.
+			if (myShader != null)
+			{
+				UnityEngine.Assertions.Assert.IsNotNull(myMat);
+				AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myMat));
+				AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myShader));
+			}
+
+			
+			MaterialValue.MV_Base albedo, metallic, smoothness;
+			GetUnityMaterialOutputs(out albedo, out metallic, out smoothness);
+
+			//Try loading the shader.
+			string shaderFile = "";
+			try
+			{
+				shaderFile = GetNewGeneratedFileName("Shad", ".shader");
+				string shaderName = Path.GetFileNameWithoutExtension(shaderFile);
+
+				string shaderText =
+					MaterialValue.ShaderGenerator.GenerateShader(shaderName, albedo, metallic, smoothness);
+
+				File.WriteAllText(shaderFile, shaderText);
+				AssetDatabase.ImportAsset(shaderFile);
+				myShader = AssetDatabase.LoadAssetAtPath<Shader>(shaderFile);
+
+				UnityEngine.Assertions.Assert.IsNotNull(myShader, "Shader compilation failed!");
+			}
+			catch (Exception e)
+			{
+				Debug.LogError("Unable to create shader file \"" + shaderFile + "\": " + e.Message);
+			}
+
+			//Try loading the material.
+			string matFile = "";
+			try
+			{
+				matFile = GetNewGeneratedFileName("Mat", ".material");
+				myMat = new Material(myShader);
+				MaterialValue.ShaderGenerator.SetMaterialParams(transform, myMat,
+																albedo, metallic, smoothness);
+
+				AssetDatabase.CreateAsset(myMat, matFile);
+				myMat = AssetDatabase.LoadAssetAtPath<Material>(matFile);
+
+				mr.sharedMaterial = myMat;
+			}
+			catch (Exception e)
+			{
+				Debug.LogError("Unable to create material file \"" + matFile + "\": " + e.Message);
+			}
+		}
+		protected abstract void GetUnityMaterialOutputs(out MaterialValue.MV_Base albedo,
+														out MaterialValue.MV_Base metallic,
+														out MaterialValue.MV_Base smoothness);
 
 		public virtual void WriteData(Serialization.DataWriter writer) { }
 		public virtual void ReadData(Serialization.DataReader reader) { }

@@ -25,20 +25,20 @@ namespace RT.MaterialValue
 
 		public override void Emit(StringBuilder shaderlabProperties,
 								  StringBuilder cgDefinitions,
-								  StringBuilder fragmentShaderBody)
+								  StringBuilder cgFunctionBody)
 		{
-			MV_Inputs.RayStart.Emit(shaderlabProperties, cgDefinitions, fragmentShaderBody);
-			MV_Inputs.RayDir.Emit(shaderlabProperties, cgDefinitions, fragmentShaderBody);
+			MV_Inputs.RayStart.Emit(shaderlabProperties, cgDefinitions, cgFunctionBody);
+			MV_Inputs.RayDir.Emit(shaderlabProperties, cgDefinitions, cgFunctionBody);
 
-			fragmentShaderBody.Append("float3 ");
-			fragmentShaderBody.Append(ShaderValueName);
-			fragmentShaderBody.Append(" = ");
-			fragmentShaderBody.Append(MV_Inputs.RayStart.ShaderValueName);
-			fragmentShaderBody.Append(" + (");
-			fragmentShaderBody.Append(MV_Inputs.RayStart.ShaderValueName);
-			fragmentShaderBody.Append(" * ");
-			fragmentShaderBody.Append(GetInputValue(0, OutputSizes.Three, true));
-			fragmentShaderBody.AppendLine(");");
+			cgFunctionBody.Append("float3 ");
+			cgFunctionBody.Append(ShaderValueName);
+			cgFunctionBody.Append(" = ");
+			cgFunctionBody.Append(MV_Inputs.RayStart.ShaderValueName);
+			cgFunctionBody.Append(" + (");
+			cgFunctionBody.Append(MV_Inputs.RayStart.ShaderValueName);
+			cgFunctionBody.Append(" * ");
+			cgFunctionBody.Append(GetInput(0).GetShaderValue(OutputSizes.Three, true));
+			cgFunctionBody.AppendLine(");");
 		}
 		public override void SetParams(Transform shapeTr, Material unityMat)
 		{

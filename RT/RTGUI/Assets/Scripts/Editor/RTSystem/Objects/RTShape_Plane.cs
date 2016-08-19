@@ -9,12 +9,12 @@ namespace RT
 		public override UnityEngine.Mesh UnityMesh { get { return RTSystem.Instance.Shape_Plane; } }
 
 
-		protected override void WriteData(Serialization.DataWriter writer)
+		public override void WriteData(Serialization.DataWriter writer)
 		{
 			base.WriteData(writer);
 			writer.Bool(IsOneSided, "IsOneSided");
 		}
-		protected override void ReadData(Serialization.DataReader reader)
+		public override void ReadData(Serialization.DataReader reader)
 		{
 			base.ReadData(reader);
 			IsOneSided = reader.Bool("IsOneSided");

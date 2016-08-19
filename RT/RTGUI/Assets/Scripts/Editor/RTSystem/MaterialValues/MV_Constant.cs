@@ -108,7 +108,7 @@ namespace RT.MaterialValue
 
 		public override void Emit(StringBuilder shaderlabProperties,
 								  StringBuilder cgDefinitions,
-								  StringBuilder fragmentShaderBody) { }
+								  StringBuilder cgFunctionBody) { }
 
 		public override void WriteData(Serialization.DataWriter writer)
 		{

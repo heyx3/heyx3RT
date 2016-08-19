@@ -27,7 +27,7 @@ namespace RT.MaterialValue
 
 		public override void Emit(StringBuilder shaderlabProperties,
 								  StringBuilder cgDefinitions,
-								  StringBuilder fragmentShaderBody)
+								  StringBuilder cgFunctionBody)
 		{
 			string texName = "_tex" + GUID;
 
@@ -41,13 +41,13 @@ namespace RT.MaterialValue
 			cgDefinitions.Append(texName);
 			cgDefinitions.AppendLine(";");
 
-			fragmentShaderBody.Append("float4 ");
-			fragmentShaderBody.Append(ShaderValueName);
-			fragmentShaderBody.Append(" = tex2D(");
-			fragmentShaderBody.Append(texName);
-			fragmentShaderBody.Append(", ");
-			fragmentShaderBody.Append(GetInputValue(0, OutputSizes.Two));
-			fragmentShaderBody.AppendLine(");");
+			cgFunctionBody.Append("float4 ");
+			cgFunctionBody.Append(ShaderValueName);
+			cgFunctionBody.Append(" = tex2D(");
+			cgFunctionBody.Append(texName);
+			cgFunctionBody.Append(", ");
+			cgFunctionBody.Append(GetInput(0).GetShaderValue(OutputSizes.Two));
+			cgFunctionBody.AppendLine(");");
 		}
 		public override void SetParams(Transform shapeTr, Material unityMat)
 		{

@@ -1,11 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml;
 using UnityEngine;
-
-#if UNITY_EDITOR
 using UnityEditor;
-#endif
 
 
 namespace RT
@@ -15,57 +12,31 @@ namespace RT
 		public override string TypeName { get { return TypeName_Metal; } }
 
 
-		public Vector3 Albedo = Vector3.one;
-		public float Roughness = 0.2f;
+		public MaterialValue.MV_Base Albedo = MaterialValue.MV_Constant.MakeFloat(1.0f),
+									 Roughness = MaterialValue.MV_Constant.MakeFloat(0.5f);
 
 
-		public override void DoGUI()
+		protected override void GetUnityMaterialOutputs(out MaterialValue.MV_Base albedo,
+														out MaterialValue.MV_Base metallic,
+														out MaterialValue.MV_Base smoothness)
 		{
-#if UNITY_EDITOR
-			Albedo = EditorGUILayout.ColorField(Albedo.ToCol()).ToV3();
-			Roughness = EditorGUILayout.Slider("Roughness:", Roughness, 0.0f, 1.0f);
-#endif
+			albedo = Albedo;
+			metallic = MaterialValue.MV_Constant.MakeFloat(1.0f);
+			smoothness = MaterialValue.MV_Arithmetic.Subtract(MaterialValue.MV_Constant.MakeFloat(1.0f),
+															  Roughness);
 		}
 
-		public override Material GetUnityMat()
+		public override void WriteData(Serialization.DataWriter writer)
 		{
-			return RTSystem.Instance.Mat_Metal;
+			base.WriteData(writer);
+			MaterialValue.MV_Base.Serialize(Albedo, "Albedo", writer);
+			MaterialValue.MV_Base.Serialize(Roughness, "Roughness", writer);
 		}
-		public override void SetUnityMatParams(Material m)
+		public override void ReadData(Serialization.DataReader reader)
 		{
-			m.color = Albedo.ToCol();
-			m.SetFloat("_Shininess", 1.0f - Roughness);
-		}
-
-		protected override void ReadCustomData (XmlElement parentNode)
-		{
-			foreach (XmlElement el in parentNode.ChildNodes.OfType<XmlElement>())
-			{
-				if (el.Name == "Albedo")
-				{
-					if (!XmlUtil.FromString(el.GetAttribute("Value"), ref Albedo))
-					{
-						Debug.LogError("Couldn't parse albedo for Metal mat");
-					}
-				}
-				else if (el.Name == "Roughness")
-				{
-					if (!float.TryParse(el.GetAttribute("Value"), out Roughness))
-					{
-						Debug.LogError("Couldn't parse roughness for Metal mat");
-					}
-				}
-			}
-		}
-		protected override void WriteCustomData (XmlElement parentNode)
-		{
-			XmlElement albedoEl = parentNode.OwnerDocument.CreateElement("Albedo");
-			XmlUtil.SetAttr(albedoEl, "Value", XmlUtil.ToString(Albedo));
-
-			XmlElement roughnessEl = parentNode.OwnerDocument.CreateElement("Roughness");
-			XmlUtil.SetAttr(roughnessEl, "Value", Roughness.ToString());
-			
-			parentNode.AppendChild(albedoEl);
+			base.ReadData(reader);
+			Albedo = MaterialValue.MV_Base.Deserialize("Albedo", reader);
+			Roughness = MaterialValue.MV_Base.Deserialize("Roughness", reader);
 		}
 	}
 }

@@ -155,14 +155,14 @@ namespace RT.MaterialValue
 
 		public override void Emit(StringBuilder shaderlabProperties,
 								  StringBuilder cgDefinitions,
-								  StringBuilder fragmentShaderBody)
+								  StringBuilder cgFunctionBody)
 		{
-			fragmentShaderBody.Append(OutputSize.ToHLSLType());
-			fragmentShaderBody.Append(" ");
-			fragmentShaderBody.Append(ShaderValueName);
-			fragmentShaderBody.Append(" = (");
-			fragmentShaderBody.Append(toDo.Replace("$0", GetInput(0).ShaderValueName));
-			fragmentShaderBody.AppendLine(");");
+			cgFunctionBody.Append(OutputSize.ToHLSLType());
+			cgFunctionBody.Append(" ");
+			cgFunctionBody.Append(ShaderValueName);
+			cgFunctionBody.Append(" = (");
+			cgFunctionBody.Append(toDo.Replace("$0", GetInput(0).ShaderValueName));
+			cgFunctionBody.AppendLine(");");
 		}
 
 		public override MV_Base GetDefaultInput(int inputIndex) { return new MV_Constant(defaultValue); }

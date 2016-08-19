@@ -32,9 +32,9 @@ namespace RT.MaterialValue
 			{
 				case TypeName_Constant: mv = MV_Constant.MakeFloat(0.0f); break;
 				case TypeName_Tex2D: mv = new MV_Tex2D(); break;
-				case TypeName_Add: mv = new MV_Add(null, null); break;
-				case TypeName_Subtract: mv = new MV_Subtract(null, null); break;
-				case TypeName_Divide: mv = new MV_Divide(null, null); break;
+				case TypeName_Add: mv = MV_Arithmetic.Add(null, null); break;
+				case TypeName_Subtract: mv = MV_Arithmetic.Subtract(null, null); break;
+				case TypeName_Divide: mv = MV_Arithmetic.Divide(null, null); break;
 				case TypeName_Normalize: mv = MV_Simple1.Normalize(null); break;
 				case TypeName_Length: mv = MV_Simple1.Length(null); break;
 				case TypeName_Distance: mv = MV_Simple2.Distance(null, null); break;
@@ -47,15 +47,15 @@ namespace RT.MaterialValue
 				case TypeName_Atan: mv = MV_Simple1.Atan(null); break;
 				case TypeName_Atan2: mv = MV_Simple2.Atan2(null, null); break;
 				case TypeName_Step: mv = MV_Simple2.Step(null, null); break;
-				case TypeName_Lerp: mv = new MV_Lerp(null, null, null); break;
+				case TypeName_Lerp: mv = MV_Simple3.Lerp(null, null, null); break;
 				case TypeName_Smoothstep: mv = MV_Simple1.Smoothstep(null); break;
 				case TypeName_Smootherstep: mv = MV_Simple1.Smootherstep(null); break;
-				case TypeName_Clamp: mv = new MV_Clamp(null, null, null); break;
+				case TypeName_Clamp: mv = MV_Simple3.Clamp(null, null, null); break;
 				case TypeName_Floor: mv = MV_Simple1.Floor(null); break;
 				case TypeName_Ceil: mv = MV_Simple1.Ceil(null); break;
 				case TypeName_Abs: mv = MV_Simple1.Abs(null); break;
-				case TypeName_Min: mv = new MV_Min(null, null); break;
-				case TypeName_Max: mv = new MV_Max(null, null); break;
+				case TypeName_Min: mv = new MV_MinMax(null, null, true); break;
+				case TypeName_Max: mv = new MV_MinMax(null, null, false); break;
 				case TypeName_SurfUV: mv = MV_Inputs.SurfaceUV; break;
 				case TypeName_SurfPos: mv = MV_Inputs.SurfacePos; break;
 				case TypeName_SurfNormal: mv = MV_Inputs.SurfaceNormal; break;
@@ -139,6 +139,26 @@ namespace RT.MaterialValue
 						   set { guidToValue.Remove(guid); guid = value; guidToValue.Add(guid, this); } }
 
 		public IEnumerable<MV_Base> Inputs { get { return inputs; } }
+		public IEnumerable<MV_Base> Hierarchy
+		{
+			get
+			{
+				return GetHierarchy(new HashSet<MV_Base>());
+			}
+		}
+
+		private IEnumerable<MV_Base> GetHierarchy(HashSet<MV_Base> usedSoFar)
+		{
+			yield return this;
+
+			foreach (MV_Base input in inputs)
+				if (!usedSoFar.Contains(input))
+				{
+					usedSoFar.Add(input);
+					foreach (MV_Base input2 in input.GetHierarchy(usedSoFar))
+						yield return input2;
+				}
+		}
 		
 
 		public virtual bool HasVariableNumberOfChildren { get { return false; } }
@@ -170,27 +190,17 @@ namespace RT.MaterialValue
 
 		public void Delete() { guidToValue.Remove(guid); }
 
-		public int GetNInputs() { return inputs.Count; }
-		public MV_Base GetInput(int i) { return inputs[i]; }
-		public void ChangeInput(int i, MV_Base newChild) { inputs[i] = newChild; }
-
-		protected void AddInput(MV_Base v) { inputs.Add(v); }
-		protected void RemoveInput(MV_Base v) { inputs.Remove(v); }
-		protected void RemoveInput(int i) { inputs.RemoveAt(i); }
-		protected void InsertInput(MV_Base v, int i) { inputs.Insert(i, v); }
-		protected void ClearInput() { inputs.Clear(); }
-
 		/// <summary>
-		/// Gets the shader expression for the given input's value,
+		/// Gets the shader expression for this MaterialValue's value,
 		/// scaled up/down to have the given number of dimensions.
 		/// </summary>
 		/// <param name="alsoAllow1D">
 		/// If true, a size of One is acceptable along with the target size.
 		/// </param>
-		public string GetInputValue(int i, OutputSizes targetSize, bool alsoAllow1D = false)
+		public string GetShaderValue(OutputSizes targetSize, bool alsoAllow1D = false)
 		{
-			string val = GetInput(i).ShaderValueName;
-			OutputSizes valSize = GetInput(i).OutputSize;
+			string val = ShaderValueName;
+			OutputSizes valSize = OutputSize;
 
 			if (valSize == targetSize || (alsoAllow1D && valSize == OutputSizes.One))
 				return val;
@@ -226,11 +236,21 @@ namespace RT.MaterialValue
 					throw new NotImplementedException(valSize.ToString());
 			}
 		}
+
+		public int GetNInputs() { return inputs.Count; }
+		public MV_Base GetInput(int i) { return inputs[i]; }
+		public void ChangeInput(int i, MV_Base newChild) { inputs[i] = newChild; }
+
+		protected void AddInput(MV_Base v) { inputs.Add(v); }
+		protected void RemoveInput(MV_Base v) { inputs.Remove(v); }
+		protected void RemoveInput(int i) { inputs.RemoveAt(i); }
+		protected void InsertInput(MV_Base v, int i) { inputs.Insert(i, v); }
+		protected void ClearInput() { inputs.Clear(); }
 		
 
 		public abstract void Emit(StringBuilder shaderlabProperties,
 								  StringBuilder cgDefinitions,
-								  StringBuilder fragmentShaderBody);
+								  StringBuilder cgFunctionBody);
 		public virtual void SetParams(Transform shapeTr, Material unityMat) { }
 
 		/// <summary>

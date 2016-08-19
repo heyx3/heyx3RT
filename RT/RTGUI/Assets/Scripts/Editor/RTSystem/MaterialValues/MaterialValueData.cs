@@ -6,11 +6,14 @@ using UnityEngine;
 using UnityEditor;
 
 
+//Defines various data structures important to the Material Value graph system.
+
+
 namespace RT.MaterialValue
 {
 	/// <summary>
-	/// The different dimensionalities output by different MaterialValues.
-	/// Can be used to represent a specific value, or a set of possible values.
+	/// The different dimensionalities of MaterialValues' outputs.
+	/// Can be used to represent a specific value, or a range of possible values.
 	/// </summary>
 	[Flags]
 	public enum OutputSizes
@@ -32,11 +35,12 @@ namespace RT.MaterialValue
 		/// </summary>
 		Four = 8,
 
+		OneOrTwo = One | Two,
 		OneOrThree = One | Three,
 		OneOrFour = One | Four,
 		All = One | Two | Three | Four,
 	}
-	public static class OutputSizeExtensions
+	public static class OutputSizesExtensions
 	{
 		public static uint ToNumber(this OutputSizes o)
 		{
@@ -61,7 +65,19 @@ namespace RT.MaterialValue
 			}
 		}
 
-		public static bool IsSingleOption(this OutputSizes o) { return o > 0 && (int)o < 5; }
+		public static bool IsSingleOption(this OutputSizes o)
+		{
+			switch (o)
+			{
+				case OutputSizes.One:
+				case OutputSizes.Two:
+				case OutputSizes.Three:
+				case OutputSizes.Four:
+					return true;
+				default:
+					return false;
+			}
+		}
 		public static bool Contains(this OutputSizes o, OutputSizes o2) { return o.Intersection(o2) == o2; }
 
 		public static OutputSizes Intersection(this OutputSizes o, OutputSizes o2) { return o & o2; }

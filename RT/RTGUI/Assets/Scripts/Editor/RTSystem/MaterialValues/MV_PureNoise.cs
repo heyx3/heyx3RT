@@ -53,7 +53,7 @@ namespace RT.MaterialValue
 
 		public override void Emit(System.Text.StringBuilder shaderlabProperties,
 								  System.Text.StringBuilder cgDefinitions,
-								  System.Text.StringBuilder fragmentShaderBody)
+								  System.Text.StringBuilder cgFunctionBody)
 		{
 			//If the noise texture hasn't been declared yet, declare it.
 			if (!cgDefinitions.ToString().Contains("\t\t\t\tsampler2D " + RTSystem.Param_PureNoiseTex))
@@ -68,18 +68,18 @@ namespace RT.MaterialValue
 			}
 
 			//Combine various data to create the UV's to sample the noise texture with.
-			fragmentShaderBody.Append(OutputSize.ToHLSLType());
-			fragmentShaderBody.Append(" ");
-			fragmentShaderBody.Append(ShaderValueName);
-			fragmentShaderBody.Append(" = tex2D(");
-			fragmentShaderBody.Append(RTSystem.Param_PureNoiseTex);
-			fragmentShaderBody.Append(", ");
-			fragmentShaderBody.Append(RTSystem.Input_WorldPos);
-			fragmentShaderBody.Append(".xy + (5234.234 *");
-			fragmentShaderBody.Append(RTSystem.Input_ScreenPos);
-			fragmentShaderBody.Append(".xy) + (8282.2411 *");
-			fragmentShaderBody.Append(RTSystem.Input_UV);
-			fragmentShaderBody.Append("));");
+			cgFunctionBody.Append(OutputSize.ToHLSLType());
+			cgFunctionBody.Append(" ");
+			cgFunctionBody.Append(ShaderValueName);
+			cgFunctionBody.Append(" = tex2D(");
+			cgFunctionBody.Append(RTSystem.Param_PureNoiseTex);
+			cgFunctionBody.Append(", ");
+			cgFunctionBody.Append(RTSystem.Input_WorldPos);
+			cgFunctionBody.Append(".xy + (5234.234 *");
+			cgFunctionBody.Append(RTSystem.Input_ScreenPos);
+			cgFunctionBody.Append(".xy) + (8282.2411 *");
+			cgFunctionBody.Append(RTSystem.Input_UV);
+			cgFunctionBody.Append("));");
 		}
 		public override void SetParams(Transform tr, Material unityMat)
 		{
