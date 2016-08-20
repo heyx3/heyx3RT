@@ -23,7 +23,6 @@ namespace RT.Serialization
 			}
 		}
 
-		public void Dispose() { writer.Close(); }
 		public override void Bool(bool value, string name)
 		{
 			writer.WritePropertyName(name);
@@ -71,9 +70,11 @@ namespace RT.Serialization
 			value.WriteData(this);
 			writer.WriteEndObject();
 		}
+		
+		public void Dispose() { writer.Close(); }
 	}
 
-	public class JSONReader : DataReader, IDisposable
+	public class JSONReader : DataReader
 	{
 		private Newtonsoft.Json.Linq.JObject root;
 

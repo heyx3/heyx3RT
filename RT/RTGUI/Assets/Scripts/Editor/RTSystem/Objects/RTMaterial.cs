@@ -57,14 +57,14 @@ namespace RT
 
 		
 		[SerializeField]
-		[HideInInspector]
 		private Material myMat = null;
 		[SerializeField]
-		[HideInInspector]
 		private Shader myShader = null;
 
 
 		public abstract string TypeName { get; }
+
+		public abstract IEnumerable<KeyValuePair<string, MaterialValue.MV_Base>> Outputs { get; }
 
 
 		protected virtual void Awake()

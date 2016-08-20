@@ -47,6 +47,8 @@ namespace RT
         float DistanceSqr(const Vectorf& other) const { return (other - *this).LengthSqr(); }
         float Distance(const Vectorf& other) const { return (other - *this).Length(); }
 
+        float Dot(const Vectorf& other) const;
+
         Vectorf Normalized() const { return *this / Length(); }
 
 

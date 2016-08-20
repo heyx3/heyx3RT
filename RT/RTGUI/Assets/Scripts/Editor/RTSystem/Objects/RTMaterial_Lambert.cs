@@ -11,6 +11,14 @@ namespace RT
 	{
 		public override string TypeName { get { return TypeName_Lambert; } }
 
+		public override IEnumerable<KeyValuePair<string, MaterialValue.MV_Base>> Outputs
+		{
+			get
+			{
+				yield return new KeyValuePair<string, MaterialValue.MV_Base>("Albedo", Albedo);
+			}
+		}
+
 
 		public MaterialValue.MV_Base Albedo = MaterialValue.MV_Constant.MakeFloat(1.0f);
 

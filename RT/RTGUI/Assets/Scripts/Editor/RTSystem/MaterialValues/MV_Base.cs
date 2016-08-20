@@ -38,6 +38,7 @@ namespace RT.MaterialValue
 				case TypeName_Normalize: mv = MV_Simple1.Normalize(null); break;
 				case TypeName_Length: mv = MV_Simple1.Length(null); break;
 				case TypeName_Distance: mv = MV_Simple2.Distance(null, null); break;
+				case TypeName_Dot: mv = MV_Simple2.Dot(null, null); break;
 				case TypeName_Sqrt: mv = MV_Simple1.Sqrt(null); break;
 				case TypeName_Sin: mv = MV_Simple1.Sin(null); break;
 				case TypeName_Cos: mv = MV_Simple1.Cos(null); break;
@@ -56,6 +57,8 @@ namespace RT.MaterialValue
 				case TypeName_Abs: mv = MV_Simple1.Abs(null); break;
 				case TypeName_Min: mv = new MV_MinMax(null, null, true); break;
 				case TypeName_Max: mv = new MV_MinMax(null, null, false); break;
+				case TypeName_Swizzle: mv = new MV_Swizzle(null, MV_Swizzle.Components.X); break;
+				case TypeName_PureNoise: mv = new MV_PureNoise(1); break;
 				case TypeName_SurfUV: mv = MV_Inputs.SurfaceUV; break;
 				case TypeName_SurfPos: mv = MV_Inputs.SurfacePos; break;
 				case TypeName_SurfNormal: mv = MV_Inputs.SurfaceNormal; break;
@@ -67,7 +70,6 @@ namespace RT.MaterialValue
 				case TypeName_ShapePos: mv = MV_Inputs.ShapePos; break;
 				case TypeName_ShapeScale: mv = MV_Inputs.ShapeScale; break;
 				case TypeName_ShapeRot: mv = MV_Inputs.ShapeRot; break;
-				case TypeName_PureNoise: mv = new MV_PureNoise(1); break;
 
 				default:
 					Debug.LogError("Unexpected MaterialValue type name \"" +
@@ -90,6 +92,7 @@ namespace RT.MaterialValue
 							   TypeName_Normalize = "Normalize",
 							   TypeName_Length = "Length",
 							   TypeName_Distance = "Distance",
+							   TypeName_Dot = "Dot",
 							   TypeName_Sqrt = "Sqrt",
 							   TypeName_Sin = "Sin",
 							   TypeName_Cos = "Cos",
@@ -108,6 +111,8 @@ namespace RT.MaterialValue
 							   TypeName_Abs = "Abs",
 							   TypeName_Min = "Min",
 							   TypeName_Max = "Max",
+							   TypeName_Swizzle = "Swizzle",
+							   TypeName_PureNoise = "PureNoise",
 							   TypeName_SurfUV = "SurfUV",
 							   TypeName_SurfPos = "SurfPos",
 							   TypeName_SurfNormal = "SurfNormal",
@@ -118,8 +123,7 @@ namespace RT.MaterialValue
 							   TypeName_RayDir = "RayDir",
 							   TypeName_ShapePos = "ShapePos",
 							   TypeName_ShapeScale = "ShapeScale",
-							   TypeName_ShapeRot = "ShapeRot",
-							   TypeName_PureNoise = "PureNoise";
+							   TypeName_ShapeRot = "ShapeRot";
 		#endregion
 
 		public static readonly uint INVALID_GUID = 0;
@@ -167,6 +171,7 @@ namespace RT.MaterialValue
 		public abstract OutputSizes OutputSize { get; }
 
 		public virtual string ShaderValueName { get { return "out" + GUID; } }
+		public virtual bool IsUsableInSkyMaterial { get { return true; } }
 
 		public abstract string PrettyName { get; }
 		public virtual Color GUIColor { get { return Color.white; } }

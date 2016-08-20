@@ -73,6 +73,29 @@ namespace RT.MaterialValue
 		}
 
 		public override string ShaderValueName { get { return OptionsCode[selectedOption]; } }
+		public override bool IsUsableInSkyMaterial
+		{
+			get
+			{
+				switch (TypeName)
+				{
+					case TypeName_RayStartPos:
+					case TypeName_RayDir:
+						return true;
+					case TypeName_SurfPos:
+					case TypeName_SurfUV:
+					case TypeName_SurfNormal:
+					case TypeName_SurfTangent:
+					case TypeName_SurfBitangent:
+					case TypeName_ShapePos:
+					case TypeName_ShapeRot:
+					case TypeName_ShapeScale:
+						return false;
+
+					default: throw new NotImplementedException(TypeName);
+				}
+			}
+		}
 
 		public override string PrettyName { get { return OptionsGUI[selectedOption]; } }
 		public override UnityEngine.Color GUIColor { get { return new Color(1.0f, 1.0f, 0.85f); } }
@@ -112,22 +135,30 @@ namespace RT.MaterialValue
 		}
 		public override void SetParams(Transform shapeTr, Material unityMat)
 		{
-			switch (OptionsType[selectedOption])
+			//If we get a null reference exception accessing "shapeTr", we must be using a sky material.
+			try
 			{
-				case TypeName_ShapePos:
-					unityMat.SetVector(RTSystem.Param_ShapePos, shapeTr.position);
-					break;
-				case TypeName_ShapeScale:
-					unityMat.SetVector(RTSystem.Param_ShapeScale, shapeTr.lossyScale);
-					break;
-				case TypeName_ShapeRot:
-					Vector3 axis;
-					float angle;
-					shapeTr.rotation.ToAngleAxis(out angle, out axis);
-					unityMat.SetVector(RTSystem.Param_ShapeRot,
-									   new Vector4(axis.x, axis.y, axis.z,
-												   Mathf.Deg2Rad * angle));
-					break;
+				switch (OptionsType[selectedOption])
+				{
+					case TypeName_ShapePos:
+						unityMat.SetVector(RTSystem.Param_ShapePos, shapeTr.position);
+						break;
+					case TypeName_ShapeScale:
+						unityMat.SetVector(RTSystem.Param_ShapeScale, shapeTr.lossyScale);
+						break;
+					case TypeName_ShapeRot:
+						Vector3 axis;
+						float angle;
+						shapeTr.rotation.ToAngleAxis(out angle, out axis);
+						unityMat.SetVector(RTSystem.Param_ShapeRot,
+										   new Vector4(axis.x, axis.y, axis.z,
+													   Mathf.Deg2Rad * angle));
+						break;
+				}
+			}
+			catch (NullReferenceException)
+			{
+				Debug.LogError("Tried to use 'Shape' inputs in a Sky Material shader!");
 			}
 		}
 

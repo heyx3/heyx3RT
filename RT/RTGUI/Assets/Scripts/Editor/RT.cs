@@ -9,72 +9,6 @@ namespace RT
 {
 	public static class RT
 	{
-		[MenuItem("CONTEXT/RTMaterial/Change to Lambert")]
-		public static void ChangeToLambert(MenuCommand cmd)
-		{
-			RTMaterial oldMat = (RTMaterial)cmd.context;
-
-			GameObject go = oldMat.gameObject;
-			GameObject.DestroyImmediate(oldMat);
-
-			RTMaterial_Lambert lmbt = go.AddComponent<RTMaterial_Lambert>();
-		}
-		[MenuItem("CONTEXT/RTMaterial/Change to Lambert", true)]
-		private static bool ChangeToLambertValidation(MenuCommand cmd)
-		{
-			return !(cmd.context is RTMaterial_Lambert);
-		}
-
-		[MenuItem("CONTEXT/RTMaterial/Change to Metal")]
-		public static void ChangeToMetal(MenuCommand cmd)
-		{
-			RTMaterial oldMat = (RTMaterial)cmd.context;
-
-			GameObject go = oldMat.gameObject;
-			GameObject.DestroyImmediate(oldMat);
-
-			RTMaterial_Metal mtl = go.AddComponent<RTMaterial_Metal>();
-		}
-		[MenuItem("CONTEXT/RTMaterial/Change to Metal", true)]
-		private static bool ChangeToMetalValidation(MenuCommand cmd)
-		{
-			return !(cmd.context is RTMaterial_Metal);
-		}
-
-
-		[MenuItem("CONTEXT/RTSkyMaterial/Change to Simple Color")]
-		public static void ChangeToSimpleColor(MenuCommand cmd)
-		{
-			RTSkyMaterial oldMat = (RTSkyMaterial)cmd.context;
-
-			GameObject go = oldMat.gameObject;
-			GameObject.DestroyImmediate(oldMat);
-
-			RTSkyMaterial_SimpleColor sc = go.AddComponent<RTSkyMaterial_SimpleColor>();
-		}
-		[MenuItem("CONTEXT/RTSkyMaterial/Change to Simple Color", true)]
-		public static bool ChangeToSimpleColorValidation(MenuCommand cmd)
-		{
-			return !(cmd.context is RTSkyMaterial_SimpleColor);
-		}
-
-		[MenuItem("CONTEXT/RTSkyMaterial/Change to Vertical Gradient")]
-		public static void ChangeToVertGrad(MenuCommand cmd)
-		{
-			RTSkyMaterial oldMat = (RTSkyMaterial)cmd.context;
-
-			GameObject go = oldMat.gameObject;
-			GameObject.DestroyImmediate(oldMat);
-
-			RTSkyMaterial_VerticalGradient vg = go.AddComponent<RTSkyMaterial_VerticalGradient>();
-		}
-		[MenuItem("CONTEXT/RTSkyMaterial/Change to Simple Color", true)]
-		public static bool ChangeToVertGradValidation(MenuCommand cmd)
-		{
-			return !(cmd.context is RTSkyMaterial_VerticalGradient);
-		}
-
-
 		[DllImport("RT")]
 		public static extern byte rt_ERRORCODE_SUCCESS();
 		[DllImport("RT")]
@@ -83,15 +17,6 @@ namespace RT
 		public static extern byte rt_ERRORCODE_BAD_VALUE();
 		[DllImport("RT")]
 		public static extern byte rt_ERRORCODE_BAD_JSON();
-
-		[DllImport("RT")]
-		public static extern byte rt_GetError(uint imgWidth, uint imgHeight, uint samplesPerPixel,
-											  uint maxBounces, uint nThreads,
-											  float fovScale, float gamma,
-											  float camPosX, float camPosY, float camPosZ,
-											  float camForwardX, float camForwardY, float camForwardZ,
-											  float camUpX, float camUpY, float camUpZ,
-											  string sceneJSONPath, string rootJSONObjName);
 
 		/// <summary>
 		/// Returns an error message, or an empty string if everything went fine.S
@@ -143,6 +68,17 @@ namespace RT
 
 			return "";
 		}
+
+		
+		[DllImport("RT")]
+		private static extern byte rt_GetError(uint imgWidth, uint imgHeight, uint samplesPerPixel,
+											   uint maxBounces, uint nThreads,
+											   float fovScale, float gamma,
+											   float camPosX, float camPosY, float camPosZ,
+											   float camForwardX, float camForwardY, float camForwardZ,
+											   float camUpX, float camUpY, float camUpZ,
+											   string sceneJSONPath, string rootJSONObjName);
+
 		[DllImport("RT")]
 		private static extern IntPtr rt_GenerateImage(uint imgWidth, uint imgHeight, uint samplesPerPixel,
 													  uint maxBounces, uint nThreads,

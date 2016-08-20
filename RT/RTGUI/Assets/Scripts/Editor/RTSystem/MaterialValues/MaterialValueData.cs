@@ -42,6 +42,17 @@ namespace RT.MaterialValue
 	}
 	public static class OutputSizesExtensions
 	{
+		public static OutputSizes FromNumber(uint i)
+		{
+			switch (i)
+			{
+				case 1: return OutputSizes.One;
+				case 2: return OutputSizes.Two;
+				case 3: return OutputSizes.Three;
+				case 4: return OutputSizes.Four;
+				default: throw new NotImplementedException(i.ToString());
+			}
+		}
 		public static uint ToNumber(this OutputSizes o)
 		{
 			switch (o)

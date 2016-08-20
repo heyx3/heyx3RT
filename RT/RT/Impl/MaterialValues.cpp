@@ -22,6 +22,10 @@ ADD_MVAL_REFLECTION_DATA_CPP(MV_ShapePos);
 ADD_MVAL_REFLECTION_DATA_CPP(MV_ShapeScale);
 ADD_MVAL_REFLECTION_DATA_CPP(MV_ShapeRot);
 
+ADD_MVAL_REFLECTION_DATA_CPP(MV_Dot);
+
+ADD_MVAL_REFLECTION_DATA_CPP(MV_Swizzle);
+
 ADD_MVAL_REFLECTION_DATA_CPP(MV_PureNoise);
 
 
@@ -128,6 +132,37 @@ void MV_Tex2D::ReadData(DataReader& reader)
     {
         reader.ErrorMessage = String("Couldn't load tex file '") + filePath + "': " + err;
         throw DataReader::EXCEPTION_FAILURE;
+    }
+}
+
+Vectorf MV_Swizzle::GetValue(const Ray& ray, FastRand& prng,
+                             const Shape* shpe, const Vertex* surface) const
+{
+    Vectorf in = Val->GetValue(ray, prng, shpe, surface);
+    Vectorf out;
+
+    out.NValues = (Dimensions)NValues;
+    for (size_t i = 0; i < NValues; ++i)
+        out[i] = in[Swizzle[i]];
+
+    return out;
+}
+void MV_Swizzle::WriteData(DataWriter& writer) const
+{
+    WriteValue(Val, writer, "Val");
+    writer.WriteByte(NValues, "NValues");
+    for (size_t i = 0; i < NValues; ++i)
+        writer.WriteByte(Swizzle[i], RT::String("Value") + RT::String(i));
+}
+void MV_Swizzle::ReadData(DataReader& reader)
+{
+    ReadValue(Val, reader, "Val");
+    reader.ReadByte(NValues, "NValues");
+    for (size_t i = 0; i < NValues; ++i)
+    {
+        unsigned char c;
+        reader.ReadByte(c, RT::String("Value") + RT::String(i));
+        Swizzle[i] = (Components)c;
     }
 }
 

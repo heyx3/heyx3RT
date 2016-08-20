@@ -1,10 +1,7 @@
 using System;
-using System.Xml;
+using System.Collections.Generic;
 using UnityEngine;
-
-#if UNITY_EDITOR
 using UnityEditor;
-#endif
 
 namespace RT
 {
@@ -12,45 +9,32 @@ namespace RT
 	{
 		public override string TypeName { get { return TypeName_SimpleColor; } }
 
-		public Vector3 Color;
-
-
-		public override void DoGUI()
+		public override IEnumerable<KeyValuePair<string, MaterialValue.MV_Base>> Outputs
 		{
-#if UNITY_EDITOR
-			Color = EditorGUILayout.ColorField(this.Color.ToCol()).ToV3();
-#endif
-		}
-
-		public override Material GetUnityMat()
-		{
-			return RTSystem.Instance.SkyMat_SolidColor;
-		}
-		public override void SetUnityMatParams(Material m)
-		{
-			m.color = this.Color.ToCol();
-		}
-
-		protected override void ReadCustomData(XmlElement parentNode)
-		{
-			XmlElement colEl = XmlUtil.FindElement(parentNode, "Color");
-			if (colEl == null)
+			get
 			{
-				Debug.LogError("Couldn't find 'Color' child element in sky material");
-			}
-			else
-			{
-				if (!XmlUtil.FromString(colEl.GetAttribute("Value"), ref Color))
-				{
-					Debug.LogError("Couldn't parse 'Color' value in sky material");
-				}
+				yield return new KeyValuePair<string, MaterialValue.MV_Base>("Color", Color);
 			}
 		}
-		protected override void WriteCustomData(XmlElement parentNode)
+
+
+		public MaterialValue.MV_Base Color = MaterialValue.MV_Constant.MakeRGB(UnityEngine.Color.cyan);
+
+
+		protected override void GetUnityMaterialOutputs(out MaterialValue.MV_Base outRGB)
 		{
-			XmlElement colEl = parentNode.OwnerDocument.CreateElement("Color");
-			XmlUtil.SetAttr(colEl, "Value", XmlUtil.ToString(this.Color));
-			parentNode.AppendChild(colEl);
+			outRGB = Color;
+		}
+
+		public override void WriteData(Serialization.DataWriter writer)
+		{
+			base.WriteData(writer);
+			MaterialValue.MV_Base.Serialize(Color, "Color", writer);
+		}
+		public override void ReadData(Serialization.DataReader reader)
+		{
+			base.ReadData(reader);
+			Color = MaterialValue.MV_Base.Deserialize("Color", reader);
 		}
 	}
 }

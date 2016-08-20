@@ -11,6 +11,15 @@ namespace RT
 	{
 		public override string TypeName { get { return TypeName_Metal; } }
 
+		public override IEnumerable<KeyValuePair<string, MaterialValue.MV_Base>> Outputs
+		{
+			get
+			{
+				yield return new KeyValuePair<string, MaterialValue.MV_Base>("Albedo", Albedo);
+				yield return new KeyValuePair<string, MaterialValue.MV_Base>("Roughness", Roughness);
+			}
+		}
+
 
 		public MaterialValue.MV_Base Albedo = MaterialValue.MV_Constant.MakeFloat(1.0f),
 									 Roughness = MaterialValue.MV_Constant.MakeFloat(0.5f);

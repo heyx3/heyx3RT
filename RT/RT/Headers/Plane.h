@@ -6,6 +6,7 @@
 namespace RT
 {
     //A finite plane.
+    //If no transforms are applied, it stretches from { -1, 0, -1 } to { 1, 0, 1 }.
     class RT_API Plane : public Shape
     {
     public:

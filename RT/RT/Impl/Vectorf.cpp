@@ -3,6 +3,20 @@
 using namespace RT;
 
 
+float Vectorf::Dot(const Vectorf& other) const
+{
+    Vectorf a = *this,
+            b = other;
+    float f = 0.0f;
+
+    size_t endI = (a.NValues > b.NValues ? b.NValues : a.NValues);
+    for (size_t i = 0; i < endI; ++i)
+        f += a[i] * b[i];
+
+    return f;
+}
+
+
 Vectorf::operator Vector2f() const
 {
     switch (NValues)

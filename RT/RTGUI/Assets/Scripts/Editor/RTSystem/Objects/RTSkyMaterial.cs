@@ -1,67 +1,146 @@
-using System.Xml;
-using System.Collections;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
+using UnityEditor;
 
 
 namespace RT
 {
-	//TODO: Fix SkyMaterial and its children.
-
-
-	[DisallowMultipleComponent]
-	public abstract class RTSkyMaterial : MonoBehaviour
+	public abstract class RTSkyMaterial : MonoBehaviour, Serialization.ISerializableRT
 	{
+		public static RTSkyMaterial Instance { get; private set; }
+
 		protected const string TypeName_SimpleColor = "SimpleColor",
 		                       TypeName_VerticalGradient = "VerticalGradient";
 		
-		public static RTSkyMaterial FromXML(GameObject toAttachTo, XmlElement matEl)
+
+		public static void Serialize(RTSkyMaterial mat, string name, Serialization.DataWriter writer)
 		{
-			RTSkyMaterial mat = null;
-			
-			string typeName = matEl.GetAttribute("Type");
-			
+			writer.String(mat.TypeName, name + "Type");
+			writer.Structure(mat, name + "Value");
+		}
+		public static RTSkyMaterial Deserialize(GameObject obj, string name, Serialization.DataReader reader)
+		{
+			RTSkyMaterial skyMat = null;
+
+			string typeName = reader.String(name + "Type");
 			switch (typeName)
 			{
-			case TypeName_SimpleColor:
-				mat = toAttachTo.AddComponent<RTSkyMaterial_SimpleColor>();
-				break;
-			case TypeName_VerticalGradient:
-				mat = toAttachTo.AddComponent<RTSkyMaterial_VerticalGradient>();
-				break;
-				
-			default:
-				Debug.LogError("Unknown material type \"" + typeName + "\"");
-				return null;
+				case TypeName_SimpleColor: skyMat = obj.AddComponent<RTSkyMaterial_SimpleColor>(); break;
+				case TypeName_VerticalGradient: skyMat = obj.AddComponent<RTSkyMaterial_VerticalGradient>(); break;
+				default: throw new NotImplementedException(typeName);
 			}
-			
-			if (mat != null)
-			{
-				mat.ReadCustomData(matEl);
-			}
-			
-			return mat;
+
+			reader.Structure(skyMat, name + "Value");
+
+			return skyMat;
 		}
 		
 		
-		public abstract string TypeName { get; }
-		
-		
-		public abstract void DoGUI();
-		
-		public abstract Material GetUnityMat();
-		public abstract void SetUnityMatParams(Material m);
-		
-		
-		public void WriteData(XmlElement rootNode)
+		private const string GeneratedFolderPath = "Assets\\Generated";
+		private string GetNewGeneratedFileName(string namePrefix, string nameSuffix)
 		{
-			XmlElement el = rootNode.OwnerDocument.CreateElement("SkyMaterial");
-			rootNode.AppendChild(el);
-			XmlUtil.SetAttr(el, "Type", TypeName);
-			
-			WriteCustomData(el);
+			int i = 0;
+			while (File.Exists(Path.Combine(GeneratedFolderPath, namePrefix + i + nameSuffix)))
+				i += 1;
+			return Path.Combine(GeneratedFolderPath, namePrefix + i + nameSuffix);
 		}
+
+
+		public float Distance = 2000.0f;
+
+		[SerializeField]
+		private Material myMat = null;
+		[SerializeField]
+		private Shader myShader = null;
+
+
+		public abstract string TypeName { get; }
+
+		public abstract IEnumerable<KeyValuePair<string, MaterialValue.MV_Base>> Outputs { get; }
 		
-		protected abstract void WriteCustomData(XmlElement parentNode);
-		protected abstract void ReadCustomData(XmlElement parentNode);
+		
+		protected virtual void Awake()
+		{
+			if (Instance != null)
+				Destroy(Instance.gameObject);
+			Instance = this;
+
+			//Create/update the mesh renderer.
+			MeshRenderer mr = GetComponent<MeshRenderer>();
+			if (mr == null)
+				mr = gameObject.AddComponent<MeshRenderer>();
+			RegenerateMaterial(mr);
+		}
+		protected virtual void OnDestroy()
+		{
+			AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myMat));
+			AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myShader));
+		}
+		private void Update()
+		{
+			Transform tr = transform;
+			tr.parent = null;
+			tr.position = SceneView.currentDrawingSceneView.camera.transform.position;
+			tr.localScale = Vector3.one * Distance;
+		}
+
+		public void RegenerateMaterial(MeshRenderer mr)
+		{
+			//Clear out the old shader/material if they exist.
+			if (myShader != null)
+			{
+				UnityEngine.Assertions.Assert.IsNotNull(myMat);
+				AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myMat));
+				AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myShader));
+			}
+
+			MaterialValue.MV_Base outRGB;
+			GetUnityMaterialOutputs(out outRGB);
+
+			//Try loading the shader.
+			string shaderFile = "";
+			try
+			{
+				shaderFile = GetNewGeneratedFileName("Shad", ".shader");
+				string shaderName = Path.GetFileNameWithoutExtension(shaderFile);
+
+				string shaderText =
+					MaterialValue.ShaderGenerator.GenerateShader(shaderName, outRGB);
+
+				File.WriteAllText(shaderFile, shaderText);
+				AssetDatabase.ImportAsset(shaderFile);
+				myShader = AssetDatabase.LoadAssetAtPath<Shader>(shaderFile);
+
+				UnityEngine.Assertions.Assert.IsNotNull(myShader, "Shader compilation failed!");
+			}
+			catch (Exception e)
+			{
+				Debug.LogError("Unable to create shader file \"" + shaderFile + "\": " + e.Message);
+			}
+
+			//Try loading the material.
+			string matFile = "";
+			try
+			{
+				matFile = GetNewGeneratedFileName("Mat", ".material");
+				myMat = new Material(myShader);
+				MaterialValue.ShaderGenerator.SetMaterialParams(myMat, outRGB);
+
+				AssetDatabase.CreateAsset(myMat, matFile);
+				myMat = AssetDatabase.LoadAssetAtPath<Material>(matFile);
+
+				mr.sharedMaterial = myMat;
+			}
+			catch (Exception e)
+			{
+				Debug.LogError("Unable to create material file \"" + matFile + "\": " + e.Message);
+			}
+		}
+		protected abstract void GetUnityMaterialOutputs(out MaterialValue.MV_Base outRGB);
+
+		public virtual void WriteData(Serialization.DataWriter writer) { }
+		public virtual void ReadData(Serialization.DataReader reader) { }
 	}
 }

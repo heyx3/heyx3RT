@@ -27,6 +27,7 @@ namespace RT
     class MV_Normalize;
     class MV_Length;
     class MV_Distance;
+    class MV_Dot;
 
     class MV_Sqrt;
     class MV_Sin;
@@ -48,6 +49,8 @@ namespace RT
     class MV_Abs;
     class MV_Min;
     class MV_Max;
+
+    class MV_Swizzle;
 
     class MV_SurfUV;
     class MV_SurfPos;
@@ -237,8 +240,61 @@ namespace RT
     };
 
 
+    class RT_API MV_Swizzle : public MaterialValue
+    {
+    public:
+        enum RT_API Components : unsigned char { X = 0, Y, Z, W };
+
+        unsigned char NValues;
+        Components Swizzle[4];
+
+        Ptr Val;
+
+        MV_Swizzle(Ptr val, Components newX)
+            : NValues(1), Val(val.Release()) { Swizzle[0] = newX; }
+        MV_Swizzle(Ptr val, Components newX, Components newY)
+            : NValues(2), Val(val.Release()) { Swizzle[0] = newX; Swizzle[1] = newY; }
+        MV_Swizzle(Ptr val, Components newX, Components newY, Components newZ)
+            : NValues(3), Val(val.Release()) { Swizzle[0] = newX; Swizzle[1] = newY; Swizzle[2] = newZ; }
+        MV_Swizzle(Ptr val, Components newX, Components newY, Components newZ, Components newW)
+            : NValues(4), Val(val.Release()) { Swizzle[0] = newX; Swizzle[1] = newY; Swizzle[2] = newZ; Swizzle[3] = newW; }
+
+        virtual Dimensions GetNDims() const override { return (Dimensions)NValues; }
+        virtual Vectorf GetValue(const Ray& ray, FastRand& prng,
+                                 const Shape* shpe = nullptr,
+                                 const Vertex* surface = nullptr) const override;
+        virtual size_t GetNChildren() const override { return 1; }
+        virtual const MaterialValue* GetChild(size_t i) const override { return Val.Get(); }
+        virtual void WriteData(DataWriter& writer) const override;
+        virtual void ReadData(DataReader& reader) override;
+    private:
+        ADD_MVAL_REFLECTION_DATA_H(MV_Swizzle, Swizzle, nullptr, X);
+    };
+
+
+    class RT_API MV_Dot : public MaterialValue
+    {
+    public:
+        Ptr A, B;
+        MV_Dot(Ptr a, Ptr b) : A(a.Release()), B(b.Release()) { }
+        virtual Dimensions GetNDims() const override { return One; }
+        virtual Vectorf GetValue(const Ray& ray, FastRand& prng,
+                                 const Shape* shpe = nullptr,
+                                 const Vertex* surface = nullptr) const override
+            { return A->GetValue(ray, prng, shpe, surface).Dot(B->GetValue(ray, prng, shpe, surface)); }
+        virtual size_t GetNChildren() const override { return 2; }
+        virtual const MaterialValue* GetChild(size_t i) const override { return (i == 0 ? A.Get() : B.Get()); }
+        virtual void WriteData(DataWriter& writer) const override
+            { WriteValue(A, writer, "A"); WriteValue(B, writer, "B"); }
+        virtual void ReadData(DataReader& reader) override
+            { ReadValue(A, reader, "A"); ReadValue(B, reader, "B"); }
+    private:
+        ADD_MVAL_REFLECTION_DATA_H(MV_Dot, Dot, nullptr, nullptr);
+    };
+
+
 /*
-    Use a bunch of macros to quickly define the large number of simple MaterialValues.
+    Use a bunch of macros to quickly define a large number of simple MaterialValues.
     For example:
         * MV_Add
         * MV_Div
@@ -393,12 +449,13 @@ namespace RT
     //TODO: Reflection/refraction MV's.
     //TODO: "Average" MV.
     //TODO: Noise generation MV's.
-    //TODO: Append/Component/Swizzle MV's.
+    //TODO: Append MV.
     //TODO: Pow/Exp/Exp2/Log2/LogN MV's.
-    //TODO: Modulo MV's.
-    //TODO: Cross/Dot MV's.
+    //TODO: Modulo MV.
+    //TODO: Cross MV.
     //TODO: Fract/Int MV's.
     //TODO: Branch MV's.
+    //TODO: Remap MV.
 
 #undef MAKE_MULTI_MV
 #undef MAKE_COMPLEX_FUNC1

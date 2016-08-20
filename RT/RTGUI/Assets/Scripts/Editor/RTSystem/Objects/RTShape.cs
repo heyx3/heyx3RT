@@ -75,11 +75,13 @@ namespace RT
 		{
 			TransformSerializationWrapper trnsf = new TransformSerializationWrapper(transform);
 			writer.Structure(trnsf, "Transform");
+			writer.String(gameObject.name, "GameObjName");
 		}
 		public virtual void ReadData(Serialization.DataReader reader)
 		{
 			TransformSerializationWrapper trnsf = new TransformSerializationWrapper(transform);
 			reader.Structure(trnsf, "Transform");
+			gameObject.name = reader.String("GameObjName");
 		}
 		
 		#region Helper class for serialization

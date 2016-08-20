@@ -32,6 +32,12 @@ namespace RT.MaterialValue
 								  new EditableVectorf(new Vectorf(0.5f), false, OutputSizes.All,
 													  float.NegativeInfinity, float.PositiveInfinity));
 		}
+		public static MV_Simple2 Dot(MV_Base a, MV_Base b)
+		{
+			return new MV_Simple2("dot($0, $1)", "Dot Product", TypeName_Dot, "A", "B", a, b,
+								  new EditableVectorf(new Vectorf(1.0f, OutputSizes.One),
+													  false, OutputSizes.All));
+		}
 
 		
 		[SerializeField]

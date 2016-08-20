@@ -1,10 +1,8 @@
 using System;
-using System.Xml;
+using System.Collections.Generic;
 using UnityEngine;
-
-#if UNITY_EDITOR
 using UnityEditor;
-#endif
+using RT.MaterialValue;
 
 namespace RT
 {
@@ -12,66 +10,46 @@ namespace RT
 	{
 		public override string TypeName { get { return TypeName_VerticalGradient; } }
 
-		public Vector3 BottomColor, TopColor;
-
-
-		public override void DoGUI()
+		public override IEnumerable<KeyValuePair<string, MaterialValue.MV_Base>> Outputs
 		{
-#if UNITY_EDITOR
-			BottomColor = EditorGUILayout.ColorField("Bottom Color", BottomColor.ToCol()).ToV3();
-			TopColor = EditorGUILayout.ColorField("Top Color", TopColor.ToCol()).ToV3();
-#endif
-		}
-
-		public override Material GetUnityMat()
-		{
-			return RTSystem.Instance.SkyMat_SolidColor;
-		}
-		public override void SetUnityMatParams(Material m)
-		{
-			m.SetColor("_BottomCol", BottomColor.ToCol());
-			m.SetColor("_TopCol", TopColor.ToCol());
-		}
-
-		protected override void ReadCustomData(XmlElement parentNode)
-		{
-			XmlElement colEl = XmlUtil.FindElement(parentNode, "BottomColor");
-			if (colEl == null)
+			get
 			{
-				Debug.LogError("Couldn't find 'BottomColor' child element in sky material");
-			}
-			else
-			{
-				if (!XmlUtil.FromString(colEl.GetAttribute("Value"), ref BottomColor))
-				{
-					Debug.LogError("Couldn't parse 'BottomColor' value in sky material");
-				}
-				else
-				{
-					colEl = XmlUtil.FindElement(parentNode, "TopColor");
-					if (colEl == null)
-					{
-						Debug.LogError("Couldn't find 'TopColor' child element in sky material");
-					}
-					else
-					{
-						if (!XmlUtil.FromString(colEl.GetAttribute("Value"), ref TopColor))
-						{
-							Debug.LogError("Couldn't parse 'TopColor' value in sky material");
-						}
-					}
-				}
+				yield return new KeyValuePair<string, MV_Base>("Bottom Color", BottomColor);
+				yield return new KeyValuePair<string, MV_Base>("Top Color", TopColor);
+				yield return new KeyValuePair<string, MV_Base>("Sky Direction", SkyDir);
 			}
 		}
-		protected override void WriteCustomData(XmlElement parentNode)
-		{
-			XmlElement colEl = parentNode.OwnerDocument.CreateElement("BottomColor");
-			XmlUtil.SetAttr(colEl, "Value", XmlUtil.ToString(BottomColor));
-			parentNode.AppendChild(colEl);
 
-			colEl = parentNode.OwnerDocument.CreateElement("TopColor");
-			XmlUtil.SetAttr(colEl, "Value", XmlUtil.ToString(TopColor));
-			parentNode.AppendChild(colEl);
+		
+		public MV_Base BottomColor = MV_Constant.MakeRGB(UnityEngine.Color.black),
+					   TopColor = MV_Constant.MakeRGB(UnityEngine.Color.cyan),
+					   SkyDir = MV_Constant.MakeVec3(0.0f, 1.0f, 0.0f,
+													 0.0f, 1.0f, MaterialValue.OutputSizes.One);
+
+
+		protected override void GetUnityMaterialOutputs(out MV_Base outRGB)
+		{
+			MV_Base dotRaySky = MV_Simple2.Dot(MV_Simple1.Normalize(SkyDir),
+											   MV_Inputs.RayDir);
+			MV_Base drs0To1 = MV_Arithmetic.Add(MV_Constant.MakeFloat(0.5f),
+												MV_Arithmetic.Multiply(MV_Constant.MakeFloat(0.5f),
+																	   dotRaySky));
+			outRGB = MV_Simple3.Lerp(BottomColor, TopColor, drs0To1);
+		}
+		
+		public override void WriteData(Serialization.DataWriter writer)
+		{
+			base.WriteData(writer);
+			MV_Base.Serialize(BottomColor, "BottomCol", writer);
+			MV_Base.Serialize(TopColor, "TopCol", writer);
+			MV_Base.Serialize(SkyDir, "SkyDir", writer);
+		}
+		public override void ReadData(Serialization.DataReader reader)
+		{
+			base.ReadData(reader);
+			BottomColor = MV_Base.Deserialize("BottomCol", reader);
+			TopColor = MV_Base.Deserialize("TopCol", reader);
+			SkyDir = MV_Base.Deserialize("SkyDir", reader);
 		}
 	}
 }
