@@ -84,6 +84,7 @@ $RECYCLE.BIN/
 *.sdf
 RT/RT/Build
 RT/RTCmd/Build
+RT/RT.VC.opendb
 
 # Unity Project
 RT/RTGUI/*.csproj
@@ -91,3 +92,5 @@ RT/RTGUI/ProjectSettings
 RT/RTGUI/*.sln
 RT/RTGUI/Library
 RT/RTGUI/Temp
+RT/RTGUI/Assets/Generated*
+RT/RTGUI/Assets/Test*
