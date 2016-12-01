@@ -38,6 +38,8 @@ Exit codes:
 
 using namespace RT;
 
+#include <iostream>
+
 
 int main(int argc, const char* argv[])
 {
@@ -55,6 +57,7 @@ int main(int argc, const char* argv[])
     //Read the scene data from the file.
     Tracer tracer;
     String err;
+    //TODO: This can't parse json unless it's line-broken properly?
     JsonSerialization::FromJSONFile(RT::String(cmdArgs.InputSceneFile.GetValue().c_str()),
                                     tracer,
                                     RT::String(cmdArgs.SceneFileRootName.GetValue().c_str()),

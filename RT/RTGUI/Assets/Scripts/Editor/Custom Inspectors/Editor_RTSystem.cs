@@ -37,7 +37,7 @@ namespace RT.CustomInspectors
 			if (GUILayout.Button("Save scene to file"))
 			{
 				string filePath = EditorUtility.SaveFilePanel("Choose where to save the scene",
-															  Application.dataPath, "Scene", ".json");
+															  Application.dataPath, "Scene", "json");
 				if (filePath != null && filePath != "")
 				{
 					string err = sys.ToFile(filePath, "scene");
@@ -52,7 +52,7 @@ namespace RT.CustomInspectors
 			if (GUILayout.Button("Load scene from file"))
 			{
 				string filePath = EditorUtility.OpenFilePanel("Choose the scene to load",
-															  Application.dataPath, ".json");
+															  Application.dataPath, "json");
 				if (filePath != null && filePath != "")
 				{
 					string err = sys.FromFile(filePath, "scene");
@@ -130,7 +130,7 @@ namespace RT.CustomInspectors
 				if (GUILayout.Button("Render scene"))
 				{
 					string filePath = EditorUtility.SaveFilePanel("Choose where to save the image",
-																  Application.dataPath, "Img", ".png");
+																  Application.dataPath, "Img", "png");
 					if (filePath != null && filePath != "")
 					{
 						//Write the JSON to a temporary file.

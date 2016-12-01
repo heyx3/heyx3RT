@@ -119,7 +119,7 @@ namespace RT
 		/// </summary>
 		public Texture2D GenerateImage(Transform cam, string sceneJSON, string sceneJSONRootName)
 		{
-			Texture2D tex = new Texture2D(ImgSizeX, ImgSizeY, TextureFormat.RGB24, false);
+			Texture2D tex = new Texture2D(ImgSizeX, ImgSizeY, TextureFormat.RGBA32, false);
 
 			string err = C_API.rt_GenerateImage(tex, (uint)SamplesPerPixel, (uint)MaxBounces,
 												(uint)NThreads, FovScale, Gamma,

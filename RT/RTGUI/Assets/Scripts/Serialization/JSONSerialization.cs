@@ -16,6 +16,10 @@ namespace RT.Serialization
 			try
 			{
 				writer = new Newtonsoft.Json.JsonTextWriter(new System.IO.StreamWriter(filePath));
+				writer.Indentation = 4;
+				writer.IndentChar = ' ';
+
+				writer.WriteStartObject();
 			}
 			catch (Exception e)
 			{
@@ -72,7 +76,11 @@ namespace RT.Serialization
 			writer.WriteEndObject();
 		}
 		
-		public void Dispose() { writer.Close(); }
+		public void Dispose()
+		{
+			writer.WriteEndObject();
+			writer.Close();
+		}
 	}
 
 	public class JSONReader : DataReader

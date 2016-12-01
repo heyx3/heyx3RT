@@ -399,11 +399,11 @@ private:
             std::string tryVal;
 
             std::cout << message;
-            std::cin >> tryVal;
+            std::getline(std::cin, tryVal);
             while (!predicate(tryVal))
             {
                 std::cout << message;
-                std::cin >> tryVal;
+                std::getline(std::cin, tryVal);
             }
 
             return tryVal;

@@ -10,7 +10,16 @@ namespace RT
 	[ExecuteInEditMode]
 	public abstract class RTSkyMaterial : MonoBehaviour, Serialization.ISerializableRT
 	{
-		public static RTSkyMaterial Instance { get; private set; }
+		public static RTSkyMaterial Instance
+		{
+			get
+			{
+				if (instance == null)
+					instance = FindObjectOfType<RTSkyMaterial>();
+				return instance;
+			}
+		}
+		private static RTSkyMaterial instance = null;
 
 		protected const string TypeName_SimpleColor = "SimpleColor",
 		                       TypeName_VerticalGradient = "VerticalGradient";
@@ -77,13 +86,7 @@ namespace RT
 		
 		public virtual void Awake()
 		{
-			//Make sure this instance is a singleton.
-			if (Instance != null && Instance != this)
-			{
-				DestroyImmediate(this);
-				Debug.LogError("An RTSkyMaterial is already in the scene");
-			}
-			Instance = this;
+			Debug.Log("START");
 
 			//Create/update the mesh filter.
 			MeshFilter mf = GetComponent<MeshFilter>();
@@ -104,9 +107,13 @@ namespace RT
 		}
 		private void Update()
 		{
+			SceneView currentSV = SceneView.lastActiveSceneView;
+			if (currentSV == null)
+				return;
+
 			Transform tr = transform;
 			tr.parent = null;
-			tr.position = SceneView.lastActiveSceneView.camera.transform.position;
+			tr.position = currentSV.camera.transform.position;
 			tr.localScale = Vector3.one * Distance;
 		}
 
