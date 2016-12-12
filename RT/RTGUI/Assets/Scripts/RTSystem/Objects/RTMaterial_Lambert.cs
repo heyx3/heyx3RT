@@ -26,11 +26,15 @@ namespace RT
 
 		protected override void GetUnityMaterialOutputs(out MaterialValue.MV_Base albedo,
 														out MaterialValue.MV_Base metallic,
-														out MaterialValue.MV_Base smoothness)
+														out MaterialValue.MV_Base smoothness,
+														HashSet<MaterialValue.MV_Base> toDelete)
 		{
 			albedo = Albedo;
 			metallic = MaterialValue.MV_Constant.MakeFloat(0.0f);
 			smoothness = MaterialValue.MV_Constant.MakeFloat(0.5f);
+
+			toDelete.Add(metallic);
+			toDelete.Add(smoothness);
 		}
 
 		public override void WriteData(Serialization.DataWriter writer)

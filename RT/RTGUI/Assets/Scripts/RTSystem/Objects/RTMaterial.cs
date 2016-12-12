@@ -84,6 +84,9 @@ namespace RT
 		}
 		protected virtual void OnDestroy()
 		{
+			foreach (var nameAndVal in Outputs)
+				nameAndVal.Value.Delete();
+
 			Materials.Remove(this);
 			
 			AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myMat));
@@ -100,9 +103,10 @@ namespace RT
 				AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myShader));
 			}
 
-			
+
+			HashSet<MaterialValue.MV_Base> toDelete = new HashSet<MaterialValue.MV_Base>();
 			MaterialValue.MV_Base albedo, metallic, smoothness;
-			GetUnityMaterialOutputs(out albedo, out metallic, out smoothness);
+			GetUnityMaterialOutputs(out albedo, out metallic, out smoothness, toDelete);
 
 			//Try loading the shader.
 			string shaderFile = "";
@@ -143,12 +147,30 @@ namespace RT
 			{
 				Debug.LogError("Unable to create material file \"" + matFile + "\": " + e.Message);
 			}
+
+			//Clean up.
+			foreach (MaterialValue.MV_Base tempVal in toDelete)
+				tempVal.Delete();
 		}
+
+		/// <summary>
+		/// Gets the outputs of this material in terms of the Unity standard shader.
+		/// </summary>
+		/// <param name="toDelete">
+		/// Any temporary MaterialValues that were created just for this method call.
+		/// These should all have their Delete() method called once they're done being used.
+		/// </param>
 		protected abstract void GetUnityMaterialOutputs(out MaterialValue.MV_Base albedo,
 														out MaterialValue.MV_Base metallic,
-														out MaterialValue.MV_Base smoothness);
+														out MaterialValue.MV_Base smoothness,
+														HashSet<MaterialValue.MV_Base> toDelete);
 
 		public virtual void WriteData(Serialization.DataWriter writer) { }
-		public virtual void ReadData(Serialization.DataReader reader) { }
+		public virtual void ReadData(Serialization.DataReader reader)
+		{
+			//Clean up the outputs before the new ones are read.
+			foreach (var nameAndVal in Outputs)
+				nameAndVal.Value.Delete();
+		}
 	}
 }

@@ -195,7 +195,14 @@ namespace RT.MaterialValue
 		}
 
 
-		public void Delete() { guidToValue.Remove(guid); }
+		/// <summary>
+		/// Cleans up the GUID allocated for this instance, plus the GUIDs of every input instance.
+		/// </summary>
+		public void Delete()
+		{
+			foreach (MV_Base b in Hierarchy)
+				guidToValue.Remove(b.guid);
+		}
 
 		/// <summary>
 		/// Gets the shader expression for this MaterialValue's value,
@@ -309,7 +316,11 @@ namespace RT.MaterialValue
 			else
 			{
 				int nChildren = reader.Int("NChildren");
+
+				foreach (MV_Base toDelete in inputs)
+					toDelete.Delete();
 				inputs.Clear();
+
 				inputs.Capacity = nChildren;
 				for (int i = 0; i < nChildren; ++i)
 					inputs.Add(Deserialize(GetInputName(i), reader));

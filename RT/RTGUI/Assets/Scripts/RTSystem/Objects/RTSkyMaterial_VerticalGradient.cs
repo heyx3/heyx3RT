@@ -28,14 +28,24 @@ namespace RT
 													 0.0f, 1.0f, MaterialValue.OutputSizes.One);
 
 
-		protected override void GetUnityMaterialOutputs(out MV_Base outRGB)
+		protected override void GetUnityMaterialOutputs(out MV_Base outRGB, HashSet<MV_Base> toDelete)
 		{
-			MV_Base dotRaySky = MV_Simple2.Dot(MV_Simple1.Normalize(SkyDir),
-											   MV_Inputs.RayDir);
-			MV_Base drs0To1 = MV_Arithmetic.Add(MV_Constant.MakeFloat(0.5f),
-												MV_Arithmetic.Multiply(MV_Constant.MakeFloat(0.5f),
-																	   dotRaySky));
-			outRGB = MV_Simple3.Lerp(BottomColor, TopColor, drs0To1);
+			MV_Base normalizedSkyDir = MV_Simple1.Normalize(SkyDir),
+					dotRaySky = MV_Simple2.Dot(normalizedSkyDir, MV_Inputs.RayDir),
+					constantHalf = MV_Constant.MakeFloat(0.5f),
+					constantHalf2 = MV_Constant.MakeFloat(0.5f),
+					halfRaySky = MV_Arithmetic.Multiply(constantHalf, dotRaySky),
+					dotRaySkyMapped = MV_Arithmetic.Add(constantHalf2, halfRaySky);
+
+			toDelete.Add(normalizedSkyDir);
+			toDelete.Add(dotRaySky);
+			toDelete.Add(constantHalf);
+			toDelete.Add(constantHalf2);
+			toDelete.Add(halfRaySky);
+			toDelete.Add(dotRaySkyMapped);
+
+			outRGB = MV_Simple3.Lerp(BottomColor, TopColor, dotRaySkyMapped);
+			toDelete.Add(outRGB);
 		}
 		
 		public override void WriteData(Serialization.DataWriter writer)

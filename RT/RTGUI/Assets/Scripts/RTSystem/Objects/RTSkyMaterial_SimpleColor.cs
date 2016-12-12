@@ -22,7 +22,8 @@ namespace RT
 		public MaterialValue.MV_Base Color = MaterialValue.MV_Constant.MakeRGB(UnityEngine.Color.cyan);
 
 
-		protected override void GetUnityMaterialOutputs(out MaterialValue.MV_Base outRGB)
+		protected override void GetUnityMaterialOutputs(out MaterialValue.MV_Base outRGB,
+														HashSet<MaterialValue.MV_Base> toDelete)
 		{
 			outRGB = Color;
 		}

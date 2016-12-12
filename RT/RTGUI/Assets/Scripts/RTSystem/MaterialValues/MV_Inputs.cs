@@ -101,7 +101,7 @@ namespace RT.MaterialValue
 		public override UnityEngine.Color GUIColor { get { return new Color(1.0f, 1.0f, 0.85f); } }
 
 
-		public MV_Inputs(int _selectedOption = 0) { selectedOption = _selectedOption; }
+		private MV_Inputs(int _selectedOption = 0) { selectedOption = _selectedOption; }
 
 
 		public override void Emit(StringBuilder shaderlabProperties,

@@ -86,8 +86,6 @@ namespace RT
 		
 		public virtual void Awake()
 		{
-			Debug.Log("START");
-
 			//Create/update the mesh filter.
 			MeshFilter mf = GetComponent<MeshFilter>();
 			if (mf == null)
@@ -102,6 +100,9 @@ namespace RT
 		}
 		protected virtual void OnDestroy()
 		{
+			foreach (var nameAndVal in Outputs)
+				nameAndVal.Value.Delete();
+
 			AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myMat));
 			AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myShader));
 		}
@@ -127,8 +128,9 @@ namespace RT
 				AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myShader));
 			}
 
+			HashSet<MaterialValue.MV_Base> toDelete = new HashSet<MaterialValue.MV_Base>();
 			MaterialValue.MV_Base outRGB;
-			GetUnityMaterialOutputs(out outRGB);
+			GetUnityMaterialOutputs(out outRGB, toDelete);
 
 			//Try loading the shader.
 			string shaderFile = "";
@@ -168,10 +170,31 @@ namespace RT
 			{
 				Debug.LogError("Unable to create material file \"" + matFile + "\": " + e.Message);
 			}
-		}
-		protected abstract void GetUnityMaterialOutputs(out MaterialValue.MV_Base outRGB);
 
-		public virtual void WriteData(Serialization.DataWriter writer) { }
-		public virtual void ReadData(Serialization.DataReader reader) { }
+			//Clean up.
+			foreach (var tempVal in toDelete)
+				tempVal.Delete();
+		}
+
+		/// <summary>
+		/// Gets the final output color of the sky.
+		/// Used to compile a Unity material for the sky.
+		/// </summary>
+		/// <param name="toDelete">
+		/// Any temp MaterialValues used to generate this output.
+		/// They will all need to have their Delete() method called when they are done being used.
+		/// </param>
+		protected abstract void GetUnityMaterialOutputs(out MaterialValue.MV_Base outRGB,
+														HashSet<MaterialValue.MV_Base> toDelete);
+
+		public virtual void WriteData(Serialization.DataWriter writer)
+		{
+		}
+		public virtual void ReadData(Serialization.DataReader reader)
+		{
+			//Clean up all the outputs before they get changed.
+			foreach (var nameAndVal in Outputs)
+				nameAndVal.Value.Delete();
+		}
 	}
 }

@@ -96,19 +96,19 @@ namespace RT
 			string errMsg = "";
 			try
 			{
-				//Read all objects into a new scene.
-				var newScene = UnityEditor.SceneManagement.EditorSceneManager.NewScene(
-							       UnityEditor.SceneManagement.NewSceneSetup.EmptyScene);
-				UnityEditor.SceneManagement.EditorSceneManager.SetActiveScene(newScene);
+				//Remove all objects from the current scene.
+				foreach (GameObject go in FindObjectsOfType<GameObject>())
+					if (go.transform.parent == null && go != gameObject)
+						DestroyImmediate(go);
 
-				//Do the actual reading.
+				//Read in the new scene.
 				Serialization.JSONReader reader = new Serialization.JSONReader(filePath);
 				reader.Structure(new RT.Scene(), rootObjectName);
 			}
 			catch (Exception e)
 			{
 				errMsg = "Error reading scene from " + filePath +
-							 ": (" + e.GetType() + ") " + e.Message;
+							 ": (" + e.GetType() + ") " + e.Message + "\n\n" + e.StackTrace;
 			}
 
 			return errMsg;
