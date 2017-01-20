@@ -110,71 +110,69 @@ namespace RT.MaterialValue
 	{
 		Tags { ""RenderType""=""Opaque"" }
 		
-		Pass
+		CGPROGRAM
+
+		//Use Unity's Standard lighting model and full shadowing
+		//Use a custom function to pass per-vertex data into the surface shader.
+		#pragma surface surf Standard fullforwardshadows vertex:vert
+
+		//Use shader model 3.0 target, to get nice lighting.
+		#pragma target 3.0
+
+		//Using appdata_tan struct for vertex data.
+		#include ""UnityCG.cginc""
+
+		");
+		shader.AppendLine(cgDefinitions.ToString());
+		shader.Append(@"
+		struct Input
 		{
-			CGPROGRAM
-
-			//Use Unity's Standard lighting model and full shadowing
-			//Use a custom function to pass per-vertex data into the surface shader.
-			#pragma surface surf Standard fullforwardshadows vertex:vert
-
-			//Use shader model 3.0 target, to get nice lighting.
-			#pragma target 3.0
-
-			//Using appdata_tan struct for vertex data.
-			#include ""UnityCG.cginc""
-
-			");
-			shader.AppendLine(cgDefinitions.ToString());
-			shader.Append(@"
-			struct Input
-			{
-				//The following are filled in by Unity automatically.
-				float4 screenPos;
-				float3 worldPos;
-				float3 worldNormal;
+			//The following are filled in by Unity automatically.
+			float4 screenPos;
+			float3 worldPos;
+			float3 worldNormal;
 			
-				//The following will be filled in via the vertex shader.
-				float4 tangent;
-				//UV will be packed into screenPos.zw.
-			};
+			//The following will be filled in via the vertex shader.
+			float4 tangent;
+			//UV will be packed into screenPos.zw.
+		};
 
-			void vert(inout appdata_tan v, out Input o)
-			{
-				UNITY_INITIALIZE_OUTPUT(Input, o);
-				o.screenPos.zw = v.texcoord.xy;
+		void vert(inout appdata_tan v, out Input o)
+		{
+			UNITY_INITIALIZE_OUTPUT(Input, o);
+			o.screenPos.zw = v.texcoord.xy;
 
-				float3 worldTangent = normalize(mul(_Object2World,
-													float4(v.tangent.xyz, 0.0)).xyz);
-				o.tangent = float4(worldTangent, v.tangent.w);
-			}
-			void surf(Input IN, inout SurfaceOutputStandard o)
-			{
-				//--------------Generated from Material Values-------------------------
-				");
-			shader.AppendLine(funcBody.ToString());
-			shader.AppendLine("//--------------------------------------------------");
-			shader.AppendLine();
-
-			shader.Append("\t\t\t\to.Albedo = ");
-			shader.Append(albedo.GetShaderValue(OutputSizes.Three));
-			shader.AppendLine(";");
-
-			shader.Append("\t\t\t\to.Metallic = ");
-			shader.Append(metallic.GetShaderValue(OutputSizes.One));
-			shader.AppendLine(";");
-
-			shader.Append("\t\t\t\to.Smoothness = ");
-			shader.Append(smoothness.GetShaderValue(OutputSizes.One));
-			shader.AppendLine(";");
-
-			shader.AppendLine("\t\t\t\to.Alpha = 1.0;");
-
-			shader.Append(@"
-			}
-
-			ENDCG
+			float3 worldTangent = normalize(mul(_Object2World,
+												float4(v.tangent.xyz, 0.0)).xyz);
+			o.tangent = float4(worldTangent, v.tangent.w);
 		}
+		void surf(Input IN, inout SurfaceOutputStandard o)
+		{
+			//--------------Generated from Material Values-------------------------
+			");
+		shader.AppendLine(funcBody.ToString());
+		shader.AppendLine(@"
+			//--------------------------------------------------");
+		shader.AppendLine();
+
+		shader.Append("\t\t\t\to.Albedo = ");
+		shader.Append(albedo.GetShaderValue(OutputSizes.Three));
+		shader.AppendLine(";");
+
+		shader.Append("\t\t\t\to.Metallic = ");
+		shader.Append(metallic.GetShaderValue(OutputSizes.One));
+		shader.AppendLine(";");
+
+		shader.Append("\t\t\t\to.Smoothness = ");
+		shader.Append(smoothness.GetShaderValue(OutputSizes.One));
+		shader.AppendLine(";");
+
+		shader.AppendLine("\t\t\t\to.Alpha = 1.0;");
+
+		shader.Append(@"
+		}
+
+		ENDCG
 	}
 	Fallback ""Diffuse""
 }");
