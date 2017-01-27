@@ -42,17 +42,35 @@ namespace RT
 			toDelete.Add(smoothness);
 		}
 
+		private static readonly string Name_Albedo = "Albedo (rgb)",
+									   Name_Roughness = "Roughness (scalar)";
+		public override void GetMVs(Dictionary<string, MaterialValue.MV_Base> outVals)
+		{
+			outVals.Add(Name_Albedo, Albedo);
+			outVals.Add(Name_Roughness, Roughness);
+		}
+		public override void SetMVs(Dictionary<string, MaterialValue.MV_Base> newVals)
+		{
+			Albedo = newVals[Name_Albedo];
+			Roughness = newVals[Name_Roughness];
+		}
+
 		public override void WriteData(Serialization.DataWriter writer)
 		{
 			base.WriteData(writer);
-			MaterialValue.MV_Base.Serialize(Albedo, "Albedo", writer);
-			MaterialValue.MV_Base.Serialize(Roughness, "Roughness", writer);
+
+			var graph = new MaterialValue.Graph(new List<MaterialValue.MV_Base>() { Albedo, Roughness });
+			writer.Structure(graph, "Albedo_Roughness");
 		}
 		public override void ReadData(Serialization.DataReader reader)
 		{
 			base.ReadData(reader);
-			Albedo = MaterialValue.MV_Base.Deserialize("Albedo", reader);
-			Roughness = MaterialValue.MV_Base.Deserialize("Roughness", reader);
+
+			var graph = new MaterialValue.Graph();
+			reader.Structure(graph, "Albedo_Roughness");
+
+			Albedo = graph.RootValues[0];
+			Roughness = graph.RootValues[1];
 		}
 	}
 }

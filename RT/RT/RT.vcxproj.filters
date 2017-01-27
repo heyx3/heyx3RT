@@ -147,6 +147,12 @@
     <ClInclude Include="Headers\RTString.h">
       <Filter>Headers\Wrappers</Filter>
     </ClInclude>
+    <ClInclude Include="Headers\MaterialValueGraph.h">
+      <Filter>Headers\Materials\MaterialValue</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Dictionary.h">
+      <Filter>Headers\Wrappers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Impl\Quaternion.cpp">
@@ -234,6 +240,9 @@
       <Filter>Impl</Filter>
     </ClCompile>
     <ClCompile Include="Impl\String.cpp">
+      <Filter>Impl</Filter>
+    </ClCompile>
+    <ClCompile Include="Impl\MaterialValueGraph.cpp">
       <Filter>Impl</Filter>
     </ClCompile>
   </ItemGroup>

@@ -43,7 +43,7 @@ public:
                             OutImgWidth, OutImgHeight;
     OptionalValue<Vector3f> CamPos, CamForward, CamUp;
     OptionalValue<float> Gamma, FovScale;
-    OptionalValue<std::string> InputSceneFile, SceneFileRootName, OutputImgPath;
+    OptionalValue<std::string> InputSceneFile, OutputImgPath;
 
 
     CmdArgs() { }
@@ -108,7 +108,7 @@ public:
                 }
                 else
                 {
-                    TryParse(&args[i = 1], CamUp, outErrorMsg);
+                    TryParse(&args[i + 1], CamUp, outErrorMsg);
                     if (CamUp.HasValue())
                         CamUp.GetValue() = CamUp.GetValue().Normalize();
                     i += 3;
@@ -209,19 +209,6 @@ public:
                     i += 1;
                 }
             }
-            else if (args[i] == "-sceneRoot")
-            {
-                if (i > nArgs - 2)
-                {
-                    outErrorMsg += "\nNot enough arguments after -sceneRoot";
-                    i = nArgs;
-                }
-                else
-                {
-                    SceneFileRootName = std::string(args[i + 1]);
-                    i += 1;
-                }
-            }
             else if (args[i] == "-nThreads")
             {
                 if (i > nArgs - 2)
@@ -305,8 +292,6 @@ public:
                 FovScale = 1.0f;
         if (!InputSceneFile.HasValue())
             InputSceneFile = KeepTryingForValue("\nEnter the input scene file path: >", isValidFile);
-        if (!SceneFileRootName.HasValue())
-            SceneFileRootName = KeepTryingForValue("\nEnter the input scene file's root name: >", alwaysValid);
         if (!OutputImgPath.HasValue())
             OutputImgPath = KeepTryingForValue("\nEnter the output image file's path: >", isValidName);
 

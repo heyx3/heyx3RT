@@ -5,7 +5,7 @@ using System.IO;
 using System.Text;
 using UnityEngine;
 using UnityEditor;
-
+using RT.Serialization;
 
 namespace RT.MaterialValue
 {
@@ -57,33 +57,32 @@ namespace RT.MaterialValue
 		public override MV_Base GetDefaultInput(int inputIndex) { return MV_Constant.MakeVec2(0.0f, 0.0f); }
 		public override string GetInputName(int index) { return "UV"; }
 
-		public override void WriteData(Serialization.DataWriter writer)
+		public override void WriteData(DataWriter writer, string namePrefix,
+									   Dictionary<MV_Base, uint> idLookup)
 		{
-			base.WriteData(writer);
-
+			base.WriteData(writer, namePrefix, idLookup);
+			
 			string assetsFolder = Application.dataPath,
 				   texturePath = Path.Combine(Path.Combine(assetsFolder, "..\\"),
 											  AssetDatabase.GetAssetPath(Tex)),
 				   extension = Path.GetExtension(texturePath);
-			
-			//Write texture type.
+
 			if (extension == ".bmp")
-				writer.String("BMP", "FileType");
+				writer.String("BMP", namePrefix + "FileType");
 			else if (extension == ".png")
-				writer.String("PNG", "FileType");
+				writer.String("PNG", namePrefix + "FileType");
 			else
 				throw new NotImplementedException("Only BMP and PNG textures are supported: " + texturePath);
 
-			//Write texture path.
-			writer.String(texturePath, "FilePath");
+			writer.String(texturePath, namePrefix + "FilePath");
 		}
-		public override void ReadData(Serialization.DataReader reader)
+		public override void ReadData(DataReader reader, string namePrefix,
+									  Dictionary<MV_Base, List<uint>> childIDsLookup)
 		{
-			base.ReadData(reader);
+			base.ReadData(reader, namePrefix, childIDsLookup);
 
-			string texPath = Path.GetFullPath(reader.String("FilePath"));
-			
 			//Get the texture path relative to the "Assets" folder.
+			string texPath = Path.GetFullPath(reader.String(namePrefix + "FilePath"));
 			string[] texPathDirs = texPath.Split(Path.DirectorySeparatorChar,
 												 Path.AltDirectorySeparatorChar);
 			int index = texPathDirs.IndexOf("Assets");

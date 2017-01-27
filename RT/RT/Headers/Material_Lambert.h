@@ -14,7 +14,7 @@ namespace RT
 
     
         Material_Lambert(MaterialValue::Ptr col = new MV_Constant(Vector3f(1.0f, 1.0f, 1.0f)))
-            : Color(col.Release()) { }
+            : Color(col) { }
 
 
         virtual bool Scatter(const Ray& rIn, const Vertex& surface, const Shape& shpe,

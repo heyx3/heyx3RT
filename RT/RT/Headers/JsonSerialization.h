@@ -25,8 +25,7 @@ namespace RT
         //Reads the given item from a JSON file.
         //Returns an error message, or the empty string if everything went fine.
         //Otherwise, returns true.
-        bool RT_API FromJSONFile(const String& filePath, IReadable& toRead,
-                                 const String& rootObjectName, String& outErrorMsg);
+        bool RT_API FromJSONFile(const String& filePath, IReadable& toRead, String& outErrorMsg);
     }
 
     #pragma warning(disable: 4251)

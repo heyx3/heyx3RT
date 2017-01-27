@@ -1,5 +1,6 @@
 #include "../Headers/SkyMaterial_SimpleColor.h"
 
+#include "../Headers/MaterialValueGraph.h"
 using namespace RT;
 
 
@@ -10,15 +11,20 @@ Vector3f SkyMaterial_SimpleColor::GetColor(const Ray& ray, FastRand& prng) const
 {
     return Color->GetValue(ray, prng);
 }
+
 void SkyMaterial_SimpleColor::WriteData(DataWriter& writer) const
 {
     SkyMaterial::WriteData(writer);
 
-    MaterialValue::WriteValue(Color, writer, "Color");
+    MaterialValueGraph graph(List<const MaterialValue*>(Color.Get()));
+    writer.WriteDataStructure(graph, "Color");
 }
 void SkyMaterial_SimpleColor::ReadData(DataReader& reader)
 {
     SkyMaterial::ReadData(reader);
 
-    MaterialValue::ReadValue(Color, reader, "Color");
+    MaterialValueGraph graph;
+    reader.ReadDataStructure(graph, "Color");
+
+    Color = graph.GetRootVals()[0];
 }

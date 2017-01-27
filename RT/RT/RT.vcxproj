@@ -21,9 +21,11 @@
   <ItemGroup>
     <ClInclude Include="Headers\BoundingBox.h" />
     <ClInclude Include="Headers\Camera.h" />
+    <ClInclude Include="Headers\Dictionary.h" />
     <ClInclude Include="Headers\FastRand.h" />
     <ClInclude Include="Headers\Main.hpp" />
     <ClInclude Include="Headers\Material.h" />
+    <ClInclude Include="Headers\MaterialValueGraph.h" />
     <ClInclude Include="Headers\Material_Lambert.h" />
     <ClInclude Include="Headers\Material_Metal.h" />
     <ClInclude Include="Headers\Mathf.h" />
@@ -64,6 +66,7 @@
     <ClCompile Include="Impl\DataSerialization.cpp" />
     <ClCompile Include="Impl\Material.cpp" />
     <ClCompile Include="Impl\MaterialValue.cpp" />
+    <ClCompile Include="Impl\MaterialValueGraph.cpp" />
     <ClCompile Include="Impl\MaterialValues.cpp" />
     <ClCompile Include="Impl\Material_Lambert.cpp" />
     <ClCompile Include="Impl\Material_Metal.cpp" />

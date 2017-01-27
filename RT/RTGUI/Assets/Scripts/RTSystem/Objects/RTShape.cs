@@ -5,8 +5,6 @@ using UnityEngine;
 
 namespace RT
 {
-	//TODO: Add custom inspectors as necessary (button for material editor).
-
 	[ExecuteInEditMode]
 	public abstract class RTShape : MonoBehaviour, Serialization.ISerializableRT
 	{

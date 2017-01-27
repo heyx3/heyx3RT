@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-
+using RT.Serialization;
 
 namespace RT.MaterialValue
 {
@@ -86,15 +86,17 @@ namespace RT.MaterialValue
 			unityMat.SetTexture(RTSystem.Param_PureNoiseTex, RTSystem.Instance.PureNoiseTex);
 		}
 
-		public override void WriteData(Serialization.DataWriter writer)
+		public override void WriteData(DataWriter writer, string namePrefix,
+									   Dictionary<MV_Base, uint> idLookup)
 		{
-			base.WriteData(writer);
-			writer.Byte(NChannels, "Dimensions");
+			base.WriteData(writer, namePrefix, idLookup);
+			writer.Byte(NChannels, namePrefix + "Dimensions");
 		}
-		public override void ReadData(Serialization.DataReader reader)
+		public override void ReadData(DataReader reader, string namePrefix,
+									  Dictionary<MV_Base, List<uint>> childIDsLookup)
 		{
-			base.ReadData(reader);
-			NChannels = reader.Byte("Dimensions");
+			base.ReadData(reader, namePrefix, childIDsLookup);
+			NChannels = reader.Byte(namePrefix + "Dimensions");
 		}
 
 		protected override GUIResults DoCustomGUI()

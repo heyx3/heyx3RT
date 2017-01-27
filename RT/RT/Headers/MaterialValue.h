@@ -4,6 +4,7 @@
 #include "Main.hpp"
 #include "Shape.h"
 #include "Ray.h"
+#include "Dictionary.h"
 #include "DataSerialization.h"
 #include "SmartPtrs.h"
 #include "FastRand.h"
@@ -12,37 +13,48 @@
 
 namespace RT
 {
+    /*
+        NOTE: Serializing MaterialValues is complicated because multiple nodes can share a child.
+        Instead of implementing ISerializable themselves,
+            a special helper class called "MaterialValueGraph" implements it
+            and helps them serialize properly.
+        The basic idea is that every MaterialValue is assigned a unique ID,
+            and any list of MaterialValue::Ptr should be serialized as a list of ID's.
+    */
+
+
     class MaterialValue;
-    EXPORT_UNIQUEPTR(MaterialValue);
+    EXPORT_SHAREDPTR(MaterialValue);
+
+    EXPORT_RT_DICT(MaterialValue*, unsigned int);
+    EXPORT_RT_DICT(const MaterialValue*, unsigned int);
+    using IDToMaterialValue = Dictionary<unsigned int, SharedPtr<MaterialValue>>;
+    using ConstMaterialValueToID = Dictionary<const MaterialValue*, unsigned int>;
+
+    EXPORT_RT_LIST(unsigned int);
+    EXPORT_RT_DICT(MaterialValue*, List<unsigned int>);
+    using IDList = List<unsigned int>;
+    using NodeToChildIDs = Dictionary<MaterialValue*, IDList>;
 
 
     //A value calculated based on a ray collision with an object.
-    //For example, a texture lookup based on the collision point's UV.
-    //Outputs anything from a 1D vector to a 4D vector.
-    class RT_API MaterialValue : public ISerializable
+    //For example: a texture lookup based on the collision point's UV.
+    //Outputs a 1D, 2D, 3D, or 4D float value.
+    class RT_API MaterialValue
     {
     public:
 
-        typedef UniquePtr<MaterialValue> Ptr;
+        typedef SharedPtr<MaterialValue> Ptr;
 
 
-        static Ptr Create(const String& typeName)
-        {    
-            return Ptr(GetFactory(typeName)());
-        }
+        static Ptr Create(const String& typeName) { return Ptr(GetFactory(typeName)()); }
 
-        static void WriteValue(const Ptr& mv, DataWriter& writer, const String& name)
-        {
-            writer.WriteString(mv->GetTypeName(), name + "Type");
-            writer.WriteDataStructure(*mv, name + "Value");
-        }
-        static void ReadValue(Ptr& outMV, DataReader& reader, const String name)
-        {
-            String typeName;
-            reader.ReadString(typeName, name + "Type");
-            outMV.Reset(Create(typeName).Release());
-            reader.ReadDataStructure(*outMV, name + "Value");
-        }
+        static void WriteValue(const MaterialValue* mv, const ConstMaterialValueToID& idLookup,
+                               DataWriter& writer, const String& name);
+
+        //Returns the node's ID.
+        static unsigned int ReadValue(Ptr& outMV, NodeToChildIDs& childIDLookup,
+                                      DataReader& reader, const String name);
 
 
         MaterialValue() { }
@@ -60,13 +72,20 @@ namespace RT
 
         virtual size_t GetNChildren() const = 0;
         virtual const MaterialValue* GetChild(size_t index) const = 0;
-        MaterialValue* GetChild(size_t index) { return const_cast<MaterialValue*>(((const MaterialValue*)this)->GetChild(index)); }
+        MaterialValue* GetChild(size_t index) { return (MaterialValue*)((const MaterialValue*)this)->GetChild(index); }
+        virtual void SetChild(size_t index, const Ptr& newChild) = 0;
 
         //Don't override this manually! Use the "ADD_MVAL_REFLECTION_DATA_H" macros instead.
         virtual String GetTypeName() const = 0;
 
-        virtual void ReadData(DataReader& data) override { }
-        virtual void WriteData(DataWriter& data) const override { }
+
+        virtual void WriteData(DataWriter& data, const String& namePrefix,
+                               const ConstMaterialValueToID& idLookup) const;
+
+        virtual void ReadData(DataReader& data, const String& namePrefix,
+                              NodeToChildIDs& childIDLookup);
+        virtual void OnDoneReadingData(const IDToMaterialValue& mvLookup,
+                                       const NodeToChildIDs& childIDLookup);
 
 
     protected:

@@ -1,5 +1,6 @@
 #include "../Headers/Material_Metal.h"
 
+#include "../Headers/MaterialValueGraph.h"
 using namespace RT;
 
 
@@ -32,13 +33,16 @@ void Material_Metal::WriteData(DataWriter& writer) const
 {
     Material::WriteData(writer);
 
-    MaterialValue::WriteValue(Albedo, writer, "Albedo");
-    MaterialValue::WriteValue(Roughness, writer, "Roughness");
+    MaterialValueGraph graph(List<const MaterialValue*>(Albedo.Get(), Roughness.Get()));
+    writer.WriteDataStructure(graph, "Albedo_Roughness");
 }
 void Material_Metal::ReadData(DataReader& reader)
 {
     Material::ReadData(reader);
 
-    MaterialValue::ReadValue(Albedo, reader, "Albedo");
-    MaterialValue::ReadValue(Roughness, reader, "Roughness");
+    MaterialValueGraph graph;
+    reader.ReadDataStructure(graph, "Albedo_Roughness");
+
+    Albedo = graph.GetRootVals()[0];
+    Roughness = graph.GetRootVals()[1];
 }

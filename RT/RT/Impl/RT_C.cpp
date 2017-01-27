@@ -11,7 +11,7 @@ C_RT_API_IMPL float* rt_GenerateImage(unsigned int imgWidth, unsigned int imgHei
                                       float camPosX, float camPosY, float camPosZ,
                                       float camForwardX, float camForwardY, float camForwardZ,
                                       float camUpX, float camUpY, float camUpZ,
-                                      const char* sceneJSONPath, const char* rootJSONObjName)
+                                      const char* sceneJSONPath)
 {
     //Set up the camera.
     Vector3f camForward = Vector3f(camForwardX, camForwardY, camForwardZ).Normalize(),
@@ -23,7 +23,7 @@ C_RT_API_IMPL float* rt_GenerateImage(unsigned int imgWidth, unsigned int imgHei
     //Load the scene.
     Tracer tracer;
     String err;
-    JsonSerialization::FromJSONFile(sceneJSONPath, tracer, rootJSONObjName, err);
+    JsonSerialization::FromJSONFile(sceneJSONPath, tracer, err);
 
     return new float[imgWidth * 3 * imgHeight];
 
@@ -71,7 +71,7 @@ unsigned char rt_GetError(unsigned int imgWidth, unsigned int imgHeight, unsigne
                           float camPosX, float camPosY, float camPosZ,
                           float camForwardX, float camForwardY, float camForwardZ,
                           float camUpX, float camUpY, float camUpZ,
-                          const char* sceneJSONPath, const char* rootJSONObjName)
+                          const char* sceneJSONPath)
 {
     if (nThreads == 0 || samplesPerPixel == 0 || fovScale <= 0.0f)
         return rt_ERRORCODE_BAD_VALUE();
@@ -81,7 +81,7 @@ unsigned char rt_GetError(unsigned int imgWidth, unsigned int imgHeight, unsigne
 
     Tracer tr;
     String err;
-    JsonSerialization::FromJSONFile(sceneJSONPath, tr, rootJSONObjName, err);
+    JsonSerialization::FromJSONFile(sceneJSONPath, tr, err);
     if (err.GetSize() > 0)
     {
         std::cout << "\nERROR reading JSON: " << err.CStr() << "\n\n";

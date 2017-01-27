@@ -15,7 +15,6 @@ Parameters (mandatory unless said otherwise):
 -outputPath "MyImg.bmp"  The path of the output image. Must end in either .bmp or .png.
 -outputSize 800 600      The width/height of the output image.
 -scene "MyScene.json"    The scene JSON file containing the Tracer scene.
--sceneRoot "data"        The name of the root object in the JSON scene file.
 -nThreads 4              OPTIONAL (default 4): The number of threads to split the work across.
 -gamma 2.2               OPTIONAL (default 2.2): The gamma value, used to gamma-correct the output file.
 -fovScale 1.0            OPTIONAL (default 1.0): Scales the FOV of the camera.
@@ -41,7 +40,8 @@ using namespace RT;
 #include <iostream>
 
 
-int main(int argc, const char* argv[])
+
+int haha(int argc, const char* argv[])
 {
     //Aquire the arguments.
     std::string errorMsg;
@@ -60,7 +60,6 @@ int main(int argc, const char* argv[])
     //TODO: This can't parse json unless it's line-broken properly?
     JsonSerialization::FromJSONFile(RT::String(cmdArgs.InputSceneFile.GetValue().c_str()),
                                     tracer,
-                                    RT::String(cmdArgs.SceneFileRootName.GetValue().c_str()),
                                     err);
     if (err.GetSize() > 0)
     {
@@ -109,8 +108,58 @@ int main(int argc, const char* argv[])
     exit(0);
 }
 
+
 /*
-int haha(int argc, const char* argv[])
+void hehe()
+{
+    Tracer scene;
+
+    SharedPtr<Shape> sphere = new Sphere(Vector3f(5.0f, 0.0f, 0.0f), 2.5f);
+    SharedPtr<Material> mat = new Material_Lambert;
+    SharedPtr<SkyMaterial> sky = new SkyMaterial_VerticalGradient;
+
+    scene.Objects.PushBack(ShapeAndMat(sphere, mat));
+    scene.SkyMat = sky;
+
+    //Write the scene.
+    const String path = "D:/Other Games/temp/scene.json";
+    String err;
+    JsonSerialization::ToJSONFile(path, scene, false, err);
+    if (!err.IsEmpty())
+    {
+        std::cout << "Error writing file: " << err.CStr() << "\n";
+        char dummy;
+        std::cin >> dummy;
+        return;
+    }
+
+    //Read the scene back.
+    JsonSerialization::FromJSONFile(path, scene, err);
+    if (!err.IsEmpty())
+    {
+        std::cout << "Error reading file: " << err.CStr() << "\n";
+        char dummy;
+        std::cin >> dummy;
+        return;
+    }
+
+    //Trace the scene.
+    Texture2D tex(128, 128);
+    scene.TraceFullImage(Camera(Vector3f(), Vector3f(1.0f, 0.0f, 0.0f), Vector3f(0.0f, 1.0f, 0.0f), 1.0f),
+                         tex, 8, 50, 1.0f, 2.0f, 1000);
+
+    //Write the image to a file.
+    err = tex.SavePNG("D:/Other Games/temp/img.png");
+    if (!err.IsEmpty())
+    {
+        std::cout << "Error saving PNG: " << err.CStr() << "\n";
+        char dummy;
+        std::cin >> dummy;
+        return;
+    }
+}
+
+int main(int argc, const char* argv[])
 {
     Tracer trc;
     trc.SkyMat = new SkyMaterial_SimpleColor(MV_Constant::Create(1.0f));
@@ -140,9 +189,8 @@ int haha(int argc, const char* argv[])
         "-outputPath", "MyImg.bmp",
         "-outputSize", "400", "200",
         "-scene", "SampleScene.json",
-        "-sceneRoot", "data",
     };
-    //haha(nArgs, args);
+    haha(nArgs, args);
     return 0;
 }
 */

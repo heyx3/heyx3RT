@@ -30,6 +30,9 @@ namespace RT
 
         virtual void WriteData(DataWriter& writer) const override;
         virtual void ReadData(DataReader& reader) override;
+
+        bool operator==(const ShapeAndMat& other) const { return Shpe.Get() == other.Shpe.Get() &&
+                                                                 Mat.Get() == other.Mat.Get(); }
     };
 
     EXPORT_RT_LIST(ShapeAndMat);

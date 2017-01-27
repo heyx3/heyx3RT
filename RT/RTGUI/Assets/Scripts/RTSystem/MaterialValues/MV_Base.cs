@@ -10,7 +10,7 @@ using UnityEditor;
 namespace RT.MaterialValue
 {
 	[Serializable]
-	public abstract class MV_Base : Serialization.ISerializableRT
+	public abstract class MV_Base
 	{
 		private static Dictionary<uint, MV_Base> guidToValue = new Dictionary<uint, MV_Base>();
 
@@ -18,16 +18,18 @@ namespace RT.MaterialValue
 			{ return (guidToValue.ContainsKey(guid) ? guidToValue[guid] : null); }
 
 
-		public static void Serialize(MV_Base val, string name, Serialization.DataWriter writer)
+		public static void Write(MV_Base val, Dictionary<MV_Base, uint> idLookup, string name,
+								 Serialization.DataWriter writer)
 		{
 			writer.String(val.TypeName, name + "Type");
-			writer.Structure(val, name + "Value");
+			writer.UInt(idLookup[val], name + "ID");
+			val.WriteData(writer, name, idLookup);
 		}
-		public static MV_Base Deserialize(string name,Serialization.DataReader reader)
+		public static MV_Base Read(Dictionary<MV_Base, List<uint>> childIDLookup, string name,
+								   Serialization.DataReader reader, out uint id)
 		{
 			string typeName = reader.String(name + "Type");
 			MV_Base mv = null;
-
 			switch (typeName)
 			{
 				case TypeName_Constant: mv = MV_Constant.MakeFloat(0.0f); break;
@@ -74,10 +76,13 @@ namespace RT.MaterialValue
 				default:
 					Debug.LogError("Unexpected MaterialValue type name \"" +
 								   typeName + "\"");
+					id = uint.MaxValue;
 					return null;
 			}
 
-			reader.Structure(mv, name + "Value");
+			mv.ReadData(reader, name, childIDLookup);
+
+			id = reader.UInt(name + "ID");
 			return mv;
 		}
 
@@ -280,51 +285,44 @@ namespace RT.MaterialValue
 		public virtual string GetInputName(int index) { throw new ArgumentOutOfRangeException("This node has no inputs!"); }
 
 
-		public virtual void WriteData(Serialization.DataWriter writer)
+		public virtual void WriteData(Serialization.DataWriter writer, string namePrefix,
+									  Dictionary<MV_Base, uint> idLookup)
 		{
-			writer.UInt(guid, "GUID");
-			writer.Rect(pos, "Pos");
+			writer.UInt(guid, namePrefix + "GUID");
+			writer.Rect(pos, namePrefix + "Pos");
 
-			if (HasVariableNumberOfChildren)
-			{
-				writer.List(inputs, "Items",
-							(Serialization.DataWriter wr, MV_Base val, string name) =>
-							{
-								Serialize(val, name, wr);
-							});
-			}
-			else
-			{
-				writer.Int(inputs.Count, "NChildren");
-				for (int i = 0; i < inputs.Count; ++i)
-					Serialize(inputs[i], GetInputName(i), writer);
-			}
+			//Write children nodes as a list of their IDs.
+			List<uint> childIDs = new List<uint>(inputs.Count);
+			for (int i = 0; i < inputs.Count; ++i)
+				childIDs.Add(idLookup[inputs[i]]);
+			writer.List(childIDs, namePrefix + "childrenIDs",
+						(Serialization.DataWriter wr, uint val, string name) =>
+						{
+							wr.UInt(val, name);
+						});
 		}
-		public virtual void ReadData(Serialization.DataReader reader)
+		public virtual void ReadData(Serialization.DataReader reader, string namePrefix,
+									 Dictionary<MV_Base, List<uint>> childIDsLookup)
 		{
-			GUID = reader.UInt("GUID");
-			pos = reader.Rect("Pos");
+			GUID = reader.UInt(namePrefix + "GUID");
+			pos = reader.Rect(namePrefix + "Pos");
 
-			if (HasVariableNumberOfChildren)
-			{
-				inputs = reader.List("Items",
-									 (Serialization.DataReader rd, ref MV_Base outVal, string name) =>
-									 {
-									     outVal = Deserialize(name, rd);
-									 });
-			}
-			else
-			{
-				int nChildren = reader.Int("NChildren");
-
-				foreach (MV_Base toDelete in inputs)
-					toDelete.Delete();
-				inputs.Clear();
-
-				inputs.Capacity = nChildren;
-				for (int i = 0; i < nChildren; ++i)
-					inputs.Add(Deserialize(GetInputName(i), reader));
-			}
+			//Read children nodes as a list of their IDs.
+			List<uint> childIDs = reader.List(namePrefix + "childrenIDs",
+											  (Serialization.DataReader rd, ref uint outVal, string name) =>
+											  {
+												  outVal = rd.UInt(name);
+											  });
+			childIDsLookup.Add(this, childIDs);
+		}
+		public virtual void OnDoneReadingData(Dictionary<uint, MV_Base> mvLookup,
+											  Dictionary<MV_Base, List<uint>> childIDsLookup)
+		{
+			//Add the children.
+			var childIDs = childIDsLookup[this];
+			inputs.Clear();
+			for (int i = 0; i < childIDs.Count; ++i)
+				inputs.Add(mvLookup[childIDs[i]]);
 		}
 
 

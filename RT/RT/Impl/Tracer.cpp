@@ -13,6 +13,7 @@
 #include <pthread.h>
 #endif
 
+//TODO: Use C++11 threading.
 
 using namespace RT;
 
@@ -274,10 +275,9 @@ void Tracer::WriteData(DataWriter& writer) const
 }
 void Tracer::ReadData(DataReader& reader)
 {
-    SkyMaterial* smPtr;
-    SkyMaterial::ReadValue(smPtr, reader, "SkyMaterial");
-    SkyMat.Reset(smPtr);
+    SkyMaterial::ReadValue(SkyMat, reader, "SkyMaterial");
 
+    Objects.Clear();
     reader.ReadList<ShapeAndMat>(&Objects,
                                  [](void* pList, size_t nElements)
                                     { ((std::vector<ShapeAndMat>*)pList)->resize(nElements); },

@@ -17,7 +17,7 @@ namespace RT
         SkyMaterial_VerticalGradient(MaterialValue::Ptr bottomCol = new MV_Constant(Vector3f()),
                                      MaterialValue::Ptr topCol = new MV_Constant(Vector3f(1.0f, 1.0f, 1.0f)),
                                      MaterialValue::Ptr skyDir = new MV_Constant(Vector3f(0.0f, 1.0f, 0.0f)))
-            : BottomCol(bottomCol.Release()), TopCol(topCol.Release()), SkyDir(skyDir.Release()) { }
+            : BottomCol(bottomCol), TopCol(topCol), SkyDir(skyDir) { }
 
 
         virtual Vector3f GetColor(const Ray& ray, FastRand& prng) const override;

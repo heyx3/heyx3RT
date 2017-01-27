@@ -16,7 +16,7 @@ namespace RT
 
         Material_Metal(MaterialValue::Ptr albedo = new MV_Constant(Vector3f(1.0f, 1.0f, 1.0f)),
                        MaterialValue::Ptr roughness = new MV_Constant(0.0f))
-            : Albedo(albedo.Release()), Roughness(roughness.Release()) { }
+            : Albedo(albedo), Roughness(roughness) { }
 
 
         virtual bool Scatter(const Ray& rIn, const Vertex& surf, const Shape& shpe,

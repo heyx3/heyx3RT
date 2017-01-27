@@ -33,6 +33,30 @@ namespace
     }
 }
 
+
+void MaterialValue::WriteValue(const MaterialValue* mv,
+                               const ConstMaterialValueToID& idLookup,
+                               DataWriter& writer, const String& name)
+{
+    writer.WriteString(mv->GetTypeName(), name + "Type");
+    writer.WriteUInt(idLookup[mv], name + "ID");
+    mv->WriteData(writer, name, idLookup);
+}
+
+unsigned int MaterialValue::ReadValue(Ptr& outMV, NodeToChildIDs& childIDLookup,
+                                      DataReader& reader, const String name)
+{
+    String typeName;
+    reader.ReadString(typeName, name + "Type");
+
+    outMV = Create(typeName);
+    outMV->ReadData(reader, name, childIDLookup);
+
+    unsigned int u;
+    reader.ReadUInt(u, name + "ID");
+    return u;
+}
+
 void MaterialValue::AddReflectionData(const String& typeName, MVFactory factory)
 {
     std::lock_guard<std::mutex> lock(GetVectorMutex());
@@ -69,7 +93,6 @@ MaterialValue::MVFactory MaterialValue::GetFactory(const String& typeName)
     return foundFactory;
 }
 
-
 void MaterialValue::AssertExists(const Shape* shpe) const
 {
     if (shpe == nullptr)
@@ -89,4 +112,48 @@ void MaterialValue::AssertExists(const Vertex* surface) const
         char dummy;
         std::cin >> dummy;
     }
+}
+
+void MaterialValue::WriteData(DataWriter& data, const String& namePrefix,
+                              const ConstMaterialValueToID& idLookup) const
+{
+    //Get child IDs.
+    IDList childIDs;
+    childIDs.Resize(GetNChildren());
+    for (size_t i = 0; i < childIDs.GetSize(); ++i)
+        childIDs[i] = idLookup[GetChild(i)];
+
+    //Write child IDs.
+    data.WriteList<unsigned int>(childIDs.GetData(), childIDs.GetSize(),
+                                 [](DataWriter& wr, const unsigned int& val, const String& name)
+                                 {
+                                     wr.WriteUInt(val, name);
+                                 },
+                                 namePrefix + "childrenIDs");
+}
+
+void MaterialValue::ReadData(DataReader& data, const String& namePrefix,
+                             NodeToChildIDs& childIDLookup)
+{
+    //Get child IDs.
+    IDList childIDs;
+    data.ReadList<unsigned int>(&childIDs,
+                                [](void* pList, size_t nElements)
+                                {
+                                    ((IDList*)pList)->Resize(nElements);
+                                },
+                                [](DataReader& rd, void* pList, size_t listIndex, const String& name)
+                                {
+                                    rd.ReadUInt((*(IDList*)pList)[listIndex], name);
+                                },
+        namePrefix + "childrenIDs");
+    childIDLookup[this] = childIDs;
+}
+void MaterialValue::OnDoneReadingData(const IDToMaterialValue& mvLookup,
+                                      const NodeToChildIDs& childIDLookup)
+{
+    //Add the children.
+    const IDList& childIDs = *childIDLookup.TryGet(this);
+    for (size_t i = 0; i < childIDs.GetSize(); ++i)
+        SetChild(i, mvLookup[childIDs[i]]);
 }

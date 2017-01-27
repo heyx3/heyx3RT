@@ -66,7 +66,7 @@ bool RT_API JsonSerialization::ToJSONString(const IWritable& toWrite, bool compa
     }
 }
 bool RT_API JsonSerialization::FromJSONFile(const String& filePath, IReadable& toRead,
-                                            const String& rootObjectName, String& outErrorMsg)
+                                            String& outErrorMsg)
 {
     JsonReader reader(filePath);
 
@@ -79,7 +79,7 @@ bool RT_API JsonSerialization::FromJSONFile(const String& filePath, IReadable& t
 
     try
     {
-        reader.ReadDataStructure(toRead, rootObjectName);
+        reader.ReadDataStructure(toRead, "data");
         return true;
     }
     catch (int i)

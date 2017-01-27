@@ -37,15 +37,32 @@ namespace RT
 			toDelete.Add(smoothness);
 		}
 
+		
+		private static readonly string Name_Albedo = "Albedo (rgb)";
+		public override void GetMVs(Dictionary<string, MaterialValue.MV_Base> outVals)
+		{
+			outVals.Add(Name_Albedo, Albedo);
+		}
+		public override void SetMVs(Dictionary<string, MaterialValue.MV_Base> newVals)
+		{
+			Albedo = newVals[Name_Albedo];
+		}
+		
 		public override void WriteData(Serialization.DataWriter writer)
 		{
 			base.WriteData(writer);
-			MaterialValue.MV_Base.Serialize(Albedo, "Color", writer);
+
+			var graph = new MaterialValue.Graph(new List<MaterialValue.MV_Base>() { Albedo });
+			writer.Structure(graph, "Color");
 		}
 		public override void ReadData(Serialization.DataReader reader)
 		{
 			base.ReadData(reader);
-			Albedo = MaterialValue.MV_Base.Deserialize("Color", reader);
+
+			var graph = new MaterialValue.Graph();
+			reader.Structure(graph, "Color");
+
+			Albedo = graph.RootValues[0];
 		}
 	}
 }

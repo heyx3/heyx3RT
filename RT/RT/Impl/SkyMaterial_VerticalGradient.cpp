@@ -1,5 +1,6 @@
 #include "../Headers/SkyMaterial_VerticalGradient.h"
 
+#include "../Headers/MaterialValueGraph.h"
 #include "../Headers/Mathf.h"
 
 using namespace RT;
@@ -21,15 +22,17 @@ void SkyMaterial_VerticalGradient::WriteData(DataWriter& writer) const
 {
     SkyMaterial::WriteData(writer);
 
-    MaterialValue::WriteValue(BottomCol, writer, "BottomCol");
-    MaterialValue::WriteValue(TopCol, writer, "TopCol");
-    MaterialValue::WriteValue(SkyDir, writer, "SkyDir");
+    MaterialValueGraph graph(List<const MaterialValue*>(BottomCol.Get(), TopCol.Get(), SkyDir.Get()));
+    writer.WriteDataStructure(graph, "BottomCol_TopCol_SkyDir");
 }
 void SkyMaterial_VerticalGradient::ReadData(DataReader& reader)
 {
     SkyMaterial::ReadData(reader);
 
-    MaterialValue::ReadValue(BottomCol, reader, "BottomCol");
-    MaterialValue::ReadValue(TopCol, reader, "TopCol");
-    MaterialValue::ReadValue(SkyDir, reader, "SkyDir");
+    MaterialValueGraph graph;
+    reader.ReadDataStructure(graph, "BottomCol_TopCol_SkyDir");
+
+    BottomCol = graph.GetRootVals()[0];
+    TopCol = graph.GetRootVals()[1];
+    SkyDir = graph.GetRootVals()[2];
 }

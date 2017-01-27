@@ -1,5 +1,6 @@
 #include "../Headers/Material_Lambert.h"
 
+#include "../Headers/MaterialValueGraph.h"
 using namespace RT;
 
 
@@ -21,10 +22,16 @@ bool Material_Lambert::Scatter(const Ray& rIn, const Vertex& surface, const Shap
 void Material_Lambert::WriteData(DataWriter& writer) const
 {
     Material::WriteData(writer);
-    MaterialValue::WriteValue(Color, writer, "Color");
+
+    MaterialValueGraph graph(List<const MaterialValue*>(Color.Get()));
+    writer.WriteDataStructure(graph, "Color");
 }
 void Material_Lambert::ReadData(DataReader& reader)
 {
     Material::ReadData(reader);
-    MaterialValue::ReadValue(Color, reader, "Color");
+
+    MaterialValueGraph graph;
+    reader.ReadDataStructure(graph, "Color");
+
+    Color = graph.GetRootVals()[0];
 }

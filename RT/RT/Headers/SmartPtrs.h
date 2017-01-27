@@ -64,6 +64,8 @@ namespace RT
 
         void Reset(T* newPtr = nullptr) { ptr.reset(newPtr); }
 
+        bool operator==(const SharedPtr<T>& other) const { return ptr.get() == other.ptr.get(); }
+
 
     private:
 

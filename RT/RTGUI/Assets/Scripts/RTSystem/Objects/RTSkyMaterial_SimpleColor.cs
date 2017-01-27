@@ -31,12 +31,18 @@ namespace RT
 		public override void WriteData(Serialization.DataWriter writer)
 		{
 			base.WriteData(writer);
-			MaterialValue.MV_Base.Serialize(Color, "Color", writer);
+
+			var graph = new MaterialValue.Graph(new List<MaterialValue.MV_Base>() { Color });
+			writer.Structure(graph, "Color");
 		}
 		public override void ReadData(Serialization.DataReader reader)
 		{
 			base.ReadData(reader);
-			Color = MaterialValue.MV_Base.Deserialize("Color", reader);
+
+			var graph = new MaterialValue.Graph();
+			reader.Structure(graph, "Color");
+
+			Color = graph.RootValues[0];
 		}
 	}
 }

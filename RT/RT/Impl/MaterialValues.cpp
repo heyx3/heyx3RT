@@ -22,8 +22,6 @@ ADD_MVAL_REFLECTION_DATA_CPP(MV_ShapePos);
 ADD_MVAL_REFLECTION_DATA_CPP(MV_ShapeScale);
 ADD_MVAL_REFLECTION_DATA_CPP(MV_ShapeRot);
 
-ADD_MVAL_REFLECTION_DATA_CPP(MV_Dot);
-
 ADD_MVAL_REFLECTION_DATA_CPP(MV_Swizzle);
 
 ADD_MVAL_REFLECTION_DATA_CPP(MV_PureNoise);
@@ -38,21 +36,23 @@ namespace
 }
 
 
-void MV_Constant::WriteData(DataWriter& writer) const
+void MV_Constant::WriteData(DataWriter& data, const String& namePrefix,
+                            const ConstMaterialValueToID& idLookup) const
 {
-    MaterialValue::WriteData(writer);
-    writer.WriteDataStructure(Vectorf_Writable(Value), "Value");
+    MaterialValue::WriteData(data, namePrefix, idLookup);
+    data.WriteDataStructure(Vectorf_Writable(Value), namePrefix + "Value");
 }
-void MV_Constant::ReadData(DataReader& reader)
+void MV_Constant::ReadData(DataReader& data, const String& namePrefix,
+                           NodeToChildIDs& childIDLookup)
 {
-    MaterialValue::ReadData(reader);
-    reader.ReadDataStructure(Vectorf_Readable(Value), "Value");
+    MaterialValue::ReadData(data, namePrefix, childIDLookup);
+    data.ReadDataStructure(Vectorf_Readable(Value), namePrefix + "Value");
 }
 
 
 MV_Tex2D::MV_Tex2D(const String& _filePath, String& errMsg,
                    Ptr uv, Texture2D::SupportedFileTypes type)
-    : UV(uv.Release())
+    : UV(uv)
 {
     errMsg = Reload(_filePath, type);
 }
@@ -75,65 +75,6 @@ String MV_Tex2D::Reload(const String& _filePath,
     }
 }
 
-void MV_Tex2D::WriteData(DataWriter& writer) const
-{
-    MaterialValue::WriteData(writer);
-    writer.WriteString(filePath, "FilePath");
-    switch (fileType)
-    {
-        case Texture2D::BMP:
-            writer.WriteString("BMP", "FileType");
-            break;
-        case Texture2D::PNG:
-            writer.WriteString("PNG", "FileType");
-            break;
-        case Texture2D::UNKNOWN:
-            writer.WriteString("Automatic", "FileType");
-            break;
-        default:
-            writer.ErrorMessage = "Unknown Texture2D-supported file-type: ";
-            writer.ErrorMessage += String(fileType);
-            throw DataWriter::EXCEPTION_FAILURE;
-    }
-    WriteValue(UV, writer, "UV");
-}
-void MV_Tex2D::ReadData(DataReader& reader)
-{
-    MaterialValue::ReadData(reader);
-    reader.ReadString(filePath, "FilePath");
-
-    String typeStr;
-    reader.ReadString(typeStr, "FileType");
-
-    if (typeStr == "BMP")
-    {
-        fileType = Texture2D::BMP;
-    }
-    else if (typeStr == "PNG")
-    {
-        fileType = Texture2D::PNG;
-    }
-    else if (typeStr == "Automatic")
-    {
-        fileType = Texture2D::UNKNOWN;
-    }
-    else
-    {
-        reader.ErrorMessage = "Unknown Texture2D-supported file-type: ";
-        reader.ErrorMessage += typeStr;
-        throw DataReader::EXCEPTION_FAILURE;
-    }
-
-    ReadValue(UV, reader, "UV");
-
-    //Try loading the texture.
-    String err = Reload();
-    if (err.GetSize() > 0)
-    {
-        reader.ErrorMessage = String("Couldn't load tex file '") + filePath + "': " + err;
-        throw DataReader::EXCEPTION_FAILURE;
-    }
-}
 
 Vectorf MV_Swizzle::GetValue(const Ray& ray, FastRand& prng,
                              const Shape* shpe, const Vertex* surface) const
@@ -147,21 +88,26 @@ Vectorf MV_Swizzle::GetValue(const Ray& ray, FastRand& prng,
 
     return out;
 }
-void MV_Swizzle::WriteData(DataWriter& writer) const
+
+void MV_Swizzle::WriteData(DataWriter& data, const String& namePrefix,
+                           const ConstMaterialValueToID& idLookup) const
 {
-    WriteValue(Val, writer, "Val");
-    writer.WriteByte(NValues, "NValues");
+    MaterialValue::WriteData(data, namePrefix, idLookup);
+
+    data.WriteByte(NValues, namePrefix + "NValues");
     for (size_t i = 0; i < NValues; ++i)
-        writer.WriteByte(Swizzle[i], RT::String("Value") + RT::String(i));
+        data.WriteByte(Swizzle[i], namePrefix + "Value" + RT::String(i));
 }
-void MV_Swizzle::ReadData(DataReader& reader)
+void MV_Swizzle::ReadData(DataReader& data, const String& namePrefix,
+                          NodeToChildIDs& childIDLookup)
 {
-    ReadValue(Val, reader, "Val");
-    reader.ReadByte(NValues, "NValues");
+    MaterialValue::ReadData(data, namePrefix, childIDLookup);
+
+    data.ReadByte(NValues, namePrefix + "NValues");
     for (size_t i = 0; i < NValues; ++i)
     {
         unsigned char c;
-        reader.ReadByte(c, RT::String("Value") + RT::String(i));
+        data.ReadByte(c, namePrefix + "Value" + RT::String(i));
         Swizzle[i] = (Components)c;
     }
 }
@@ -177,16 +123,18 @@ Vectorf MV_PureNoise::GetValue(const Ray& ray, FastRand& prng,
         noiseVal[i] = prng.NextFloat();
     return noiseVal;
 }
-void MV_PureNoise::WriteData(DataWriter& writer) const
+void MV_PureNoise::WriteData(DataWriter& data, const String& namePrefix,
+                             const ConstMaterialValueToID& idLookup) const
 {
-    MaterialValue::WriteData(writer);
-    writer.WriteByte(NDims, "Dimensions");
+    MaterialValue::WriteData(data, namePrefix, idLookup);
+    data.WriteByte(NDims, namePrefix + "Dimensions");
 }
-void MV_PureNoise::ReadData(DataReader& reader)
+void MV_PureNoise::ReadData(DataReader& data, const String& namePrefix,
+                            NodeToChildIDs& childIDLookup)
 {
-    MaterialValue::ReadData(reader);
+    MaterialValue::ReadData(data, namePrefix, childIDLookup);
     unsigned char b;
-    reader.ReadByte(b, "Dimensions");
+    data.ReadByte(b, namePrefix + "Dimensions");
     NDims = (Dimensions)b;
 }
 
@@ -223,7 +171,7 @@ void MV_PureNoise::ReadData(DataReader& reader)
             accumVal; \
         return val; \
     } \
-    void MV_##name::RemoveElement(MaterialValue* ptr) \
+    void MV_##name::RemoveElement(const MaterialValue* ptr) \
     { \
         for (size_t i = 0; i < listParamName.size(); ++i) \
         { \
@@ -234,30 +182,15 @@ void MV_PureNoise::ReadData(DataReader& reader)
             } \
         } \
     } \
-    void MV_##name::WriteData(DataWriter& writer) const \
+    void MV_##name::SetChild(size_t i, const Ptr& newChild) \
     { \
-        MaterialValue::WriteData(writer); \
-        writer.WriteList<Ptr>(listParamName.data(), listParamName.size(), \
-                              [](DataWriter& wr, const Ptr& p, const String& n) \
-                              { wr.WriteString(p->GetTypeName(), n + "Type"); \
-                                wr.WriteDataStructure(*p, n + "Value"); }, \
-                              "Items"); \
-    } \
-    void MV_##name::ReadData(DataReader& reader) \
-    { \
-        MaterialValue::ReadData(reader); \
-        reader.ReadList<Ptr>(&listParamName, \
-                             [](void* pList, size_t nElements) \
-                                { ((std::vector<Ptr>*)pList)->resize(nElements); }, \
-                             [](DataReader& rdr, void* pList, size_t listIndex, const String& n) \
-                             { \
-                                 std::vector<Ptr>& list = *(std::vector<Ptr>*)pList; \
-                                 String typeName; \
-                                 rdr.ReadString(typeName, n + "Type"); \
-                                 list.push_back(Create(typeName)); \
-                                 rdr.ReadDataStructure(*list[list.size() - 1], n + "Value"); \
-                             }, \
-                             "Items"); \
+        if (listParamName.size() > i) \
+            listParamName[i] = newChild; \
+        else \
+        { \
+            assert(listParamName.size() == i); \
+            listParamName.push_back(newChild); \
+        } \
     }
 #define IMPL_SIMPLE_FUNC1(name, valFuncBody) \
     ADD_MVAL_REFLECTION_DATA_CPP(MV_##name); \
@@ -295,6 +228,8 @@ IMPL_SIMPLE_FUNC1(Normalize, return GET_VAL(X).Normalized(); );
 IMPL_SIMPLE_FUNC1(Length, return GET_VAL(X).Length(););
 IMPL_SIMPLE_FUNC(Distance,
                  return GET_VAL(A).Distance(GET_VAL(B)); ,
+                 return One; );
+IMPL_SIMPLE_FUNC(Dot, return GET_VAL(A).Dot(GET_VAL(B)); ,
                  return One; );
 
 IMPL_SIMPLE_FUNC1(Sqrt, return GET_VAL(X).OperateOn(&sqrtf); );

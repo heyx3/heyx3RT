@@ -30,7 +30,7 @@ C_RT_API float* rt_GenerateImage(unsigned int imgWidth, unsigned int imgHeight, 
                                  float camPosX, float camPosY, float camPosZ,
                                  float camForwardX, float camForwardY, float camForwardZ,
                                  float camUpX, float camUpY, float camUpZ,
-                                 const char* sceneJSONPath, const char* rootJSONObjName);
+                                 const char* sceneJSONPath);
 //Frees up the data returned by "GenerateImage()".
 //Failing to call this when finished with the data results in a memory leak.
 C_RT_API void rt_ReleaseImage(float* img);
@@ -54,4 +54,4 @@ C_RT_API unsigned char rt_GetError(unsigned int imgWidth, unsigned int imgHeight
                                    float camPosX, float camPosY, float camPosZ,
                                    float camForwardX, float camForwardY, float camForwardZ,
                                    float camUpX, float camUpY, float camUpZ,
-                                   const char* sceneJSONPath, const char* rootJSONObjName);
+                                   const char* sceneJSONPath);

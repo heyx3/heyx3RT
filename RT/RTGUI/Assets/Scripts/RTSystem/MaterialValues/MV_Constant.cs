@@ -4,8 +4,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using UnityEditor;
-
-
+using RT.Serialization;
 
 namespace RT.MaterialValue
 {
@@ -110,17 +109,19 @@ namespace RT.MaterialValue
 								  StringBuilder cgDefinitions,
 								  StringBuilder cgFunctionBody) { }
 
-		public override void WriteData(Serialization.DataWriter writer)
+		public override void WriteData(DataWriter writer, string namePrefix,
+									   Dictionary<MV_Base, uint> idLookup)
 		{
-			base.WriteData(writer);
-			writer.Structure(Value, "Value");
-			valueEditor.WriteData(writer, "Editor");
+			base.WriteData(writer, namePrefix, idLookup);
+			writer.Structure(Value, namePrefix + "Value");
+			valueEditor.WriteData(writer, namePrefix + "Editor");
 		}
-		public override void ReadData(Serialization.DataReader reader)
+		public override void ReadData(DataReader reader, string namePrefix,
+									  Dictionary<MV_Base, List<uint>> childIDsLookup)
 		{
-			base.ReadData(reader);
-			reader.Structure(Value, "Value");
-			valueEditor.ReadData(reader, "Editor");
+			base.ReadData(reader, namePrefix, childIDsLookup);
+			reader.Structure(Value, namePrefix + "Value");
+			valueEditor.ReadData(reader, namePrefix + "Editor");
 		}
 	}
 }

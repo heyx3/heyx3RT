@@ -14,7 +14,7 @@ namespace RT
 
 
         SkyMaterial_SimpleColor(MaterialValue::Ptr col = new MV_Constant(Vector3f(0.5f, 0.5f, 1.0f)))
-            : Color(col.Release()) { }
+            : Color(col) { }
 
 
         virtual Vector3f GetColor(const Ray& ray, FastRand& prng) const override;

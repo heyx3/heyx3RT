@@ -17,6 +17,8 @@ namespace RT.Serialization
 			{
 				writer = new Newtonsoft.Json.JsonTextWriter(new System.IO.StreamWriter(filePath));
 				writer.Indentation = 4;
+				writer.Formatting = Newtonsoft.Json.Formatting.Indented;
+				writer.IndentChar = '\t';
 				writer.IndentChar = ' ';
 
 				writer.WriteStartObject();

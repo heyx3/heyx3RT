@@ -165,6 +165,16 @@ namespace RT
 														out MaterialValue.MV_Base smoothness,
 														HashSet<MaterialValue.MV_Base> toDelete);
 
+		/// <summary>
+		/// Outputs into the given dictionary the MaterialValues that define this material.
+		/// </summary>
+		public abstract void GetMVs(Dictionary<string, MaterialValue.MV_Base> outVals);
+		/// <summary>
+		/// Tells the material (passed as an argument for convenience) to use the given MaterialValues.
+		/// </summary>
+		public abstract void SetMVs(Dictionary<string, MaterialValue.MV_Base> newVals);
+
+
 		public virtual void WriteData(Serialization.DataWriter writer) { }
 		public virtual void ReadData(Serialization.DataReader reader)
 		{

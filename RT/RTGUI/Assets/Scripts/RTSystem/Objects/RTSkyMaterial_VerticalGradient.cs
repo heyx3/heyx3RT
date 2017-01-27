@@ -51,16 +51,20 @@ namespace RT
 		public override void WriteData(Serialization.DataWriter writer)
 		{
 			base.WriteData(writer);
-			MV_Base.Serialize(BottomColor, "BottomCol", writer);
-			MV_Base.Serialize(TopColor, "TopCol", writer);
-			MV_Base.Serialize(SkyDir, "SkyDir", writer);
+
+			var graph = new MaterialValue.Graph(new List<MV_Base>() { BottomColor, TopColor, SkyDir });
+			writer.Structure(graph, "BottomCol_TopCol_SkyDir");
 		}
 		public override void ReadData(Serialization.DataReader reader)
 		{
 			base.ReadData(reader);
-			BottomColor = MV_Base.Deserialize("BottomCol", reader);
-			TopColor = MV_Base.Deserialize("TopCol", reader);
-			SkyDir = MV_Base.Deserialize("SkyDir", reader);
+
+			var graph = new MaterialValue.Graph();
+			reader.Structure(graph, "BottomCol_TopCol_SkyDir");
+
+			BottomColor = graph.RootValues[0];
+			TopColor = graph.RootValues[1];
+			SkyDir = graph.RootValues[2];
 		}
 	}
 }

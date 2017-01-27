@@ -3,6 +3,7 @@
 #include "Main.hpp"
 #include "FastRand.h"
 #include "Ray.h"
+#include "SmartPtrs.h"
 #include "DataSerialization.h"
 
 
@@ -13,9 +14,9 @@ namespace RT
     {
     public:
 
-        //Allocates a sky material on the heap with the given type-name.
-        //Used in the serialization system.
-        static SkyMaterial* Create(const String& typeName) { return GetFactory(typeName)(); }
+        //Creates a sky material with the given type-name.
+        //Used for serialization.
+        static SharedPtr<SkyMaterial> Create(const String& typeName) { return GetFactory(typeName)(); }
 
         //Writes out the data for the given SkyMaterial.
         static void WriteValue(const SkyMaterial& mat, DataWriter& writer, const String& name)
@@ -23,9 +24,8 @@ namespace RT
             writer.WriteString(mat.GetTypeName(), name + "Type");
             writer.WriteDataStructure(mat, name + "Value");
         }
-        //Reads in the given SkyMaterial.
-        //Note that the code calling this function is responsible for "delete"-ing the new material.
-        static void ReadValue(SkyMaterial*& outMat, DataReader& reader, const String& name)
+        //Reads in a SkyMaterial.
+        static void ReadValue(SharedPtr<SkyMaterial>& outMat, DataReader& reader, const String& name)
         {
             String typeName;
             reader.ReadString(typeName, name + "Type");

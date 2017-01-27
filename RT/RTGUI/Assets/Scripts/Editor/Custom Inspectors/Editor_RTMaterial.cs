@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using UnityEditor;
-
+using RT.MaterialValue;
 
 namespace RT.CustomInspectors
 {
-	[CustomEditor(typeof(RTMaterial))]
-	public class Editor_RTMaterial : Editor
+	//TODO: Do this for SkyMaterial as well.
+
+	public abstract class Editor_RTMaterial : Editor
 	{
 		public override void OnInspectorGUI()
 		{
@@ -22,8 +23,23 @@ namespace RT.CustomInspectors
 
 			MyGUI.BeginCompact();
 			if (GUILayout.Button("Edit material"))
-				{ }//TODO: Show material editor.
+			{
+				Dictionary<string, MV_Base> matVals = new Dictionary<string, MV_Base>();
+				mat.GetMVs(matVals);
+				MatEditor.MatEditorWindow.Create(mat, matVals);
+			}
 			MyGUI.EndCompact();
+
+			CustomInspectorGUI(mat);
 		}
+
+		protected virtual void CustomInspectorGUI(RTMaterial mat) { }
 	}
+
+
+	[CustomEditor(typeof(RTMaterial_Lambert))]
+	public class Editor_RTMaterial_Lambert : Editor_RTMaterial { }
+
+	[CustomEditor(typeof(RTMaterial_Metal))]
+	public class Editor_RTMaterial_Metal : Editor_RTMaterial { }
 }
