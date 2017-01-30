@@ -41,7 +41,7 @@ using namespace RT;
 
 
 
-int haha(int argc, const char* argv[])
+int main(int argc, const char* argv[])
 {
     //Aquire the arguments.
     std::string errorMsg;
