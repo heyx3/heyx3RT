@@ -40,7 +40,7 @@ namespace RT.CustomInspectors
 															  Application.dataPath, "Scene", "json");
 				if (filePath != null && filePath != "")
 				{
-					string err = sys.ToFile(filePath, "scene");
+					string err = sys.ToFile(filePath);
 					if (err.Length > 0)
 						EditorUtility.DisplayDialog("Error saving scene file", err, "OK");
 				}
@@ -55,7 +55,7 @@ namespace RT.CustomInspectors
 															  Application.dataPath, "json");
 				if (filePath != null && filePath != "")
 				{
-					string err = sys.FromFile(filePath, "scene");
+					string err = sys.FromFile(filePath);
 					if (err.Length > 0)
 						EditorUtility.DisplayDialog("Error loading scene file", err, "OK");
 				}
@@ -147,11 +147,11 @@ namespace RT.CustomInspectors
 							tempPath = Path.Combine(tempDir, i.ToString() + ".json");
 						}
 
-						sys.ToFile(tempPath, "scene");
+						sys.ToFile(tempPath);
 
 						//Generate the texture.
 						Camera c = UnityEditor.SceneView.lastActiveSceneView.camera;
-						Texture2D tex = sys.GenerateImage(c.transform, tempPath, "scene");
+						Texture2D tex = sys.GenerateImage(c.transform, tempPath);
 						if (tex != null)
 						{
 							try

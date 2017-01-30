@@ -10,22 +10,15 @@ namespace RT
 	public class RTSkyMaterial_VerticalGradient : RTSkyMaterial
 	{
 		public override string TypeName { get { return TypeName_VerticalGradient; } }
+		protected override string GraphSerializationName { get { return "BottomCol_TopCol_SkyDir"; } }
 
-		public override IEnumerable<KeyValuePair<string, MaterialValue.MV_Base>> Outputs
-		{
-			get
-			{
-				yield return new KeyValuePair<string, MV_Base>("Bottom Color", BottomColor);
-				yield return new KeyValuePair<string, MV_Base>("Top Color", TopColor);
-				yield return new KeyValuePair<string, MV_Base>("Sky Direction", SkyDir);
-			}
-		}
 
-		
-		public MV_Base BottomColor = MV_Constant.MakeRGB(UnityEngine.Color.black),
-					   TopColor = MV_Constant.MakeRGB(UnityEngine.Color.cyan),
-					   SkyDir = MV_Constant.MakeVec3(0.0f, 1.0f, 0.0f,
-													 0.0f, 1.0f, MaterialValue.OutputSizes.One);
+		public MV_Base BottomColor { get { return Graph.RootValues[0]; }
+									 set { Graph.RootValues[0] = value; } }
+		public MV_Base TopColor { get { return Graph.RootValues[1]; }
+								  set { Graph.RootValues[1] = value; } }
+		public MV_Base SkyDir { get { return Graph.RootValues[2]; }
+								set { Graph.RootValues[2] = value; } }
 
 
 		protected override void GetUnityMaterialOutputs(out MV_Base outRGB, HashSet<MV_Base> toDelete)
@@ -47,24 +40,27 @@ namespace RT
 			outRGB = MV_Simple3.Lerp(BottomColor, TopColor, dotRaySkyMapped);
 			toDelete.Add(outRGB);
 		}
-		
-		public override void WriteData(Serialization.DataWriter writer)
-		{
-			base.WriteData(writer);
 
-			var graph = new MaterialValue.Graph(new List<MV_Base>() { BottomColor, TopColor, SkyDir });
-			writer.Structure(graph, "BottomCol_TopCol_SkyDir");
+		public override void Start()
+		{
+			//Bottom color.
+			Graph.RootValues.Add(MaterialValue.MV_Constant.MakeRGB(new Color(0.2f, 0.4f, 0.8f)));
+			//Top color.
+			Graph.RootValues.Add(MaterialValue.MV_Constant.MakeRGB(new Color(0.7f, 0.7f, 1.0f)));
+			//Sky dir.
+			Graph.RootValues.Add(MV_Constant.MakeVec3(0.0f, 1.0f, 0.0f,
+													  0.0f, 1.0f, OutputSizes.Three));
+
+			base.Start();
 		}
-		public override void ReadData(Serialization.DataReader reader)
+
+		public override string GetRootNodeDisplayName(int rootNodeIndex)
 		{
-			base.ReadData(reader);
-
-			var graph = new MaterialValue.Graph();
-			reader.Structure(graph, "BottomCol_TopCol_SkyDir");
-
-			BottomColor = graph.RootValues[0];
-			TopColor = graph.RootValues[1];
-			SkyDir = graph.RootValues[2];
+			return (rootNodeIndex == 0 ?
+						"Bottom Color (rgb)" :
+						(rootNodeIndex == 1 ?
+							"Top Color (rgb)" :
+							"Sky Direction (xyz)"));
 		}
 	}
 }

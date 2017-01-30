@@ -66,7 +66,7 @@ namespace RT
 		/// Saves the scene to the given JSON file.
 		/// Returns an error message, or the empty string if everything went fine.
 		/// </summary>
-		public string ToFile(string filePath, string rootObjectName)
+		public string ToFile(string filePath)
 		{
 			Scene scene = new Scene();
 
@@ -75,7 +75,7 @@ namespace RT
 				string errMsg = "";
 				try
 				{
-					writer.Structure(scene, rootObjectName);
+					writer.Structure(scene, "data");
 				}
 				catch (Exception e)
 				{
@@ -91,7 +91,7 @@ namespace RT
 		/// Doesn't change anything currently in the scene.
 		/// Returns an error message, or the empty string if everything went fine.
 		/// </summary>
-		public string FromFile(string filePath, string rootObjectName)
+		public string FromFile(string filePath)
 		{
 			string errMsg = "";
 			try
@@ -103,7 +103,7 @@ namespace RT
 
 				//Read in the new scene.
 				Serialization.JSONReader reader = new Serialization.JSONReader(filePath);
-				reader.Structure(new RT.Scene(), rootObjectName);
+				reader.Structure(new RT.Scene(), "data");
 			}
 			catch (Exception e)
 			{
@@ -117,14 +117,14 @@ namespace RT
 		/// <summary>
 		/// If something went wrong, returns null and prints an error.
 		/// </summary>
-		public Texture2D GenerateImage(Transform cam, string sceneJSON, string sceneJSONRootName)
+		public Texture2D GenerateImage(Transform cam, string sceneJSON)
 		{
 			Texture2D tex = new Texture2D(ImgSizeX, ImgSizeY, TextureFormat.RGBA32, false);
 
-			string err = C_API.rt_GenerateImage(tex, (uint)SamplesPerPixel, (uint)MaxBounces,
-												(uint)NThreads, FovScale, Gamma,
-									 		    cam.position, cam.forward, cam.up,
-												sceneJSON, sceneJSONRootName);
+			string err = C_API.GenerateImage(tex, (uint)SamplesPerPixel, (uint)MaxBounces,
+											 (uint)NThreads, FovScale, Gamma,
+									 		 cam.position, cam.forward, cam.up,
+											 sceneJSON);
 			if (err.Length > 0)
 			{
 				Debug.LogError(err);

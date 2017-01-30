@@ -50,6 +50,11 @@ namespace RT.Serialization
 			writer.WritePropertyName(name);
 			writer.WriteValue(value);
 		}
+		public override void ULong(ulong value, string name)
+		{
+			writer.WritePropertyName(name);
+			writer.WriteValue(value);
+		}
 		public override void Float(float value, string name)
 		{
 			writer.WritePropertyName(name);
@@ -118,6 +123,10 @@ namespace RT.Serialization
 		public override uint UInt(string name)
 		{
 			return root.Value<uint>(name);
+		}
+		public override ulong ULong(string name)
+		{
+			return root.Value<ulong>(name);
 		}
 		public override float Float(string name)
 		{

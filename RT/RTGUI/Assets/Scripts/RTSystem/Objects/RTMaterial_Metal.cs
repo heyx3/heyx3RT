@@ -11,20 +11,24 @@ namespace RT
 	public class RTMaterial_Metal : RTMaterial
 	{
 		public override string TypeName { get { return TypeName_Metal; } }
+		protected override string GraphSerializationName { get { return "Albedo_Roughness"; } }
 
-		public override IEnumerable<KeyValuePair<string, MaterialValue.MV_Base>> Outputs
+
+		public MaterialValue.MV_Base Albedo { get { return Graph.RootValues[0]; }
+											  set { Graph.RootValues[0] = value; } }
+		public MaterialValue.MV_Base Roughness { get { return Graph.RootValues[1]; }
+												 set { Graph.RootValues[1] = value; } }
+
+
+		public override void Start()
 		{
-			get
-			{
-				yield return new KeyValuePair<string, MaterialValue.MV_Base>("Albedo", Albedo);
-				yield return new KeyValuePair<string, MaterialValue.MV_Base>("Roughness", Roughness);
-			}
+			//Albedo.
+			Graph.RootValues.Add(MaterialValue.MV_Constant.MakeFloat(1.0f));
+			//Roughness.
+			Graph.RootValues.Add(MaterialValue.MV_Constant.MakeFloat(0.5f));
+
+			base.Start();
 		}
-
-
-		public MaterialValue.MV_Base Albedo = MaterialValue.MV_Constant.MakeFloat(1.0f),
-									 Roughness = MaterialValue.MV_Constant.MakeFloat(0.5f);
-
 
 		protected override void GetUnityMaterialOutputs(out MaterialValue.MV_Base albedo,
 														out MaterialValue.MV_Base metallic,
@@ -41,36 +45,10 @@ namespace RT
 			toDelete.Add(constant1);
 			toDelete.Add(smoothness);
 		}
-
-		private static readonly string Name_Albedo = "Albedo (rgb)",
-									   Name_Roughness = "Roughness (scalar)";
-		public override void GetMVs(Dictionary<string, MaterialValue.MV_Base> outVals)
+		
+		public override string GetRootNodeDisplayName(int rootNodeIndex)
 		{
-			outVals.Add(Name_Albedo, Albedo);
-			outVals.Add(Name_Roughness, Roughness);
-		}
-		public override void SetMVs(Dictionary<string, MaterialValue.MV_Base> newVals)
-		{
-			Albedo = newVals[Name_Albedo];
-			Roughness = newVals[Name_Roughness];
-		}
-
-		public override void WriteData(Serialization.DataWriter writer)
-		{
-			base.WriteData(writer);
-
-			var graph = new MaterialValue.Graph(new List<MaterialValue.MV_Base>() { Albedo, Roughness });
-			writer.Structure(graph, "Albedo_Roughness");
-		}
-		public override void ReadData(Serialization.DataReader reader)
-		{
-			base.ReadData(reader);
-
-			var graph = new MaterialValue.Graph();
-			reader.Structure(graph, "Albedo_Roughness");
-
-			Albedo = graph.RootValues[0];
-			Roughness = graph.RootValues[1];
+			return (rootNodeIndex == 0 ? "Albedo (rgb)" : "Roughness (scalar)");
 		}
 	}
 }

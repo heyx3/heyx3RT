@@ -9,18 +9,18 @@ namespace RT
 	public class RTSkyMaterial_SimpleColor : RTSkyMaterial
 	{
 		public override string TypeName { get { return TypeName_SimpleColor; } }
+		protected override string GraphSerializationName { get { return "Color"; } }
 
-		public override IEnumerable<KeyValuePair<string, MaterialValue.MV_Base>> Outputs
+		public MaterialValue.MV_Base Color { get { return Graph.RootValues[0]; }
+											 set { Graph.RootValues[0] = value; } }
+
+
+		public override void Start()
 		{
-			get
-			{
-				yield return new KeyValuePair<string, MaterialValue.MV_Base>("Color", Color);
-			}
+			Graph.RootValues.Add(MaterialValue.MV_Constant.MakeRGB(UnityEngine.Color.cyan));
+
+			base.Start();
 		}
-
-
-		public MaterialValue.MV_Base Color = MaterialValue.MV_Constant.MakeRGB(UnityEngine.Color.cyan);
-
 
 		protected override void GetUnityMaterialOutputs(out MaterialValue.MV_Base outRGB,
 														HashSet<MaterialValue.MV_Base> toDelete)
@@ -28,21 +28,9 @@ namespace RT
 			outRGB = Color;
 		}
 
-		public override void WriteData(Serialization.DataWriter writer)
+		public override string GetRootNodeDisplayName(int rootNodeIndex)
 		{
-			base.WriteData(writer);
-
-			var graph = new MaterialValue.Graph(new List<MaterialValue.MV_Base>() { Color });
-			writer.Structure(graph, "Color");
-		}
-		public override void ReadData(Serialization.DataReader reader)
-		{
-			base.ReadData(reader);
-
-			var graph = new MaterialValue.Graph();
-			reader.Structure(graph, "Color");
-
-			Color = graph.RootValues[0];
+			return "Color (rgb)";
 		}
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 using UnityEngine;
 using UnityEditor;
@@ -68,8 +69,9 @@ namespace RT
 
 
 		public abstract string TypeName { get; }
+		protected abstract string GraphSerializationName { get; }
 
-		public abstract IEnumerable<KeyValuePair<string, MaterialValue.MV_Base>> Outputs { get; }
+		public MaterialValue.Graph Graph { get; private set; }
 
 
 		public virtual void Awake()
@@ -80,12 +82,17 @@ namespace RT
 			MeshRenderer mr = GetComponent<MeshRenderer>();
 			if (mr == null)
 				mr = gameObject.AddComponent<MeshRenderer>();
-			RegenerateMaterial(mr);
+
+			Graph = new MaterialValue.Graph();
+		}
+		public virtual void Start()
+		{
+			RegenerateMaterial(GetComponent<MeshRenderer>());
 		}
 		protected virtual void OnDestroy()
 		{
-			foreach (var nameAndVal in Outputs)
-				nameAndVal.Value.Delete();
+			foreach (var node in Graph.RootValues.Concat(Graph.ExtraNodes))
+				node.Delete(true);
 
 			Materials.Remove(this);
 			
@@ -149,8 +156,8 @@ namespace RT
 			}
 
 			//Clean up.
-			foreach (MaterialValue.MV_Base tempVal in toDelete)
-				tempVal.Delete();
+			foreach (var tempNode in toDelete)
+				tempNode.Delete(false);
 		}
 
 		/// <summary>
@@ -166,21 +173,21 @@ namespace RT
 														HashSet<MaterialValue.MV_Base> toDelete);
 
 		/// <summary>
-		/// Outputs into the given dictionary the MaterialValues that define this material.
+		/// Gets the display name of the given root node.
 		/// </summary>
-		public abstract void GetMVs(Dictionary<string, MaterialValue.MV_Base> outVals);
-		/// <summary>
-		/// Tells the material (passed as an argument for convenience) to use the given MaterialValues.
-		/// </summary>
-		public abstract void SetMVs(Dictionary<string, MaterialValue.MV_Base> newVals);
+		/// <param name="rootNodeIndex">
+		/// The index of the node in "Graph.RootValues" to get the name of.
+		/// </param>
+		public abstract string GetRootNodeDisplayName(int rootNodeIndex);
 
 
-		public virtual void WriteData(Serialization.DataWriter writer) { }
+		public virtual void WriteData(Serialization.DataWriter writer)
+		{
+			writer.Structure(Graph, GraphSerializationName);
+		}
 		public virtual void ReadData(Serialization.DataReader reader)
 		{
-			//Clean up the outputs before the new ones are read.
-			foreach (var nameAndVal in Outputs)
-				nameAndVal.Value.Delete();
+			reader.Structure(Graph, GraphSerializationName);
 		}
 	}
 }

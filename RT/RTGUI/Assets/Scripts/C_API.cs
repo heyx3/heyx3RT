@@ -7,16 +7,20 @@ using UnityEditor;
 
 namespace RT
 {
+	/// <summary>
+	/// The C API for RT.
+	/// Allows Unity C# code to interface with RT.dll.
+	/// </summary>
 	public static class C_API
 	{
 		/// <summary>
 		/// Returns an error message, or an empty string if everything went fine.
 		/// </summary>
-		public static string rt_GenerateImage(Texture2D outTex, uint samplesPerPixel,
-							  				  uint maxBounces, uint nThreads,
-											  float fovScale, float gamma,
-											  Vector3 camPos, Vector3 camForward, Vector3 camUp,
-											  string sceneJSONPath, string rootJSONObjName)
+		public static string GenerateImage(Texture2D outTex, uint samplesPerPixel,
+							  			   uint maxBounces, uint nThreads,
+										   float fovScale, float gamma,
+										   Vector3 camPos, Vector3 camForward, Vector3 camUp,
+										   string sceneJSONPath)
 		{
 			uint imgWidth = (uint)outTex.width,
 				 imgHeight = (uint)outTex.height;
@@ -25,7 +29,7 @@ namespace RT
 			byte err = rt_GetError(imgWidth, imgHeight, samplesPerPixel, maxBounces, nThreads,
 								   fovScale, gamma, camPos.x, camPos.y, camPos.z,
 								   camForward.x, camForward.y, camForward.z,
-								   camUp.x, camUp.y, camUp.z, sceneJSONPath, rootJSONObjName);
+								   camUp.x, camUp.y, camUp.z, sceneJSONPath);
 			if (err == rt_ERRORCODE_BAD_JSON())
 				return "Badly-forced JSON in " + sceneJSONPath;
 			else if (err == rt_ERRORCODE_BAD_SIZE())
@@ -41,7 +45,7 @@ namespace RT
 											   camPos.x, camPos.y, camPos.z,
 											   camForward.x, camForward.y, camForward.z,
 											   camUp.x, camUp.y, camUp.z,
-											   sceneJSONPath, rootJSONObjName);
+											   sceneJSONPath);
 			float[] floatArr = new float[imgWidth * imgHeight * 3];
 			Marshal.Copy(arrayPtr, floatArr, 0, floatArr.Length);
 			rt_ReleaseImage(arrayPtr);
@@ -69,7 +73,7 @@ namespace RT
 											   float camPosX, float camPosY, float camPosZ,
 											   float camForwardX, float camForwardY, float camForwardZ,
 											   float camUpX, float camUpY, float camUpZ,
-											   string sceneJSONPath, string rootJSONObjName);
+											   string sceneJSONPath);
 		
 		[DllImport("RT")]
 		private static extern byte rt_ERRORCODE_SUCCESS();
@@ -87,7 +91,7 @@ namespace RT
 													  float camPosX, float camPosY, float camPosZ,
 													  float camForwardX, float camForwardY, float camForwardZ,
 													  float camUpX, float camUpY, float camUpZ,
-													  string sceneJSONPath, string rootJSONObjName);
+													  string sceneJSONPath);
 		[DllImport("RT")]
 		private static extern void rt_ReleaseImage(IntPtr img);
 	}

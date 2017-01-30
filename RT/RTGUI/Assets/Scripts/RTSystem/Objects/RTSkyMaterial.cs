@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 using UnityEngine;
 using UnityEditor;
@@ -80,8 +81,9 @@ namespace RT
 
 
 		public abstract string TypeName { get; }
+		protected abstract string GraphSerializationName { get; }
 
-		public abstract IEnumerable<KeyValuePair<string, MaterialValue.MV_Base>> Outputs { get; }
+		public MaterialValue.Graph Graph { get; private set; }
 		
 		
 		public virtual void Awake()
@@ -96,12 +98,17 @@ namespace RT
 			MeshRenderer mr = GetComponent<MeshRenderer>();
 			if (mr == null)
 				mr = gameObject.AddComponent<MeshRenderer>();
-			RegenerateMaterial(mr);
+
+			Graph = new MaterialValue.Graph();
+		}
+		public virtual void Start()
+		{
+			RegenerateMaterial(GetComponent<MeshRenderer>());
 		}
 		protected virtual void OnDestroy()
 		{
-			foreach (var nameAndVal in Outputs)
-				nameAndVal.Value.Delete();
+			foreach (var node in Graph.RootValues.Concat(Graph.ExtraNodes))
+				node.Delete(true);
 
 			AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myMat));
 			AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myShader));
@@ -173,7 +180,7 @@ namespace RT
 
 			//Clean up.
 			foreach (var tempVal in toDelete)
-				tempVal.Delete();
+				tempVal.Delete(false);
 		}
 
 		/// <summary>
@@ -186,15 +193,26 @@ namespace RT
 		/// </param>
 		protected abstract void GetUnityMaterialOutputs(out MaterialValue.MV_Base outRGB,
 														HashSet<MaterialValue.MV_Base> toDelete);
+		
+		/// <summary>
+		/// Gets the display name of the given root node.
+		/// </summary>
+		/// <param name="rootNodeIndex">
+		/// The index of the node in "Graph.RootValues" to get the name of.
+		/// </param>
+		public abstract string GetRootNodeDisplayName(int rootNodeIndex);
+
+
 
 		public virtual void WriteData(Serialization.DataWriter writer)
 		{
+			writer.Structure(Graph, GraphSerializationName);
+			writer.Float(Distance, "DrawDistance");
 		}
 		public virtual void ReadData(Serialization.DataReader reader)
 		{
-			//Clean up all the outputs before they get changed.
-			foreach (var nameAndVal in Outputs)
-				nameAndVal.Value.Delete();
+			reader.Structure(Graph, GraphSerializationName);
+			Distance = reader.Float("DrawDistance");
 		}
 	}
 }

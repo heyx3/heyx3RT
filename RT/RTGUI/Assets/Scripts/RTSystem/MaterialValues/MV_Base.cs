@@ -12,9 +12,10 @@ namespace RT.MaterialValue
 	[Serializable]
 	public abstract class MV_Base
 	{
-		private static Dictionary<uint, MV_Base> guidToValue = new Dictionary<uint, MV_Base>();
+		private static ulong nextGUID = 1;
+		private static Dictionary<ulong, MV_Base> guidToValue = new Dictionary<ulong, MV_Base>();
 
-		public static MV_Base GetValue(uint guid)
+		public static MV_Base GetValue(ulong guid)
 			{ return (guidToValue.ContainsKey(guid) ? guidToValue[guid] : null); }
 
 
@@ -131,11 +132,11 @@ namespace RT.MaterialValue
 							   TypeName_ShapeRot = "ShapeRot";
 		#endregion
 
-		public static readonly uint INVALID_GUID = 0;
+		public static readonly ulong INVALID_GUID = 0;
 
 		
 		[SerializeField]
-		private uint guid;
+		private ulong guid;
 
 		[SerializeField]
 		private Rect pos;
@@ -144,8 +145,9 @@ namespace RT.MaterialValue
 		private List<MV_Base> inputs = new List<MV_Base>();
 
 		
-		public uint GUID { get { return guid; }
-						   set { guidToValue.Remove(guid); guid = value; guidToValue.Add(guid, this); } }
+		public ulong GUID { get { return guid; }
+						    set { guidToValue.Remove(guid); guid = value; guidToValue.Add(guid, this); } }
+		public Rect Pos { get { return pos; } set { pos = value; } }
 
 		public IEnumerable<MV_Base> Inputs { get { return inputs; } }
 		public IEnumerable<MV_Base> Hierarchy
@@ -184,9 +186,8 @@ namespace RT.MaterialValue
 
 		public MV_Base()
 		{
-			guid = (guidToValue.Count == 0 ?
-						1 :
-						(guidToValue.Max((kvp) => kvp.Key) + 1));
+			guid = nextGUID;
+			nextGUID += 1;
 			guidToValue.Add(guid, this);
 
 			//Double-check that this sub-class is serializable.
@@ -201,12 +202,18 @@ namespace RT.MaterialValue
 
 
 		/// <summary>
-		/// Cleans up the GUID allocated for this instance, plus the GUIDs of every input instance.
+		/// Cleans up the GUID allocated for this instance.
 		/// </summary>
-		public void Delete()
+		public void Delete(bool deleteChildren)
 		{
-			foreach (MV_Base b in Hierarchy)
-				guidToValue.Remove(b.guid);
+			if (guidToValue.ContainsKey(guid))
+			{
+				guidToValue.Remove(guid);
+
+				if (deleteChildren)
+					foreach (MV_Base input in Inputs)
+						input.Delete(true);
+			}
 		}
 
 		/// <summary>
@@ -288,7 +295,7 @@ namespace RT.MaterialValue
 		public virtual void WriteData(Serialization.DataWriter writer, string namePrefix,
 									  Dictionary<MV_Base, uint> idLookup)
 		{
-			writer.UInt(guid, namePrefix + "GUID");
+			writer.ULong(guid, namePrefix + "GUID");
 			writer.Rect(pos, namePrefix + "Pos");
 
 			//Write children nodes as a list of their IDs.
@@ -304,7 +311,7 @@ namespace RT.MaterialValue
 		public virtual void ReadData(Serialization.DataReader reader, string namePrefix,
 									 Dictionary<MV_Base, List<uint>> childIDsLookup)
 		{
-			GUID = reader.UInt(namePrefix + "GUID");
+			GUID = reader.ULong(namePrefix + "GUID");
 			pos = reader.Rect(namePrefix + "Pos");
 
 			//Read children nodes as a list of their IDs.
@@ -466,5 +473,15 @@ namespace RT.MaterialValue
 			return result;
 		}
 		protected virtual GUIResults DoCustomGUI() { return GUIResults.Nothing; }
+
+
+		public override int GetHashCode()
+		{
+			return guid.GetHashCode();
+		}
+		public override bool Equals(object obj)
+		{
+			return obj is MV_Base && ((MV_Base)obj).guid == guid;
+		}
 	}
 }

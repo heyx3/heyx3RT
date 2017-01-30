@@ -12,11 +12,126 @@ namespace RT.MaterialValue
 	public class Graph : Serialization.ISerializableRT
 	{
 		public List<MV_Base> RootValues { get; private set; }
+		public HashSet<MV_Base> ExtraNodes { get; private set; }
 
-		public Graph() { RootValues = new List<MV_Base>(); }
+		public IEnumerable<MV_Base> AllConnectedNodes
+		{
+			get
+			{
+				tempNodeCollection.Clear();
+
+				foreach (MV_Base rootValue in RootValues)
+				{
+					foreach (MV_Base partOfRoot in rootValue.Hierarchy)
+					{
+						if (!tempNodeCollection.Contains(partOfRoot))
+						{
+							tempNodeCollection.Add(partOfRoot);
+							yield return partOfRoot;
+						}
+					}
+				}
+			}
+		}
+		public IEnumerable<MV_Base> AllNodes
+		{
+			get
+			{
+				tempNodeCollection.Clear();
+
+				foreach (MV_Base rootValue in RootValues)
+				{
+					foreach (MV_Base partOfRoot in rootValue.Hierarchy)
+					{
+						if (!tempNodeCollection.Contains(partOfRoot))
+						{
+							tempNodeCollection.Add(partOfRoot);
+							yield return partOfRoot;
+						}
+					}
+				}
+
+				foreach (MV_Base extraNode in ExtraNodes)
+				{
+					foreach (MV_Base partOfNode in extraNode.Hierarchy)
+					{
+						if (!tempNodeCollection.Contains(partOfNode))
+						{
+							tempNodeCollection.Add(partOfNode);
+							yield return partOfNode;
+						}
+					}
+				}
+			}
+		}
+		private HashSet<MV_Base> tempNodeCollection = new HashSet<MV_Base>();
+
+
+		public Graph()
+		{
+			RootValues = new List<MV_Base>();
+			ExtraNodes = new HashSet<MV_Base>();
+		}
 		public Graph(List<MV_Base> rootValues)
 		{
 			RootValues = new List<MV_Base>(rootValues);
+			ExtraNodes = new HashSet<MV_Base>();
+		}
+
+
+		/// <summary>
+		/// Gets whether the given node is connected to one of the root nodes.
+		/// </summary>
+		public bool IsConnected(MV_Base node)
+		{
+			foreach (MV_Base connectedNode in AllConnectedNodes)
+				if (node == connectedNode)
+					return true;
+			return false;
+		}
+
+		public Graph Clone()
+		{
+			//Serialize to a stream, then deserialize a new graph from that stream.
+
+			string filePath = Path.Combine(Application.dataPath, "..\\temp.temp");
+
+			const int maxAttempts = 10;
+
+			for (int i = 0; i < maxAttempts; ++i)
+			{
+				try
+				{
+					if (File.Exists(filePath))
+						File.Delete(filePath);
+
+					using (var writer = new Serialization.JSONWriter(filePath))
+					{
+						writer.Structure(this, "data");
+					}
+
+					Graph g = new Graph();
+					var reader = new Serialization.JSONReader(filePath);
+					reader.Structure(this, "data");
+
+					File.Delete(filePath);
+
+					return g;
+				}
+				catch (Exception e)
+				{
+					Debug.LogError("Unable to clone graph (will retry several times): |" + e.GetType().Name + "| " + e.Message +
+									   "\n" + e.StackTrace);
+				}
+			}
+
+			return null;
+		}
+		public void Clear()
+		{
+			ExtraNodes.Clear();
+			for (int i = 0; i < RootValues.Count; ++i)
+				RootValues[i] = MV_Constant.MakeFloat(1.0f);
 		}
 
 		public void WriteData(Serialization.DataWriter writer)
@@ -27,7 +142,7 @@ namespace RT.MaterialValue
 			uint nextID = uint.MinValue;
 			uint nNodes = 0;
 
-			Stack<MV_Base> toInvestigate = new Stack<MV_Base>(RootValues);
+			Stack<MV_Base> toInvestigate = new Stack<MV_Base>(RootValues.Concat(ExtraNodes));
 			while (toInvestigate.Count > 0)
 			{
 				var mv = toInvestigate.Pop();
@@ -50,10 +165,10 @@ namespace RT.MaterialValue
 			
 			List<MV_Base> toWrite = new List<MV_Base>();
 			Dictionary<MV_Base, bool> processedChildrenYet = new Dictionary<MV_Base, bool>();
-			for (int i = 0; i < RootValues.Count; ++i)
+			foreach (MV_Base node in RootValues.Concat(ExtraNodes))
 			{
-				toWrite.Add(RootValues[i]);
-				processedChildrenYet.Add(RootValues[i], false);
+				toWrite.Add(node);
+				processedChildrenYet.Add(node, false);
 			}
 
 			uint count = 0;
@@ -136,6 +251,41 @@ namespace RT.MaterialValue
 													val = rd.UInt(name);
 												});
 			RootValues = new List<MV_Base>(rootValIDs.Select(id => idLookup[id]));
+
+
+			//Figure out which nodes are extra/unused with a depth-first search.
+
+			HashSet<uint> usedNodes = new HashSet<uint>();
+			Stack<KeyValuePair<MV_Base, uint>> toProcess = new Stack<KeyValuePair<MV_Base, uint>>();
+			HashSet<MV_Base> processedAlready = new HashSet<MV_Base>();
+			foreach (uint rootValueID in rootValIDs)
+			{
+				usedNodes.Add(rootValueID);
+				toProcess.Push(new KeyValuePair<MV_Base, uint>(idLookup[rootValueID], rootValueID));
+			}
+
+			while (toProcess.Count > 0)
+			{
+				var mvAndID = toProcess.Pop();
+				for (int i = 0; i < mvAndID.Key.GetNInputs(); ++i)
+				{
+					var inputMV = mvAndID.Key.GetInput(i);
+					if (!processedAlready.Contains(inputMV))
+					{
+						uint inputMVID = idLookup.First(kvp => kvp.Value == inputMV).Key;
+						toProcess.Push(new KeyValuePair<MV_Base, uint>(inputMV, inputMVID));
+						processedAlready.Add(inputMV);
+						usedNodes.Add(inputMVID);
+					}
+				}
+			}
+
+			ExtraNodes.Clear();
+			foreach (var idAndNode in idLookup)
+			{
+				if (!usedNodes.Contains(idAndNode.Key))
+					ExtraNodes.Add(idAndNode.Value);
+			}
 		}
 	}
 }

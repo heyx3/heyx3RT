@@ -8,8 +8,6 @@ using RT.MaterialValue;
 
 namespace RT.CustomInspectors
 {
-	//TODO: Do this for SkyMaterial as well.
-
 	public abstract class Editor_RTMaterial : Editor
 	{
 		public override void OnInspectorGUI()
@@ -24,9 +22,7 @@ namespace RT.CustomInspectors
 			MyGUI.BeginCompact();
 			if (GUILayout.Button("Edit material"))
 			{
-				Dictionary<string, MV_Base> matVals = new Dictionary<string, MV_Base>();
-				mat.GetMVs(matVals);
-				MatEditor.MatEditorWindow.Create(mat, matVals);
+				MatEditor.MatEditorWindow.Create(mat, mat.Graph);
 			}
 			MyGUI.EndCompact();
 

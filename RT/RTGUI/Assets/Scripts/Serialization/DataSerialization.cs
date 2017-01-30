@@ -26,6 +26,7 @@ namespace RT.Serialization
 		public abstract void Byte(byte value, string name);
 		public abstract void Int(int value, string name);
 		public abstract void UInt(uint value, string name);
+		public abstract void ULong(ulong value, string name);
 		public abstract void Float(float value, string name);
 		public abstract void Double(double value, string name);
 		public abstract void String(string value, string name);
@@ -99,6 +100,7 @@ namespace RT.Serialization
 		public abstract byte Byte(string name);
 		public abstract int Int(string name);
 		public abstract uint UInt(string name);
+		public abstract ulong ULong(string name);
 		public abstract float Float(string name);
 		public abstract double Double(string name);
 		public abstract string String(string name);
