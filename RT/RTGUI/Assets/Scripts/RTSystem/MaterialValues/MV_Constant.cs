@@ -87,9 +87,14 @@ namespace RT.MaterialValue
 		}
 
 
+		/// <summary>
+		/// If true, this instance is used by a single node
+		///     and should not be given its own node in the editor GUI.
+		/// </summary>
+		public bool IsInline = false;
+
 		[SerializeField]
 		private EditableVectorf valueEditor;
-
 		public EditableVectorf ValueEditor { get { return valueEditor; } }
 
 		public Vectorf Value { get { return valueEditor.V; } set { valueEditor.V = value; } }
@@ -113,15 +118,21 @@ namespace RT.MaterialValue
 									   Dictionary<MV_Base, uint> idLookup)
 		{
 			base.WriteData(writer, namePrefix, idLookup);
+
 			writer.Structure(Value, namePrefix + "Value");
 			valueEditor.WriteData(writer, namePrefix + "Editor");
+
+			writer.Bool(IsInline, "IsInline");
 		}
 		public override void ReadData(DataReader reader, string namePrefix,
 									  Dictionary<MV_Base, List<uint>> childIDsLookup)
 		{
 			base.ReadData(reader, namePrefix, childIDsLookup);
+
 			reader.Structure(Value, namePrefix + "Value");
 			valueEditor.ReadData(reader, namePrefix + "Editor");
+
+			IsInline = reader.Bool("IsInline");
 		}
 	}
 }
