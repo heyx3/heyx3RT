@@ -16,7 +16,7 @@ namespace RT.MatEditor
 		public RT.MaterialValue.Graph Graph { get; private set; }
 		public Func<int, string> RootIndexToDisplayName { get; private set; }
 
-		public event Action<Vector2> OnClickEmptySpace;
+		//public event Action<Vector2> OnClickEmptySpace;
 
 		/// <summary>
 		/// The position of the "camera" viewing the nodes.
@@ -287,7 +287,8 @@ namespace RT.MatEditor
 
 				if (GUILayout.Button("Disconnect"))
 				{
-					Graph.DisconnectInput(null, i);
+					//TODO: "Undo" here.
+					Graph.DisconnectInput(null, i, false);
 				}
 
 				GUILayout.Label(RootIndexToDisplayName(i));
@@ -301,7 +302,118 @@ namespace RT.MatEditor
 		}
 		private void GUIWindow_Node(int windowID)
 		{
-			//TODO: Implement.
+			//TODO: I feel like these horizontal GUILayout sections are too heavily-used.
+
+			GUILayout.BeginVertical();
+			GUILayout.BeginHorizontal();
+
+			MV_Base node = MV_Base.GetValue(unchecked((uint)(ulong)windowID));
+			
+			GUILayout.BeginHorizontal();
+			GUILayout.BeginVertical();
+			for (int i = 0; i < node.GetNInputs(); ++i)
+			{
+				GUILayout.BeginHorizontal();
+
+				GUILayout.Label(node.GetInputName(i));
+
+				//Button to select input.
+				string buttStr = "O";
+				if (reconnectingInputID == node.GUID && reconnectingInputIndex == i)
+					buttStr = "o";
+				if (GUILayout.Button(buttStr))
+				{
+					if (reconnectingOutputID != ulong.MaxValue)
+					{
+						//TODO: "Undo" here.
+						Graph.ConnectInput(node, i, MV_Base.GetValue(reconnectingOutputID));
+						reconnectingOutputID = ulong.MaxValue;
+					}
+					else
+					{
+						reconnectingInputID = node.GUID;
+						reconnectingInputIndex = i;
+					} 
+				}
+
+				//If this input is a constant, expose a little inline GUI to edit it more easily.
+				var constInput = node.GetInput(i) as MV_Constant;
+				if (constInput != null && constInput.IsInline)
+				{
+					if (constInput.ValueEditor.DoGUI())
+					{
+						//TODO: "Undo" here.
+					}
+				}
+				//Otherwise, draw a line to it and expose a button to release the connection.
+				else
+				{
+					const float OutputHeight = 30.0f,
+								TitleBarHeight = 30.0f,
+								InputSpacing = 20.0f;
+					Rect otherPos = node.GetInput(i).Pos;
+					Vector2 endPos = new Vector2(otherPos.xMax, otherPos.yMin + OutputHeight) -
+									   node.Pos.min;
+					MyGUI.DrawLine(new Vector2(0.0f, TitleBarHeight + (i * InputSpacing)),
+								   endPos, 2.0f, Color.white);
+
+					if (GUILayout.Button("Disconnect"))
+					{
+						//TODO: "Undo" here.
+						Graph.ConnectInput(node, i, node.GetDefaultInput(i));
+					}
+				}
+
+				//A button to remove this input.
+				if (node.HasVariableNumberOfChildren)
+				{
+					if (GUILayout.Button("X"))
+					{
+						//TODO: "Undo" here.
+						Graph.DisconnectInput(node, i, true);
+						i -= 1;
+					}
+				}
+
+				GUILayout.EndHorizontal();
+			}
+
+			//A button to add a new input.
+			if (node.HasVariableNumberOfChildren && GUILayout.Button("Add input"))
+			{
+				//TODO: "Undo" here.
+				Graph.ConnectInput(node, node.GetNInputs(), node.GetDefaultInput(node.GetNInputs()));
+			}
+			
+			MV_Base.GUIResults subResult = node.DoCustomGUI();
+			if (subResult != MaterialValue.MV_Base.GUIResults.Nothing)
+			{
+				//TODO: "Undo" here.
+			}
+			
+			GUILayout.EndVertical();
+			GUILayout.FlexibleSpace();
+			GUILayout.EndHorizontal();
+
+
+			//"Duplicate" and "Delete" buttons.
+			//TODO: A "Duplicate" button basically requires an abstract "Clone()" method on MV_Base.
+			GUILayout.BeginHorizontal();
+			/*if (GUILayout.Button("Duplicate"))
+			{
+				Rect newPos = ;
+				Graph.AddNode()
+			}*/
+			GUILayout.FlexibleSpace();
+			if (GUILayout.Button("Delete"))
+			{
+				//TODO: "Undo" here.
+				Graph.DeleteNode(node);
+			}
+			GUILayout.EndHorizontal();
+
+			GUILayout.EndHorizontal();
+			GUILayout.EndVertical();
 		}
 	}
 }

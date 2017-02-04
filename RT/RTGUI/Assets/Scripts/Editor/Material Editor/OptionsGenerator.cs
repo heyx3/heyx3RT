@@ -6,8 +6,8 @@ using UnityEditor;
 
 using RT.MaterialValue;
 
-using Category = MatEditor.NodeTree_Element_Category;
-using Option = MatEditor.NodeTree_Element_Option;
+using Category = RT.MatEditor.NodeTree_Element_Category;
+using Option = RT.MatEditor.NodeTree_Element_Option;
 
 
 namespace RT.MatEditor

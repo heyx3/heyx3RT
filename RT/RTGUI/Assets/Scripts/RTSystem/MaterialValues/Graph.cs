@@ -9,6 +9,8 @@ using UnityEditor;
 
 namespace RT.MaterialValue
 {
+	//TODO: If AddNode/DeleteNode/ConnectInput/DisconnectInput get too hard to debug, try changing "ExtraNodes" to become "AllNodes", and filter out any nodes connected to the root when serializing.
+
 	public class Graph : Serialization.ISerializableRT
 	{
 		public Rect OutputNodePos = new Rect(0.0f, 0.0f, 1.0f, 1.0f);
@@ -23,6 +25,9 @@ namespace RT.MaterialValue
 				tempNodeCollection.Clear();
 				foreach (MV_Base rootValue in RootValues)
 				{
+					if (rootValue == null)
+						continue;
+
 					foreach (MV_Base partOfRoot in rootValue.Hierarchy)
 					{
 						if (!tempNodeCollection.Contains(partOfRoot))
@@ -103,8 +108,10 @@ namespace RT.MaterialValue
 		/// </summary>
 		public void AddNode(MV_Base node)
 		{
+			//Add the node.
 			ExtraNodes.Add(node);
 			
+			//Run "AddNode()" on each of its children.
 			for (int i = 0; i < node.GetNInputs(); ++i)
 				AddNode(node.GetInput(i));
 		}
@@ -113,74 +120,79 @@ namespace RT.MaterialValue
 		/// </summary>
 		public void DeleteNode(MV_Base node)
 		{
-			bool wasInRoot = IsConnected(node);
-
 			//Remove all references to the node by other nodes.
 			foreach (MV_Base graphNode in AllNodes)
 				for (int i = 0; i < graphNode.GetNInputs(); ++i)
 					if (graphNode.GetInput(i) == node)
-						DisconnectInput(graphNode, i); //TODO: This causes problems with the line in DisconnectInput(): "//Update the status of anything connected to the old input node."
+						DisconnectInput(graphNode, i, false);
 
-			//If any of the node's children was an inline constant, delete it.
+			//Disconnect the node's children.
 			for (int i = 0; i < node.GetNInputs(); ++i)
-				if (node.GetInput(i) is MV_Constant && ((MV_Constant)node.GetInput(i)).IsInline)
-				{
-					node.GetInput(i).Delete(false);
-					ExtraNodes.Remove(node.GetInput(i));
-				}
-			
-			//If the node was connected to a root, see if its children are still connected to a root.
-			if (wasInRoot)
-			{
-				foreach (MV_Base childNode in node.Hierarchy)
-					if (childNode != node && !IsConnected(childNode))
-						ExtraNodes.Add(childNode);
-			}
-			//Otherwise, just remove the node itself.
-			else
-			{
-				ExtraNodes.Remove(node);
-			}
+				DisconnectInput(node, i, false, false);
 
+			//Finally, delete the node.
+			ExtraNodes.Remove(node);
 			node.Delete(false);
 		}
 		/// <summary>
 		/// Changes a node's input.
 		/// </summary>
 		/// <param name="node">Pass "null" if changing one of this graph's roots.</param>
-		/// <param name="inputIndex">The index of the input on the node.</param>
+		/// <param name="inputIndex">
+		/// The index of the input on the node.
+		/// If the index is equal to the current number of nodes,
+		///     and the node has a variable number of children, then a new input index will be added.
+		/// </param>
 		/// <param name="newInput">The new input.</param>
 		public void ConnectInput(MV_Base node, int inputIndex, MV_Base newInput)
 		{
-			//Remove the old input.
-			DisconnectInput(node, inputIndex, false);
+			//If the node has variable numbers of children
+			//    and this input index doesn't yet exist, add it.
+			if (node != null && inputIndex == node.GetNInputs())
+			{
+				UnityEngine.Assertions.Assert.IsTrue(node.HasVariableNumberOfChildren);
+				node.AddInput(newInput);
+			}
+			//Otherwise, remove the current input at that index.
+			else
+			{
+				DisconnectInput(node, inputIndex, false, false);
+			}
 
+			//If the node getting a new input is actually the root of the graph...
 			if (node == null)
 			{
 				//If the new input was disconnected from the graph's roots, it obviously isn't now.
-				ExtraNodes.Remove(newInput);
+				foreach (MV_Base hierarchyNode in newInput.Hierarchy)
+					ExtraNodes.Remove(hierarchyNode);
 
 				//Set the new input.
 				RootValues[inputIndex] = newInput;
 			}
+			//Otherwise, this is just a regular node getting a new input.
 			else
 			{
-				if (!IsConnected(newInput) && IsConnected(node))
-				{
-					ExtraNodes.Remove(newInput);
-				}
+				//If the parent node is connected to the root, the input will be now as well.
+				if (IsConnected(node))
+					foreach (MV_Base hierarchyNode in newInput.Hierarchy)
+						ExtraNodes.Remove(hierarchyNode);
 			}
 		}
 		/// <summary>
-		/// Removes a node's input. Replaces it with an inline MV_Constant instance.
+		/// Removes a node's input.
+		/// Either replaces it with an inline MV_Constant instance, or
+		///     (assuming the node can have a variable number of children) deletes it entirely.
 		/// </summary>
-		/// <param name="node">Pass "null" to disconnect one of the graph roots.</param>
-		/// <param name="inputIndex">The index of the input to disconnect.</param>
-		public void DisconnectInput(MV_Base node, int inputIndex)
+		/// <param name="deleteIndexEntirely">
+		/// If true, assuming this node can have a variable number of inputs,
+		///     the input index will be completely deleted from the node.
+		/// If false, then the input will simply be replaced.
+		/// </param>
+		public void DisconnectInput(MV_Base node, int inputIndex, bool deleteIndexEntirely)
 		{
-			DisconnectInput(node, inputIndex, true);
+			DisconnectInput(node, inputIndex, deleteIndexEntirely, true);
 		}
-		private void DisconnectInput(MV_Base node, int inputIndex, bool replaceWithConstInline)
+		private void DisconnectInput(MV_Base node, int inputIndex, bool deleteIndexEntirely, bool replaceInput)
 		{
 			MV_Base oldInput = (node == null ?
 							        RootValues[inputIndex] :
@@ -191,30 +203,34 @@ namespace RT.MaterialValue
 			if (oldInput == null)
 				return;
 
-			//Update the status of anything connected to the old input node.
-			foreach (MV_Base hierarchyNode in oldInput.Hierarchy)
-				if (!IsConnected(hierarchyNode))
-					ExtraNodes.Add(hierarchyNode);
-
-			//If this was an inline constant, delete it.
-			if (oldInput is MV_Constant && ((MV_Constant)oldInput).IsInline)
-			{
-				oldInput.Delete(false);
-				ExtraNodes.Remove(oldInput);
-			}
-
 			//Nullify the input reference.
 			if (node == null)
 				RootValues[inputIndex] = null;
 			else
 				node.ChangeInput(inputIndex, null);
 
-			if (replaceWithConstInline)
+			//Check whether any nodes in the input's graph are now no longer connected to a root.
+			foreach (MV_Base hierarchyNode in oldInput.Hierarchy)
+				if (!ExtraNodes.Contains(hierarchyNode) && !IsConnected(hierarchyNode))
+					ExtraNodes.Add(hierarchyNode);
+
+			//If the input was an inline constant, delete it.
+			if (oldInput is MV_Constant && ((MV_Constant)oldInput).IsInline)
 			{
-				MV_Constant newInput = MV_Constant.MakeFloat(1.0f);
-				newInput.IsInline = true;
+				oldInput.Delete(false);
+				ExtraNodes.Remove(oldInput);
+			}
+
+			//Replace or remove the input.
+			if (replaceInput)
+			{
+				MV_Base newInput = node.GetDefaultInput(inputIndex);
 				AddNode(newInput);
 				ConnectInput(node, inputIndex, newInput);
+			}
+			else if (deleteIndexEntirely)
+			{
+				node.RemoveInput(inputIndex);
 			}
 		}
 

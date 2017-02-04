@@ -99,7 +99,7 @@ namespace RT.MaterialValue
 			NChannels = reader.Byte(namePrefix + "Dimensions");
 		}
 
-		protected override GUIResults DoCustomGUI()
+		public override GUIResults DoCustomGUI()
 		{
 			GUIResults result = GUIResults.Nothing;
 

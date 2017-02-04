@@ -54,7 +54,7 @@ namespace RT.MaterialValue
 			unityMat.SetTexture("_tex" + GUID, Tex);
 		}
 
-		public override MV_Base GetDefaultInput(int inputIndex) { return MV_Constant.MakeVec2(0.0f, 0.0f); }
+		public override MV_Base GetDefaultInput(int inputIndex) { return MV_Constant.MakeVec2(0.0f, 0.0f, true, 0.0f, 1.0f, OutputSizes.Two, true); }
 		public override string GetInputName(int index) { return "UV"; }
 
 		public override void WriteData(DataWriter writer, string namePrefix,
@@ -93,7 +93,7 @@ namespace RT.MaterialValue
 			Tex = AssetDatabase.LoadAssetAtPath<Texture2D>(texPath);
 		}
 
-		protected override GUIResults DoCustomGUI()
+		public override GUIResults DoCustomGUI()
 		{
 			GUIResults results = GUIResults.Nothing;
 

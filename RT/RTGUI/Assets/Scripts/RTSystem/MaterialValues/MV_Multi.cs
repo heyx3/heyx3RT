@@ -72,7 +72,8 @@ namespace RT.MaterialValue
 		{
 			return new MV_Constant(new EditableVectorf(new Vectorf(identity, OutputSize),
 													   false, OutputSizes.All,
-													   float.NegativeInfinity, float.PositiveInfinity));
+													   float.NegativeInfinity, float.PositiveInfinity),
+								   true);
 		}
 		public override void Emit(StringBuilder shaderlabProperties,
 								  StringBuilder cgDefinitions,
@@ -122,7 +123,8 @@ namespace RT.MaterialValue
 		{
 			return new MV_Constant(new EditableVectorf(new Vectorf(isMin ? 0.0f : 1.0f),
 													   false, OutputSizes.All,
-													   float.NegativeInfinity, float.PositiveInfinity));
+													   float.NegativeInfinity, float.PositiveInfinity),
+								   true);
 		}
 		public override void Emit(StringBuilder shaderlabProperties,
 								  StringBuilder cgDefinitions,

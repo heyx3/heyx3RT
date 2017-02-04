@@ -162,7 +162,7 @@ namespace RT.MaterialValue
 			}
 		}
 
-		protected override GUIResults DoCustomGUI()
+		public override GUIResults DoCustomGUI()
 		{
 			GUIResults results = GUIResults.Nothing;
 

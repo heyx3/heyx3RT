@@ -112,7 +112,8 @@ namespace RT.MaterialValue
 
 		public override MV_Base GetDefaultInput(int inputIndex)
 		{
-			return new MV_Constant(inputIndex == 0 ? defaultValue1 : defaultValue2);
+			return new MV_Constant(inputIndex == 0 ? defaultValue1 : defaultValue2,
+								   true);
 		}
 		public override string GetInputName(int index) { return (index == 0 ? inputName1 : inputName2); }
 

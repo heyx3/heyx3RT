@@ -46,7 +46,7 @@ namespace RT.MaterialValue
 			MV_Inputs.RayDir.SetParams(shapeTr, unityMat);
 		}
 
-		public override MV_Base GetDefaultInput(int inputIndex) { return MV_Constant.MakeFloat(0.0f); }
+		public override MV_Base GetDefaultInput(int inputIndex) { return MV_Constant.MakeFloat(0.0f, true, 0.0f, 1.0f, OutputSizes.One, true); }
 		public override string GetInputName(int index) { return "T"; }
 	}
 }

@@ -165,7 +165,7 @@ namespace RT.MaterialValue
 			cgFunctionBody.AppendLine(");");
 		}
 
-		public override MV_Base GetDefaultInput(int inputIndex) { return new MV_Constant(defaultValue); }
+		public override MV_Base GetDefaultInput(int inputIndex) { return new MV_Constant(defaultValue, true); }
 		public override string GetInputName(int index) { return inputName; }
 
 

@@ -56,7 +56,7 @@ namespace RT.MaterialValue
 			{ AddInput(val); NComponents = 4; NewX = newX; NewY = newY; NewZ = newZ; NewW = newW; }
 
 
-		public override MV_Base GetDefaultInput(int inputIndex) { return MV_Constant.MakeVec2(0.0f, 0.0f); }
+		public override MV_Base GetDefaultInput(int inputIndex) { return MV_Constant.MakeVec2(0.0f, 0.0f, false, 0.0f, 1.0f, OutputSizes.OneOrTwo, true); }
 		public override string GetInputName(int index) { return "Val"; }
 
 		public override void Emit(StringBuilder shaderlabProperties, StringBuilder cgDefinitions, StringBuilder cgFunctionBody) { }
@@ -88,7 +88,7 @@ namespace RT.MaterialValue
 				NewW = (Components)reader.Byte(namePrefix + "Value3");
 		}
 
-		protected override GUIResults DoCustomGUI()
+		public override GUIResults DoCustomGUI()
 		{
 			GUIResults result = GUIResults.Nothing;
 

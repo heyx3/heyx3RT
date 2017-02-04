@@ -6,6 +6,8 @@ using System.IO;
 using UnityEngine;
 using UnityEditor;
 
+using Assert = UnityEngine.Assertions.Assert;
+
 
 namespace RT.MaterialValue
 {
@@ -186,8 +188,12 @@ namespace RT.MaterialValue
 
 		public MV_Base()
 		{
+			//Find an unused GUID for this node.
+			while (guidToValue.ContainsKey(nextGUID))
+				nextGUID += 1;
 			guid = nextGUID;
 			nextGUID += 1;
+
 			guidToValue.Add(guid, this);
 
 			//Double-check that this sub-class is serializable.
@@ -267,11 +273,12 @@ namespace RT.MaterialValue
 		public MV_Base GetInput(int i) { return inputs[i]; }
 		public void ChangeInput(int i, MV_Base newChild) { inputs[i] = newChild; }
 
-		protected void AddInput(MV_Base v) { inputs.Add(v); }
-		protected void RemoveInput(MV_Base v) { inputs.Remove(v); }
-		protected void RemoveInput(int i) { inputs.RemoveAt(i); }
-		protected void InsertInput(MV_Base v, int i) { inputs.Insert(i, v); }
-		protected void ClearInput() { inputs.Clear(); }
+		//The following only work if HasVariableNumberOfChildren is true.
+		public void AddInput(MV_Base v) { Assert.IsTrue(HasVariableNumberOfChildren); inputs.Add(v); }
+		public void RemoveInput(MV_Base v) { Assert.IsTrue(HasVariableNumberOfChildren); inputs.Remove(v); }
+		public void RemoveInput(int i) { Assert.IsTrue(HasVariableNumberOfChildren); inputs.RemoveAt(i); }
+		public void InsertInput(MV_Base v, int i) { Assert.IsTrue(HasVariableNumberOfChildren); inputs.Insert(i, v); }
+		public void ClearInput() { Assert.IsTrue(HasVariableNumberOfChildren); inputs.Clear(); }
 		
 
 		public abstract void Emit(StringBuilder shaderlabProperties,
@@ -281,9 +288,9 @@ namespace RT.MaterialValue
 
 		/// <summary>
 		/// Gets a valid default input for the given input index.
-		/// Default behavior: returns a constant float input of 0.0.
+		/// Default behavior: returns an inline MV_Constant input of 0.0.
 		/// </summary>
-		public virtual MV_Base GetDefaultInput(int inputIndex) { return MV_Constant.MakeFloat(0.0f); }
+		public virtual MV_Base GetDefaultInput(int inputIndex) { return MV_Constant.MakeFloat(0.0f, false, 0.0f, 1.0f, OutputSizes.One, true); }
 		/// <summary>
 		/// Returns the name for the given input.
 		/// Note that this is the name used to serialize the inputs as well.
@@ -352,127 +359,7 @@ namespace RT.MaterialValue
 			/// </summary>
 			Other,
 		}
-		/// <summary>
-		/// Returns what happend to this node during this GUI frame.
-		/// </summary>
-		/// <param name="inputFrom">
-		/// If a MaterialValue's output was previously selected,
-		///		this is the MaterialValue in question.
-		/// Otherwise, it should be "null".
-		/// </param>
-		/// <param name="outputTo">
-		/// If a MaterialValue's input was previously selected,
-		///     this is the MaterialValue in question.
-		/// Otherwise, it should be "null".
-		/// </param>
-		/// <param name="outputTo_Index">
-		/// If a MaterialValue's input was previously selected,
-		///     this is the index of the input in question.
-		/// </param>
-		public GUIResults DoGUI(ref MV_Base inputFrom,
-								ref MV_Base outputTo, ref int outputTo_Index)
-		{
-			GUIResults result = GUIResults.Nothing;
-
-			GUILayout.BeginHorizontal();
-
-			GUILayout.BeginVertical();
-			for (int i = 0; i < inputs.Count; ++i)
-			{
-				GUILayout.BeginHorizontal();
-
-				GUILayout.Label(GetInputName(i));
-
-				//Button to select input.
-				string buttStr = "O";
-				if (outputTo != null && outputTo_Index == i)
-					buttStr = "o";
-				if (GUILayout.Button(buttStr))
-				{
-					if (inputFrom != null)
-					{
-						result = GUIResults.Other;
-						ChangeInput(i, inputFrom);
-						inputFrom = null;
-					}
-					else
-					{
-						outputTo = this;
-						outputTo_Index = i;
-					} 
-				}
-
-				//If this input is a constant, expose a little inline GUI to edit it more easily.
-				//TODO: If we're going to do this, we should consider immediately deleting the node from the graph once a new node is connected.
-				/*
-				if (inputs[i] is MV_Constant)
-				{
-					MV_Constant inp = (MV_Constant)inputs[i];
-					if (inp.ValueEditor.DoGUI())
-						result = GUIResults.Other;
-				}
-				//Otherwise, draw a line to it and expose a button to release the connection.
-				else
-				*/
-				{
-					const float OutputHeight = 30.0f,
-								TitleBarHeight = 30.0f,
-								InputSpacing = 20.0f;
-					Rect otherPos = inputs[i].pos;
-					Vector2 endPos = new Vector2(otherPos.xMax, otherPos.yMin + OutputHeight) - pos.min;
-					MyGUI.DrawLine(new Vector2(0.0f, TitleBarHeight + ((float)i * InputSpacing)),
-								   endPos, 2.0f, Color.white);
-
-					if (GUILayout.Button("Disconnect"))
-					{
-						result = GUIResults.Other;
-						ChangeInput(i, GetDefaultInput(i));
-					}
-				}
-
-				//A button to remove this input.
-				if (HasVariableNumberOfChildren)
-				{
-					if (GUILayout.Button("X"))
-					{
-						result = GUIResults.Other;
-						RemoveInput(i);
-						i -= 1;
-					}
-				}
-
-				GUILayout.EndHorizontal();
-			}
-
-			//A button to add a new input.
-			if (HasVariableNumberOfChildren)
-			{
-				if (GUILayout.Button("Add input"))
-					AddInput(GetDefaultInput(inputs.Count));
-			}
-
-			GUIResults subResult = DoCustomGUI();
-			if (subResult != GUIResults.Nothing)
-				result = subResult;
-			
-			GUILayout.EndVertical();
-
-			GUILayout.FlexibleSpace();
-			GUILayout.EndHorizontal();
-
-
-			//"Duplicate" and "Delete" buttons.
-			GUILayout.BeginHorizontal();
-			if (GUILayout.Button("Duplicate"))
-				result = GUIResults.Duplicate;
-			GUILayout.FlexibleSpace();
-			if (GUILayout.Button("Delete"))
-				result = GUIResults.Delete;
-			GUILayout.EndHorizontal();
-
-			return result;
-		}
-		protected virtual GUIResults DoCustomGUI() { return GUIResults.Nothing; }
+		public virtual GUIResults DoCustomGUI() { return GUIResults.Nothing; }
 
 
 		public override int GetHashCode()

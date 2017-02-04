@@ -16,35 +16,40 @@ namespace RT.MaterialValue
 	{
 		public static MV_Constant MakeFloat(float f,
 											bool useSlider = true, float min = 0.0f, float max = 1.0f,
-											OutputSizes allowable = OutputSizes.One)
+											OutputSizes allowable = OutputSizes.One,
+											bool isInline = false)
 		{
-			return new MV_Constant(new EditableVectorf(f, useSlider, allowable, min, max));
+			return new MV_Constant(new EditableVectorf(f, useSlider, allowable, min, max), isInline);
 		}
 		
 		public static MV_Constant MakeVec2(Vector2 v,
 										   bool useSlider = true, float min = 0.0f, float max = 1.0f,
-										   OutputSizes allowable = OutputSizes.One | OutputSizes.Two)
+										   OutputSizes allowable = OutputSizes.One | OutputSizes.Two,
+										   bool isInline = false)
 		{
-			return MakeVec2(v, useSlider, min, max, allowable);
+			return MakeVec2(v, useSlider, min, max, allowable, isInline);
 		}
 		public static MV_Constant MakeVec2(float x, float y,
 										   bool useSlider = true, float min = 0.0f, float max = 1.0f,
-										   OutputSizes allowable = OutputSizes.One | OutputSizes.Two)
+										   OutputSizes allowable = OutputSizes.One | OutputSizes.Two,
+										   bool isInline = false)
 		{
-			return MakeVec2(new Vector2(x, y), useSlider, min, max, allowable);
+			return MakeVec2(new Vector2(x, y), useSlider, min, max, allowable, isInline);
 		}
 
 		public static MV_Constant MakeVec3(float x, float y, float z,
 										   float min = 0.0f, float max = 1.0f,
-										   OutputSizes allowable = OutputSizes.OneOrThree)
+										   OutputSizes allowable = OutputSizes.OneOrThree,
+										   bool isInline = false)
 		{
-			return MakeVec3(new Vector3(x, y, z), min, max, allowable);
+			return MakeVec3(new Vector3(x, y, z), min, max, allowable, isInline);
 		}
 		public static MV_Constant MakeVec3(Vector3 v,
 										   float min = 0.0f, float max = 1.0f,
-										   OutputSizes allowable = OutputSizes.OneOrThree)
+										   OutputSizes allowable = OutputSizes.OneOrThree,
+										   bool isInline = false)
 		{
-			return new MV_Constant(new EditableVectorf(v, false, allowable, min, max));
+			return new MV_Constant(new EditableVectorf(v, false, allowable, min, max), isInline);
 		}
 
 		public static MV_Constant MakeRGB(Color col)
@@ -104,9 +109,10 @@ namespace RT.MaterialValue
 		public OutputSizes AllowableSizes { get { return valueEditor.AllowedDimensions; } set { valueEditor.AllowedDimensions = value; } }
 
 
-		public MV_Constant(EditableVectorf initialValue)
+		public MV_Constant(EditableVectorf initialValue, bool isInline = false)
 		{
 			valueEditor = initialValue;
+			IsInline = isInline;
 		}
 
 
