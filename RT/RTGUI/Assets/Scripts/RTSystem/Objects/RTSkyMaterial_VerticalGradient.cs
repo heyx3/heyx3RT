@@ -41,8 +41,10 @@ namespace RT
 			toDelete.Add(outRGB);
 		}
 
-		public override void Start()
+		public override void Awake()
 		{
+            base.Awake();
+
 			//Bottom color.
 			Graph.RootValues.Add(MaterialValue.MV_Constant.MakeRGB(new Color(0.2f, 0.4f, 0.8f)));
 			//Top color.
@@ -50,8 +52,6 @@ namespace RT
 			//Sky dir.
 			Graph.RootValues.Add(MV_Constant.MakeVec3(0.0f, 1.0f, 0.0f,
 													  0.0f, 1.0f, OutputSizes.Three));
-
-			base.Start();
 		}
 
 		public override string GetRootNodeDisplayName(int rootNodeIndex)

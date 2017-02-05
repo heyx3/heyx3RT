@@ -204,7 +204,7 @@ namespace RT.MaterialValue
 		/// <summary>
 		/// Generates a custom Unity shader using the given unlit color output.
 		/// </summary>
-		public static string GenerateShader(string name, MV_Base rgbOut)
+		public static string GenerateShader(string name, MV_Base rgbOut, bool cullBackfaces = true)
 		{
 			//Insert the MaterialValues into various parts of the shader.
 
@@ -231,11 +231,17 @@ namespace RT.MaterialValue
 			shader.AppendLine("{");
 			shader.AppendLine(shaderlabProperties.ToString());
 
-			shader.Append(@"
+            shader.Append(@"
 	SubShader
 	{
 		Tags { ""RenderType""=""Opaque"" }
 		
+        ");
+            if (!cullBackfaces)
+            {
+                shader.AppendLine("Cull Off");
+            }
+            shader.Append(@"
 		Pass
 		{
 			CGPROGRAM

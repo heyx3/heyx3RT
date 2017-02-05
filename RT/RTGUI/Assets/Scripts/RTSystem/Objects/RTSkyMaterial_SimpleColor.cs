@@ -15,11 +15,11 @@ namespace RT
 											 set { Graph.RootValues[0] = value; } }
 
 
-		public override void Start()
+		public override void Awake()
 		{
-			Graph.RootValues.Add(MaterialValue.MV_Constant.MakeRGB(UnityEngine.Color.cyan));
+            base.Awake();
 
-			base.Start();
+			Graph.RootValues.Add(MaterialValue.MV_Constant.MakeRGB(UnityEngine.Color.cyan));
 		}
 
 		protected override void GetUnityMaterialOutputs(out MaterialValue.MV_Base outRGB,

@@ -147,7 +147,7 @@ namespace RT
 				string shaderName = Path.GetFileNameWithoutExtension(shaderFile);
 
 				string shaderText =
-					MaterialValue.ShaderGenerator.GenerateShader(shaderName, outRGB);
+					MaterialValue.ShaderGenerator.GenerateShader(shaderName, outRGB, false);
 
 				File.WriteAllText(shaderFile, shaderText);
 				AssetDatabase.ImportAsset(shaderFile);

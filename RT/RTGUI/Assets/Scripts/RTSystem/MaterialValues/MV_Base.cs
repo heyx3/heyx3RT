@@ -148,7 +148,7 @@ namespace RT.MaterialValue
 
 		
 		public ulong GUID { get { return guid; }
-						    set { guidToValue.Remove(guid); guid = value; guidToValue.Add(guid, this); } }
+						    set { guidToValue.Remove(guid); guidToValue.Remove(value); guid = value; guidToValue.Add(guid, this); } }
 		public Rect Pos { get { return pos; } set { pos = value; } }
 
 		public IEnumerable<MV_Base> Inputs { get { return inputs; } }
@@ -272,13 +272,12 @@ namespace RT.MaterialValue
 		public int GetNInputs() { return inputs.Count; }
 		public MV_Base GetInput(int i) { return inputs[i]; }
 		public void ChangeInput(int i, MV_Base newChild) { inputs[i] = newChild; }
-
-		//The following only work if HasVariableNumberOfChildren is true.
-		public void AddInput(MV_Base v) { Assert.IsTrue(HasVariableNumberOfChildren); inputs.Add(v); }
-		public void RemoveInput(MV_Base v) { Assert.IsTrue(HasVariableNumberOfChildren); inputs.Remove(v); }
-		public void RemoveInput(int i) { Assert.IsTrue(HasVariableNumberOfChildren); inputs.RemoveAt(i); }
-		public void InsertInput(MV_Base v, int i) { Assert.IsTrue(HasVariableNumberOfChildren); inputs.Insert(i, v); }
-		public void ClearInput() { Assert.IsTrue(HasVariableNumberOfChildren); inputs.Clear(); }
+        
+		public void AddInput(MV_Base v) { inputs.Add(v); }
+		public void RemoveInput(MV_Base v) { inputs.Remove(v); }
+		public void RemoveInput(int i) { inputs.RemoveAt(i); }
+		public void InsertInput(MV_Base v, int i) { inputs.Insert(i, v); }
+		public void ClearInput() { inputs.Clear(); }
 		
 
 		public abstract void Emit(StringBuilder shaderlabProperties,

@@ -146,6 +146,13 @@ namespace RT.MaterialValue
 		/// <param name="newInput">The new input.</param>
 		public void ConnectInput(MV_Base node, int inputIndex, MV_Base newInput)
 		{
+            //Make sure infinite loops can't happen.
+            if (newInput.Hierarchy.Contains(node))
+            {
+                Debug.LogError("Can't create a loop in the graph!");
+                return;
+            }
+
 			//If the node has variable numbers of children
 			//    and this input index doesn't yet exist, add it.
 			if (node != null && inputIndex == node.GetNInputs())

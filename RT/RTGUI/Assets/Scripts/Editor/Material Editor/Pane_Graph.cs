@@ -86,7 +86,42 @@ namespace RT.MatEditor
 		{
 			HandleGUIEvents(area);
 
-			//TODO: Implement.
+            GUILayout.BeginArea(area);
+            Owner.BeginWindows();
+            
+
+            //Do each node's GUI window.
+            foreach (MV_Base node in Graph.AllNodes)
+            {
+                Rect oldPos = new Rect(node.Pos.position - CamOffset,
+                                       node.Pos.size);
+                Rect newPos = GUINode(oldPos, node);
+
+                if (Mathf.Abs(oldPos.x - newPos.x) >= 2.0f ||
+                        Mathf.Abs(oldPos.y - newPos.y) >= 2.0f)
+                {
+                    //TODO: "Undo" here.
+                }
+
+                newPos.position += CamOffset;
+                node.Pos = newPos;
+            }
+
+            //Also do a GUI window for the graph roots.
+            Rect oldRootPos = new Rect(Graph.OutputNodePos.position - CamOffset,
+                                       Graph.OutputNodePos.size);
+            Rect newRootPos = GUINode(oldRootPos, null);
+            if (Mathf.Abs(oldRootPos.x - newRootPos.x) >= 2.0f ||
+                    Mathf.Abs(oldRootPos.y - newRootPos.y) >= 2.0f)
+            {
+                //TODO: "Undo" here.
+            }
+            newRootPos.position += CamOffset;
+            Graph.OutputNodePos = newRootPos;
+
+
+            Owner.EndWindows();
+            GUILayout.EndArea();
 		}
 
 		/// <summary>
