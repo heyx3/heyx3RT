@@ -147,6 +147,7 @@ namespace RT.MaterialValue
 		private List<MV_Base> inputs = new List<MV_Base>();
 
 		
+		//TODO: This is only used by the graph pane of the material editor window. Just do GUID stuff there! Make "OnNodeAdded" and "OnNodeRemoved" events for the Graph.
 		public ulong GUID { get { return guid; }
 						    set { guidToValue.Remove(guid); guidToValue.Remove(value); guid = value; guidToValue.Add(guid, this); } }
 		public Rect Pos { get { return pos; } set { pos = value; } }

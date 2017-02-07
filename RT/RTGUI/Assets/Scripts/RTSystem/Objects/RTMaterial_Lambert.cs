@@ -17,14 +17,13 @@ namespace RT
 		public MaterialValue.MV_Base Albedo { get { return Graph.RootValues[0]; }
 											  set { Graph.RootValues[0] = value; } }
 
-
-		public override void Start()
+		
+		protected override void InitGraph()
 		{
 			//Albedo.
 			Graph.RootValues.Add(MaterialValue.MV_Constant.MakeFloat(1.0f));
-
-			base.Start();
 		}
+
 
 		protected override void GetUnityMaterialOutputs(out MaterialValue.MV_Base albedo,
 														out MaterialValue.MV_Base metallic,

@@ -137,7 +137,7 @@ namespace RT.MaterialValue
 			//UV will be packed into screenPos.zw.
 		};
 
-		void vert(inout appdata_tan v, out Input o)
+		void vert(inout appdata_full v, out Input o)
 		{
 			UNITY_INITIALIZE_OUTPUT(Input, o);
 			o.screenPos.zw = v.texcoord.xy;

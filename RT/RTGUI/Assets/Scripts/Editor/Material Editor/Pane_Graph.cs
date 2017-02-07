@@ -64,6 +64,8 @@ namespace RT.MatEditor
 			Owner = owner;
 			Graph = Owner.Graph.Clone();
 
+			CamOffset = Owner.position.center - Graph.OutputNodePos.position;
+
 			if (Owner.Owner is RT.RTMaterial)
 				RootIndexToDisplayName = ((RT.RTMaterial)Owner.Owner).GetRootNodeDisplayName;
 			else if (Owner.Owner is RT.RTSkyMaterial)
@@ -141,7 +143,7 @@ namespace RT.MatEditor
 
 				case EventType.MouseDrag:
 					//If not dragging a window, pan the camera.
-					if (draggingMouseDown && draggingWindowID == uint.MaxValue)
+					if (draggingMouseDown && draggingWindowID == ulong.MaxValue)
 					{
 						CamOffset -= currEvent.delta;
 						Owner.Repaint();
@@ -420,6 +422,7 @@ namespace RT.MatEditor
 				Graph.ConnectInput(node, node.GetNInputs(), node.GetDefaultInput(node.GetNInputs()));
 			}
 			
+			//Custom GUI.
 			MV_Base.GUIResults subResult = node.DoCustomGUI();
 			if (subResult != MaterialValue.MV_Base.GUIResults.Nothing)
 			{
@@ -428,6 +431,23 @@ namespace RT.MatEditor
 			
 			GUILayout.EndVertical();
 			GUILayout.FlexibleSpace();
+
+			//A button for connecting the node's output.
+			string buttonStr = (reconnectingOutputID == node.GUID ? "o" : "O");
+			if (GUILayout.Button(buttonStr))
+			{
+				if (reconnectingInputID == ulong.MaxValue)
+				{
+					reconnectingOutputID = node.GUID;
+				}
+				else
+				{
+					Graph.ConnectInput(MV_Base.GetValue(reconnectingInputID),
+									   reconnectingInputIndex,
+									   node);
+				}
+			}
+
 			GUILayout.EndHorizontal();
 
 

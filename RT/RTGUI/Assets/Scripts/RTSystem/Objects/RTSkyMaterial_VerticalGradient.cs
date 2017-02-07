@@ -41,10 +41,8 @@ namespace RT
 			toDelete.Add(outRGB);
 		}
 
-		public override void Awake()
+		protected override void InitGraph()
 		{
-            base.Awake();
-
 			//Bottom color.
 			Graph.RootValues.Add(MaterialValue.MV_Constant.MakeRGB(new Color(0.2f, 0.4f, 0.8f)));
 			//Top color.

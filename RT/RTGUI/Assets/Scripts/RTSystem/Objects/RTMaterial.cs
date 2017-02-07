@@ -70,8 +70,20 @@ namespace RT
 
 		public abstract string TypeName { get; }
 		protected abstract string GraphSerializationName { get; }
-
-		public MaterialValue.Graph Graph { get; private set; }
+		
+		public MaterialValue.Graph Graph
+		{
+			get
+			{
+				if (graph == null)
+				{
+					graph = new MaterialValue.Graph();
+					InitGraph();
+				}
+				return graph;
+			}
+		}
+		private MaterialValue.Graph graph = null;
 
 
 		public virtual void Awake()
@@ -82,8 +94,6 @@ namespace RT
 			MeshRenderer mr = GetComponent<MeshRenderer>();
 			if (mr == null)
 				mr = gameObject.AddComponent<MeshRenderer>();
-
-			Graph = new MaterialValue.Graph();
 		}
 		public virtual void Start()
 		{
@@ -159,6 +169,8 @@ namespace RT
 			foreach (var tempNode in toDelete)
 				tempNode.Delete(false);
 		}
+
+		protected abstract void InitGraph();
 
 		/// <summary>
 		/// Gets the outputs of this material in terms of the Unity standard shader.

@@ -52,14 +52,14 @@ namespace RT
 		{
 			//Reinitialize all shapes/materials so that they definitely are using the correct meshes.
 
-			if (RTSkyMaterial.Instance != null)
-				RTSkyMaterial.Instance.Awake();
+			//if (RTSkyMaterial.Instance != null)
+				//RTSkyMaterial.Instance.Start();
 
-			foreach (RTShape shpe in RTShape.Shapes)
-			{
-				shpe.Awake();
-				shpe.GetComponent<RTMaterial>().Awake();
-			}
+			//foreach (RTShape shpe in RTShape.Shapes)
+			//{
+			//	shpe.Awake();
+			//	shpe.GetComponent<RTMaterial>().Awake();
+			//}
 		}
 
 		/// <summary>

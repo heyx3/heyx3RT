@@ -83,10 +83,22 @@ namespace RT
 		public abstract string TypeName { get; }
 		protected abstract string GraphSerializationName { get; }
 
-		public MaterialValue.Graph Graph { get; private set; }
+		public MaterialValue.Graph Graph
+		{
+			get
+			{
+				if (graph == null)
+				{
+					graph = new MaterialValue.Graph();
+					InitGraph();
+				}
+				return graph;
+			}
+		}
+		private MaterialValue.Graph graph = null;
 		
 		
-		public virtual void Awake()
+		public virtual void Start()
 		{
 			//Create/update the mesh filter.
 			MeshFilter mf = GetComponent<MeshFilter>();
@@ -99,11 +111,7 @@ namespace RT
 			if (mr == null)
 				mr = gameObject.AddComponent<MeshRenderer>();
 
-			Graph = new MaterialValue.Graph();
-		}
-		public virtual void Start()
-		{
-			RegenerateMaterial(GetComponent<MeshRenderer>());
+			RegenerateMaterial(mr);
 		}
 		protected virtual void OnDestroy()
 		{
@@ -183,6 +191,8 @@ namespace RT
 				tempVal.Delete(false);
 		}
 
+		protected abstract void InitGraph();
+
 		/// <summary>
 		/// Gets the final output color of the sky.
 		/// Used to compile a Unity material for the sky.
@@ -201,8 +211,6 @@ namespace RT
 		/// The index of the node in "Graph.RootValues" to get the name of.
 		/// </param>
 		public abstract string GetRootNodeDisplayName(int rootNodeIndex);
-
-
 
 		public virtual void WriteData(Serialization.DataWriter writer)
 		{

@@ -14,11 +14,9 @@ namespace RT
 		public MaterialValue.MV_Base Color { get { return Graph.RootValues[0]; }
 											 set { Graph.RootValues[0] = value; } }
 
-
-		public override void Awake()
+		
+		protected override void InitGraph()
 		{
-            base.Awake();
-
 			Graph.RootValues.Add(MaterialValue.MV_Constant.MakeRGB(UnityEngine.Color.cyan));
 		}
 

@@ -19,15 +19,13 @@ namespace RT
 		public MaterialValue.MV_Base Roughness { get { return Graph.RootValues[1]; }
 												 set { Graph.RootValues[1] = value; } }
 
-
-		public override void Start()
+		
+		protected override void InitGraph()
 		{
 			//Albedo.
 			Graph.RootValues.Add(MaterialValue.MV_Constant.MakeFloat(1.0f));
 			//Roughness.
 			Graph.RootValues.Add(MaterialValue.MV_Constant.MakeFloat(0.5f));
-
-			base.Start();
 		}
 
 		protected override void GetUnityMaterialOutputs(out MaterialValue.MV_Base albedo,
