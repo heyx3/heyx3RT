@@ -168,12 +168,6 @@ namespace RT.MaterialValue
 							   TypeName_ShapeRot = "ShapeRot";
 		#endregion
 
-		public static readonly ulong INVALID_GUID = 0;
-
-		
-		[SerializeField]
-		private ulong guid;
-
 		[SerializeField]
 		private Rect pos;
 
@@ -324,7 +318,6 @@ namespace RT.MaterialValue
 		public virtual void WriteData(Serialization.DataWriter writer, string namePrefix,
 									  Dictionary<MV_Base, uint> idLookup)
 		{
-			writer.ULong(guid, namePrefix + "GUID");
 			writer.Rect(pos, namePrefix + "Pos");
 
 			//Write children nodes as a list of their IDs.
@@ -381,15 +374,5 @@ namespace RT.MaterialValue
 			Other,
 		}
 		public virtual GUIResults DoCustomGUI() { return GUIResults.Nothing; }
-
-
-		public override int GetHashCode()
-		{
-			return guid.GetHashCode();
-		}
-		public override bool Equals(object obj)
-		{
-			return obj is MV_Base && ((MV_Base)obj).guid == guid;
-		}
 	}
 }

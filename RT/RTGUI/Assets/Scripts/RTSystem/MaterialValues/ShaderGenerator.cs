@@ -28,49 +28,9 @@ namespace RT.MaterialValue
 								  Dictionary<MV_Base, uint> idLookup,
 								  params MV_Base[] roots)
 		{
-			//Emit the code for all nodes in proper order.
-
-			List<MV_Base> toProcess = new List<MV_Base>();
-			Dictionary<MV_Base, bool> isNodeDoneYet = new Dictionary<MV_Base, bool>();
-			foreach (MV_Base mv in roots)
-			{
-				toProcess.Add(mv);
-				isNodeDoneYet.Add(mv, false);
-			}
-
-			while (toProcess.Count > 0)
-			{
-				MV_Base mv = toProcess[toProcess.Count - 1];
-
-				//If this node hasn't been processed yet, add its inputs to the stack.
-				if (!isNodeDoneYet[mv])
-				{
-					isNodeDoneYet[mv] = true;
-
-					foreach (MV_Base inputMV in mv.Inputs)
-					{
-						//If the node is already in the stack, just move it to the top.
-						if (isNodeDoneYet.ContainsKey(inputMV))
-						{
-							toProcess.Remove(inputMV);
-							toProcess.Add(inputMV);
-						}
-						//Otherwise, add it to the top of the stack.
-						else
-						{
-							toProcess.Add(inputMV);
-							isNodeDoneYet.Add(inputMV, false);
-						}
-					}
-				}
-				//The node's inputs have already been processed and taken off the stack,
-				//    so process the node itself.
-				else
-				{
-					toProcess.RemoveAt(toProcess.Count - 1);
-					mv.Emit(shaderlabProperties, cgDefinitions, cgFunctionBody, idLookup);
-				}
-			}
+			Graph g = new Graph(roots.ToList());
+			foreach (MV_Base node in g.AllConnectedNodes)
+				node.Emit(shaderlabProperties, cgDefinitions, cgFunctionBody, idLookup);
 		}
 
 

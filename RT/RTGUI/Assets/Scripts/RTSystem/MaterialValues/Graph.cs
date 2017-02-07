@@ -113,11 +113,14 @@ namespace RT.MaterialValue
 				nodeToID.Remove(node);
 			};
 		}
-		public Graph(List<MV_Base> rootValues)
+		public Graph(List<MV_Base> _rootValues)
 			: this()
 		{
-			rootValues = new List<MV_Base>(rootValues);
-			extraNodes = new HashSet<MV_Base>();
+			for (int i = 0; i < _rootValues.Count; ++i)
+			{
+				AddNode(_rootValues[i]);
+				ConnectInput(null, i, _rootValues[i]);
+			}
 		}
 
 
