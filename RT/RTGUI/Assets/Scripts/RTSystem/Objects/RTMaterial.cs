@@ -101,9 +101,6 @@ namespace RT
 		}
 		protected virtual void OnDestroy()
 		{
-			foreach (var node in Graph.RootValues.Concat(Graph.ExtraNodes))
-				node.Delete(true);
-
 			Materials.Remove(this);
 			
 			AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myMat));
@@ -121,9 +118,15 @@ namespace RT
 			}
 
 
-			HashSet<MaterialValue.MV_Base> toDelete = new HashSet<MaterialValue.MV_Base>();
 			MaterialValue.MV_Base albedo, metallic, smoothness;
-			GetUnityMaterialOutputs(out albedo, out metallic, out smoothness, toDelete);
+			GetUnityMaterialOutputs(out albedo, out metallic, out smoothness);
+			HashSet<MaterialValue.MV_Base> tempNodes =
+				new HashSet<MaterialValue.MV_Base>(albedo.HierarchyRootFirst
+														 .Concat(metallic.HierarchyRootFirst)
+														 .Concat(smoothness.HierarchyRootFirst)
+														 .Where(n => !Graph.ContainsNode(n)));
+			foreach (var node in tempNodes)
+				Graph.AddNode(node);
 
 			//Try loading the shader.
 			string shaderFile = "";
@@ -132,8 +135,11 @@ namespace RT
 				shaderFile = GetNewGeneratedFileName("Shad", ".shader");
 				string shaderName = Path.GetFileNameWithoutExtension(shaderFile);
 
-				string shaderText =
-					MaterialValue.ShaderGenerator.GenerateShader(shaderName, albedo, metallic, smoothness);
+				string shaderText = MaterialValue.ShaderGenerator.GenerateShader(shaderName,
+																				 Graph.UniqueNodeIDs,
+																				 albedo,
+																				 metallic,
+																				 smoothness);
 
 				File.WriteAllText(shaderFile, shaderText);
 				AssetDatabase.ImportAsset(shaderFile);
@@ -152,7 +158,7 @@ namespace RT
 			{
 				matFile = GetNewGeneratedFileName("Mat", ".mat");
 				myMat = new Material(myShader);
-				MaterialValue.ShaderGenerator.SetMaterialParams(transform, myMat,
+				MaterialValue.ShaderGenerator.SetMaterialParams(transform, myMat, graph.UniqueNodeIDs,
 																albedo, metallic, smoothness);
 
 				AssetDatabase.CreateAsset(myMat, matFile);
@@ -166,8 +172,8 @@ namespace RT
 			}
 
 			//Clean up.
-			foreach (var tempNode in toDelete)
-				tempNode.Delete(false);
+			foreach (var node in tempNodes)
+				Graph.DeleteNode(node);
 		}
 
 		protected abstract void InitGraph();
@@ -181,8 +187,7 @@ namespace RT
 		/// </param>
 		protected abstract void GetUnityMaterialOutputs(out MaterialValue.MV_Base albedo,
 														out MaterialValue.MV_Base metallic,
-														out MaterialValue.MV_Base smoothness,
-														HashSet<MaterialValue.MV_Base> toDelete);
+														out MaterialValue.MV_Base smoothness);
 
 		/// <summary>
 		/// Gets the display name of the given root node.

@@ -81,7 +81,21 @@ namespace RT
 
 
         template<typename T>
-        //Writes a given element into the given DataWriter with the given name.
+        //Writes a given list element into the given DataWriter with the given name.
+        using ElementWriterFull = void(*)(DataWriter& writer, const T& t, const String& name, void* pData);
+
+        template<typename T>
+        void WriteList(const T* listData, size_t nValues,
+                       ElementWriterFull<T> elementWriter,
+                       const String& name, void* pData)
+        {
+            CollectionWrite<T> helper(listData, nValues, pData, elementWriter);
+            WriteDataStructure(helper, name);
+        }
+
+
+        template<typename T>
+        //Writes a given list element into the given DataWriter with the given name.
         using ElementWriter = void(*)(DataWriter& writer, const T& t, const String& name);
 
         template<typename T>
@@ -89,8 +103,13 @@ namespace RT
                        ElementWriter<T> elementWriter,
                        const String& name)
         {
-            CollectionWrite<T> helper(listData, nValues, elementWriter);
-            WriteDataStructure(helper, name);
+            ElementWriterFull<T> fullWriter = [](DataWriter& wr, const T& t, const String& _name,
+                                                 void* pInnerFunc)
+            {
+                ElementWriter<T> innerWriter = (ElementWriter<T>)pInnerFunc;
+                innerWriter(wr, t, _name);
+            };
+            WriteList<T>(listData, nValues, fullWriter, name, elementWriter);
         }
 
     private:
@@ -102,17 +121,18 @@ namespace RT
         {
             const T* Values;
             size_t NValues;
-            ElementWriter<T> Writer;
+            void* PData;
+            ElementWriterFull<T> Writer;
 
-            CollectionWrite(const T* values, size_t nValues, ElementWriter<T> writer)
-                : Values(values), NValues(nValues), Writer(writer) { }
+            CollectionWrite(const T* values, size_t nValues, void* pData, ElementWriterFull<T> writer)
+                : Values(values), NValues(nValues), PData(pData), Writer(writer) { }
 
             virtual void WriteData(DataWriter& writer) const override
             {
                 writer.WriteUInt(NValues, "NValues");
                 for (size_t i = 0; i < NValues; ++i)
                 {
-                    Writer(writer, Values[i], String(i + 1));
+                    Writer(writer, Values[i], String(i + 1), PData);
                 }
             }
         };
@@ -167,6 +187,23 @@ namespace RT
 
         template<typename T>
         //Reads a given element from the given DataReader with the given name.
+        using ElementReaderFull = void(*)(DataReader& reader, void* pList,
+                                          size_t listIndex, const String& name,
+                                          void* pData);
+
+        template<typename T>
+        void ReadList(void* list,
+                      ListResizer listResizer,
+                      ElementReaderFull<T> elementReader,
+                      const String& name,
+                      void* pData)
+        {
+            CollectionRead<T> helper(list, listResizer, pData, elementReader);
+            ReadDataStructure(helper, name);
+        }
+
+        template<typename T>
+        //Reads a given element from the given DataReader with the given name.
         using ElementReader = void(*)(DataReader& reader, void* pList,
                                       size_t listIndex, const String& name);
 
@@ -176,8 +213,12 @@ namespace RT
                       ElementReader<T> elementReader,
                       const String& name)
         {
-            CollectionRead<T> helper(list, listResizer, elementReader);
-            ReadDataStructure(helper, name);
+            ElementReaderFull<T> fullReader =
+                [](DataReader& rd, void* pList, size_t i, const String& name, void* pInnerFunc)
+                {
+                    ((ElementReader<T>)pInnerFunc)(rd, pList, i, name);
+                };
+            ReadList<T>(list, listResizer, fullReader, name, (void*)elementReader);
         }
 
 
@@ -190,12 +231,14 @@ namespace RT
         {
             void* List;
             ListResizer Resizer;
-            ElementReader<T> Reader;
+            void* PData;
+            ElementReaderFull<T> Reader;
 
             CollectionRead(void* list,
                            ListResizer resizer,
-                           ElementReader<T> reader)
-                : List(list), Resizer(resizer), Reader(reader) { }
+                           void* pData,
+                           ElementReaderFull<T> reader)
+                : List(list), Resizer(resizer), PData(pData), Reader(reader) { }
 
             virtual void ReadData(DataReader& reader) override
             {
@@ -205,7 +248,7 @@ namespace RT
 
                 for (size_t i = 0; i < nValues; ++i)
                 {
-                    Reader(reader, List, i, String(i + 1));
+                    Reader(reader, List, i, String(i + 1), PData);
                 }
             }
         };

@@ -70,25 +70,22 @@ namespace RT.MaterialValue
 		public override OutputSizes OutputSize { get { return Value.OutputSize; } }
 		public override string PrettyName { get { return "Constant"; } }
 
-		public override string ShaderValueName
+		public override string ShaderValueName(Dictionary<MV_Base, uint> idLookup)
 		{
-			get
-			{
-				if (Value.OutputSize == OutputSizes.One)
-					return Value.FullValue.x.ToString();
+			if (Value.OutputSize == OutputSizes.One)
+				return Value.FullValue.x.ToString();
 
-				System.Text.StringBuilder valStr = new System.Text.StringBuilder();
-				valStr.Append(Value.OutputSize.ToHLSLType());
-				valStr.Append("(");
-				for (uint i = 0; i < Value.OutputSize.ToNumber(); ++i)
-				{
-					if (i > 0)
-						valStr.Append(", ");
-					valStr.Append(Value[i]);
-				}
-				valStr.Append(")");
-				return valStr.ToString();
+			System.Text.StringBuilder valStr = new System.Text.StringBuilder();
+			valStr.Append(Value.OutputSize.ToHLSLType());
+			valStr.Append("(");
+			for (uint i = 0; i < Value.OutputSize.ToNumber(); ++i)
+			{
+				if (i > 0)
+					valStr.Append(", ");
+				valStr.Append(Value[i]);
 			}
+			valStr.Append(")");
+			return valStr.ToString();
 		}
 
 
@@ -118,7 +115,8 @@ namespace RT.MaterialValue
 
 		public override void Emit(StringBuilder shaderlabProperties,
 								  StringBuilder cgDefinitions,
-								  StringBuilder cgFunctionBody) { }
+								  StringBuilder cgFunctionBody,
+								  Dictionary<MV_Base, uint> idLookup) { }
 
 		public override void WriteData(DataWriter writer, string namePrefix,
 									   Dictionary<MV_Base, uint> idLookup)

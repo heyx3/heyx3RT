@@ -14,13 +14,6 @@ namespace RT.MaterialValue
 	[Serializable]
 	public abstract class MV_Base
 	{
-		private static ulong nextGUID = 1;
-		private static Dictionary<ulong, MV_Base> guidToValue = new Dictionary<ulong, MV_Base>();
-
-		public static MV_Base GetValue(ulong guid)
-			{ return (guidToValue.ContainsKey(guid) ? guidToValue[guid] : null); }
-
-
 		public static void Write(MV_Base val, Dictionary<MV_Base, uint> idLookup, string name,
 								 Serialization.DataWriter writer)
 		{
@@ -90,6 +83,47 @@ namespace RT.MaterialValue
 		}
 
 
+		/// <summary>
+		/// Returns a sorted version of the given collection
+		///     so that every node comes before any of its parents.
+		/// </summary>
+		public static IEnumerable<MV_Base> SortDeepestFirst(IEnumerable<MV_Base> nodes)
+		{
+			List<MV_Base> toCheck = new List<MV_Base>(nodes);
+			HashSet<MV_Base> alreadyChecked = new HashSet<MV_Base>();
+			while (toCheck.Count > 0)
+			{
+				MV_Base node = toCheck[toCheck.Count - 1];
+
+				//Make sure we return its children first.
+				if (alreadyChecked.Contains(node))
+				{
+					yield return node;
+					toCheck.RemoveAt(toCheck.Count - 1);
+				}
+				else
+				{
+					alreadyChecked.Add(node);
+
+					for (int i = 0; i < node.inputs.Count; ++i)
+					{
+						//If this node is still queued up to be checked, move it to the front.
+						if (toCheck.Contains(node.inputs[i]))
+						{
+							toCheck.Remove(node.inputs[i]);
+							toCheck.Add(node.inputs[i]);
+						}
+						//Otherwise, if it hasn't been checked yet, queue it up to be checked.
+						else if (!alreadyChecked.Contains(node.inputs[i]))
+						{
+							toCheck.Add(node.inputs[i]);
+						}
+					}
+				}
+			}
+		}
+
+
 		#region "TypeName"s
 		protected const string TypeName_Constant = "Constant",
 							   TypeName_Tex2D = "Tex2D",
@@ -147,21 +181,12 @@ namespace RT.MaterialValue
 		private List<MV_Base> inputs = new List<MV_Base>();
 
 		
-		//TODO: This is only used by the graph pane of the material editor window. Just do GUID stuff there! Make "OnNodeAdded" and "OnNodeRemoved" events for the Graph.
-		public ulong GUID { get { return guid; }
-						    set { guidToValue.Remove(guid); guidToValue.Remove(value); guid = value; guidToValue.Add(guid, this); } }
 		public Rect Pos { get { return pos; } set { pos = value; } }
 
 		public IEnumerable<MV_Base> Inputs { get { return inputs; } }
-		public IEnumerable<MV_Base> Hierarchy
-		{
-			get
-			{
-				return GetHierarchy(new HashSet<MV_Base>());
-			}
-		}
 
-		private IEnumerable<MV_Base> GetHierarchy(HashSet<MV_Base> usedSoFar)
+		public IEnumerable<MV_Base> HierarchyRootFirst { get { return GetHierarchyRootFirst(new HashSet<MV_Base>()); } }
+		private IEnumerable<MV_Base> GetHierarchyRootFirst(HashSet<MV_Base> usedSoFar)
 		{
 			yield return this;
 
@@ -169,9 +194,23 @@ namespace RT.MaterialValue
 				if (!usedSoFar.Contains(input))
 				{
 					usedSoFar.Add(input);
-					foreach (MV_Base input2 in input.GetHierarchy(usedSoFar))
+					foreach (MV_Base input2 in input.GetHierarchyRootFirst(usedSoFar))
 						yield return input2;
 				}
+		}
+
+		public IEnumerable<MV_Base> HierarchyDeepestFirst { get { return GetDeepestFirstHierarchy(new HashSet<MV_Base>()); } }
+		private IEnumerable<MV_Base> GetDeepestFirstHierarchy(HashSet<MV_Base> usedSoFar)
+		{
+			foreach (MV_Base input in inputs)
+				if (!usedSoFar.Contains(input))
+				{
+					foreach (MV_Base childHierarchy in input.GetDeepestFirstHierarchy(usedSoFar))
+						yield return childHierarchy;
+				}
+
+			yield return this;
+			usedSoFar.Add(this);
 		}
 		
 
@@ -180,7 +219,10 @@ namespace RT.MaterialValue
 		public abstract string TypeName { get; }
 		public abstract OutputSizes OutputSize { get; }
 
-		public virtual string ShaderValueName { get { return "out" + GUID; } }
+		public virtual string ShaderValueName(Dictionary<MV_Base, uint> idLookup)
+		{
+			return "out" + idLookup[this];
+		}
 		public virtual bool IsUsableInSkyMaterial { get { return true; } }
 
 		public abstract string PrettyName { get; }
@@ -189,14 +231,6 @@ namespace RT.MaterialValue
 
 		public MV_Base()
 		{
-			//Find an unused GUID for this node.
-			while (guidToValue.ContainsKey(nextGUID))
-				nextGUID += 1;
-			guid = nextGUID;
-			nextGUID += 1;
-
-			guidToValue.Add(guid, this);
-
 			//Double-check that this sub-class is serializable.
 			if ((GetType().Attributes & System.Reflection.TypeAttributes.Serializable) !=
 					System.Reflection.TypeAttributes.Serializable)
@@ -206,22 +240,7 @@ namespace RT.MaterialValue
 											"OK");
 			}
 		}
-
-
-		/// <summary>
-		/// Cleans up the GUID allocated for this instance.
-		/// </summary>
-		public void Delete(bool deleteChildren)
-		{
-			if (guidToValue.ContainsKey(guid))
-			{
-				guidToValue.Remove(guid);
-
-				if (deleteChildren)
-					foreach (MV_Base input in Inputs)
-						input.Delete(true);
-			}
-		}
+		
 
 		/// <summary>
 		/// Gets the shader expression for this MaterialValue's value,
@@ -230,9 +249,10 @@ namespace RT.MaterialValue
 		/// <param name="alsoAllow1D">
 		/// If true, a size of One is acceptable along with the target size.
 		/// </param>
-		public string GetShaderValue(OutputSizes targetSize, bool alsoAllow1D = false)
+		public string GetShaderValue(OutputSizes targetSize, Dictionary<MV_Base, uint> idLookup,
+									 bool alsoAllow1D = false)
 		{
-			string val = ShaderValueName;
+			string val = ShaderValueName(idLookup);
 			OutputSizes valSize = OutputSize;
 
 			if (valSize == targetSize || (alsoAllow1D && valSize == OutputSizes.One))
@@ -283,8 +303,10 @@ namespace RT.MaterialValue
 
 		public abstract void Emit(StringBuilder shaderlabProperties,
 								  StringBuilder cgDefinitions,
-								  StringBuilder cgFunctionBody);
-		public virtual void SetParams(Transform shapeTr, Material unityMat) { }
+								  StringBuilder cgFunctionBody,
+								  Dictionary<MV_Base, uint> idLookup);
+		public virtual void SetParams(Transform shapeTr, Material unityMat,
+									  Dictionary<MV_Base, uint> idLookup) { }
 
 		/// <summary>
 		/// Gets a valid default input for the given input index.
@@ -318,7 +340,6 @@ namespace RT.MaterialValue
 		public virtual void ReadData(Serialization.DataReader reader, string namePrefix,
 									 Dictionary<MV_Base, List<uint>> childIDsLookup)
 		{
-			GUID = reader.ULong(namePrefix + "GUID");
 			pos = reader.Rect(namePrefix + "Pos");
 
 			//Read children nodes as a list of their IDs.

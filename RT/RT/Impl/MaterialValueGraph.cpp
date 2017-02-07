@@ -7,6 +7,7 @@ void MaterialValueGraph::WriteData(DataWriter& data) const
 {
     //Make a unique ID for every node.
 
+    std::vector<const MaterialValue*> allNodes;
     ConstMaterialValueToID mvToID;
     unsigned int nextID = std::numeric_limits<unsigned int>::min();
     unsigned int nNodes = 0;
@@ -23,6 +24,8 @@ void MaterialValueGraph::WriteData(DataWriter& data) const
         if (mvToID.Contains(mv))
             continue;
 
+        allNodes.push_back(mv);
+
         mvToID[mv] = nextID;
         nextID += 1;
 
@@ -30,72 +33,20 @@ void MaterialValueGraph::WriteData(DataWriter& data) const
             toInvestigate.PushBack(mv->GetChild(i));
     }
 
+    
+    //Write the nodes.
+    data.WriteList<const MaterialValue*>(allNodes.data(), allNodes.size(),
+                                         [](DataWriter& wr, const MaterialValue*const& val,
+                                            const String& name, void* pData)
+                                         {
+                                             MaterialValue::WriteValue(val,
+                                                                       *(ConstMaterialValueToID*)pData,
+                                                                       wr, name);
+                                         },
+                                         "nodes",
+                                         &mvToID);
 
-    //Write the nodes in order, from highest tree depth to the lowest.
-
-    data.WriteUInt(nNodes, "NumbNodes");
-
-    List<const MaterialValue*> toWrite;
-    Dictionary<const MaterialValue*, bool> processedNodeYet;
-    for (int i = 0; i < OUT_rootVals.GetSize(); ++i)
-    {
-        toWrite.PushBack(OUT_rootVals[i]);
-        processedNodeYet[OUT_rootVals[i]] = false;
-    }
-
-    size_t count = 0;
-    while (toWrite.GetSize() > 0)
-    {
-        auto mv = toWrite.GetBack();
-
-        //If this node has already been processed, write it out and pop it off the stack.
-        if (processedNodeYet[mv])
-        {
-            toWrite.PopBack();
-            MaterialValue::WriteValue(mv, mvToID, data, String(count));
-            count += 1;
-        }
-        //Otherwise, queue up its children to be processed first.
-        else
-        {
-            processedNodeYet[mv] = true;
-            for (size_t i = 0; i < mv->GetNChildren(); ++i)
-            {
-                auto childMV = mv->GetChild(i);
-
-                //Add this child to the front of the stack.
-                int pos = toWrite.IndexOf([&childMV](const MaterialValue* mv2)
-                {
-                    return childMV == mv2;
-                });
-                bool processedAlready = processedNodeYet.Get(childMV, false);
-
-                if (pos == -1)
-                {
-                    if (processedAlready)
-                    {
-                        //We already wrote the node out.
-                        continue;
-                    }
-                    else
-                    {
-                        //We haven't seen this node yet.
-                        toWrite.PushBack(childMV);
-                        processedNodeYet[childMV] = false;
-                    }
-                }
-                else
-                {
-                    //The node has already been seen, but not processed,
-                    //    so move it to the top of the stack.
-                    toWrite.RemoveAt(pos);
-                    toWrite.PushBack(childMV);
-                }
-            }
-        }
-    }
-
-    //Finally, write out the root values as IDs.
+    //Write out the root values as IDs.
     List<unsigned int> rootValIDs;
     for (size_t i = 0; i < OUT_rootVals.GetSize(); ++i)
         rootValIDs.PushBack(mvToID[OUT_rootVals[i]]);
@@ -114,20 +65,37 @@ void MaterialValueGraph::ReadData(DataReader& data)
     IDToMaterialValue idLookup;
 
     //Read each node.
-    unsigned int nNodes;
-    data.ReadUInt(nNodes, "NumbNodes");
-    for (unsigned int i = 0; i < nNodes; ++i)
+    struct ReaderData
     {
-        MaterialValue::Ptr mv;
-        unsigned int id = MaterialValue::ReadValue(mv, childIDs, data, String(i));
-        idLookup[id] = mv;
-    }
+        NodeToChildIDs& childIDs;
+        IDToMaterialValue& idLookup;
+        ReaderData(NodeToChildIDs& _childIDs, IDToMaterialValue& _idLookup)
+            : childIDs(_childIDs), idLookup(_idLookup) { }
+    };
+    std::vector<MaterialValue::Ptr> allNodes;
+    ReaderData rdData(childIDs, idLookup);
+    data.ReadList<MaterialValue::Ptr>(&allNodes,
+                                      [](void* pList, size_t newSize)
+                                      {
+                                          ((std::vector<MaterialValue::Ptr>*)pList)->resize(newSize);
+                                      },
+                                      [](DataReader& rd, void* pList, size_t i, const String& name,
+                                         void* pData)
+                                      {
+                                          auto& list = *(std::vector<MaterialValue::Ptr>*)pList;
+                                          ReaderData& rdData = *(ReaderData*)pData;
+
+                                          unsigned int id = MaterialValue::ReadValue(list[i],
+                                                                                     rdData.childIDs,
+                                                                                     rd, name);
+                                          rdData.idLookup[id] = list[i];
+                                      },
+                                      "nodes",
+                                      &rdData);
 
     //Finalize each node.
-    idLookup.DoToEach([&childIDs, &idLookup](unsigned int key)
-    {
-        idLookup[key]->OnDoneReadingData(idLookup, childIDs);
-    });
+    for (auto& mvPtr : allNodes)
+        mvPtr->OnDoneReadingData(idLookup, childIDs);
 
     //Read in the root values as IDs.
     List<unsigned int> rootValIDs;

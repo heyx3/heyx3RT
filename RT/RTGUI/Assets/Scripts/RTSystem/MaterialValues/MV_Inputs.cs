@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEditor;
-using System.Text;
+
 using RT.Serialization;
+
 
 namespace RT.MaterialValue
 {
@@ -72,7 +75,7 @@ namespace RT.MaterialValue
 			}
 		}
 
-		public override string ShaderValueName { get { return OptionsCode[selectedOption]; } }
+		public override string ShaderValueName(Dictionary<MV_Base, uint> idLookup) { return OptionsCode[selectedOption]; }
 		public override bool IsUsableInSkyMaterial
 		{
 			get
@@ -106,7 +109,8 @@ namespace RT.MaterialValue
 
 		public override void Emit(StringBuilder shaderlabProperties,
 								  StringBuilder cgDefinitions,
-								  StringBuilder cgFunctionBody)
+								  StringBuilder cgFunctionBody,
+								  Dictionary<MV_Base, uint> idLookup)
 		{
 			//If the shape data params haven't been defined yet, define them.
 			if (!shaderlabProperties.ToString().Contains(RTSystem.Param_ShapePos))
@@ -133,7 +137,8 @@ namespace RT.MaterialValue
 				cgDefinitions.AppendLine(";");
 			}
 		}
-		public override void SetParams(Transform shapeTr, Material unityMat)
+		public override void SetParams(Transform shapeTr, Material unityMat,
+									   Dictionary<MV_Base, uint> idLookup)
 		{
 			//If we get a null reference exception accessing "shapeTr", we must be using a sky material.
 			try

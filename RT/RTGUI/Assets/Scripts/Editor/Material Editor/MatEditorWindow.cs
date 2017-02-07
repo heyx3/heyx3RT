@@ -56,16 +56,8 @@ namespace RT.MatEditor
 
 		public void Save()
 		{
-			//Copy the Graph that's being edited and move its values into the material's original Graph.
-
-			Graph g = GraphPane.Graph.Clone();
-			
-			Graph.RootValues.Clear();
-			Graph.RootValues.AddRange(g.RootValues);
-
-			Graph.ExtraNodes.Clear();
-			foreach (MV_Base node in g.ExtraNodes)
-				Graph.ExtraNodes.Add(node);
+			//Set the original graph to have the same layout as the editor pane's copy.
+			GraphPane.Graph.Clone(Graph);
 		}
 		
 		private void OnFocus()

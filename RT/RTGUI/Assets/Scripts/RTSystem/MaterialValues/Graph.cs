@@ -14,21 +14,37 @@ namespace RT.MaterialValue
 	public class Graph : Serialization.ISerializableRT
 	{
 		public Rect OutputNodePos = new Rect(0.0f, 0.0f, 1.0f, 1.0f);
+		
+		public event Action<Graph, MV_Base> OnNodeAdded, OnNodeDeleted;
 
-		public List<MV_Base> RootValues { get; private set; }
-		public HashSet<MV_Base> ExtraNodes { get; private set; }
+		public int NRoots { get { return rootValues.Count; } }
+		
+		/// <summary>
+		/// All nodes in this graph not connected to the root.
+		/// Not returned in any particular order.
+		/// </summary>
+		public IEnumerable<MV_Base> AllExtraNodes { get { return extraNodes; } }
+		/// <summary>
+		/// The roots of this graph, in the order they were added as a root.
+		/// </summary>
+		public IEnumerable<MV_Base> AllRootNodes { get { return rootValues; } }
 
+		/// <summary>
+		/// All nodes connected to this graph's roots, including the roots themselves.
+		/// The order of the nodes is such that the deepest nodes in the graph always come first --
+		///     you will never see a parent before any of its inputs.
+		/// </summary>
 		public IEnumerable<MV_Base> AllConnectedNodes
 		{
 			get
 			{
 				tempNodeCollection.Clear();
-				foreach (MV_Base rootValue in RootValues)
+				foreach (MV_Base rootValue in rootValues)
 				{
 					if (rootValue == null)
 						continue;
 
-					foreach (MV_Base partOfRoot in rootValue.Hierarchy)
+					foreach (MV_Base partOfRoot in rootValue.HierarchyDeepestFirst)
 					{
 						if (!tempNodeCollection.Contains(partOfRoot))
 						{
@@ -39,58 +55,83 @@ namespace RT.MaterialValue
 				}
 			}
 		}
+		/// <summary>
+		/// All nodes in this graph, starting with the ones connected to the root.
+		/// You cannot assume anything about the order of these nodes except that all root-connected nodes come first.
+		/// </summary>
 		public IEnumerable<MV_Base> AllNodes
 		{
 			get
 			{
 				tempNodeCollection.Clear();
 
-				foreach (MV_Base rootValue in RootValues)
+				foreach (MV_Base node in rootValues.Concat(extraNodes))
 				{
-					foreach (MV_Base partOfRoot in rootValue.Hierarchy)
-					{
-						if (!tempNodeCollection.Contains(partOfRoot))
-						{
-							tempNodeCollection.Add(partOfRoot);
-							yield return partOfRoot;
-						}
-					}
-				}
+					if (node == null)
+						continue;
 
-				foreach (MV_Base extraNode in ExtraNodes)
-				{
-					foreach (MV_Base partOfNode in extraNode.Hierarchy)
+					foreach (MV_Base hierarchyNode in node.HierarchyRootFirst)
 					{
-						if (!tempNodeCollection.Contains(partOfNode))
+						if (!tempNodeCollection.Contains(hierarchyNode))
 						{
-							tempNodeCollection.Add(partOfNode);
-							yield return partOfNode;
+							tempNodeCollection.Add(hierarchyNode);
+							yield return hierarchyNode;
 						}
 					}
 				}
 			}
 		}
+
+		public Dictionary<MV_Base, uint> UniqueNodeIDs { get { return nodeToID; } }
+		public Dictionary<uint, MV_Base> NodesByUniqueID {  get { return idToNode; } }
+
+
+		private List<MV_Base> rootValues = new List<MV_Base>();
+		private HashSet<MV_Base> extraNodes = new HashSet<MV_Base>();
+
 		private HashSet<MV_Base> tempNodeCollection = new HashSet<MV_Base>();
+
+		private Dictionary<MV_Base, uint> nodeToID = new Dictionary<MV_Base, uint>();
+		private Dictionary<uint, MV_Base> idToNode = new Dictionary<uint, MV_Base>();
+		private uint nextID = 0;
 
 
 		public Graph()
 		{
-			RootValues = new List<MV_Base>();
-			ExtraNodes = new HashSet<MV_Base>();
+			OnNodeAdded += (_this, node) =>
+			{
+				nodeToID.Add(node, nextID);
+				idToNode.Add(nextID, node);
+				nextID += 1;
+			};
+			OnNodeDeleted += (_this, node) =>
+			{
+				if (nextID == nodeToID[node] + 1)
+					nextID -= 1;
+
+				idToNode.Remove(nodeToID[node]);
+				nodeToID.Remove(node);
+			};
 		}
 		public Graph(List<MV_Base> rootValues)
+			: this()
 		{
-			RootValues = new List<MV_Base>(rootValues);
-			ExtraNodes = new HashSet<MV_Base>();
+			rootValues = new List<MV_Base>(rootValues);
+			extraNodes = new HashSet<MV_Base>();
 		}
 
+
+		/// <summary>
+		/// Gets the root node at the given index.
+		/// </summary>
+		public MV_Base GetRootNode(int index) { return rootValues[index]; }
 
 		/// <summary>
 		/// Gets whether the given node is connected to one of the root nodes.
 		/// </summary>
 		public bool IsConnected(MV_Base node)
 		{
-			if (ExtraNodes.Contains(node))
+			if (extraNodes.Contains(node))
 			{
 				UnityEngine.Assertions.Assert.IsFalse(AllConnectedNodes.Contains(node));
 				return true;
@@ -101,20 +142,34 @@ namespace RT.MaterialValue
 				return true;
 			}
 		}
-
+		/// <summary>
+		/// Gets whether the given node exists in this graph at all.
+		/// </summary>
+		public bool ContainsNode(MV_Base node)
+		{
+			return extraNodes.Contains(node) ||
+				   AllConnectedNodes.Contains(node);
+		}
 
 		/// <summary>
 		/// Adds a new unconnected node (plus any children) to the graph.
 		/// </summary>
 		public void AddNode(MV_Base node)
 		{
+			if (ContainsNode(node))
+				return;
+
 			//Add the node.
-			ExtraNodes.Add(node);
+			extraNodes.Add(node);
 			
 			//Run "AddNode()" on each of its children.
 			for (int i = 0; i < node.GetNInputs(); ++i)
 				AddNode(node.GetInput(i));
+
+			if (OnNodeAdded != null)
+				OnNodeAdded(this, node);
 		}
+
 		/// <summary>
 		/// Properly removes the given node from the graph.
 		/// </summary>
@@ -131,8 +186,9 @@ namespace RT.MaterialValue
 				DisconnectInput(node, i, false, false);
 
 			//Finally, delete the node.
-			ExtraNodes.Remove(node);
-			node.Delete(false);
+			extraNodes.Remove(node);
+			if (OnNodeDeleted != null)
+				OnNodeDeleted(this, node);
 		}
 		/// <summary>
 		/// Changes a node's input.
@@ -147,7 +203,7 @@ namespace RT.MaterialValue
 		public void ConnectInput(MV_Base node, int inputIndex, MV_Base newInput)
 		{
             //Make sure infinite loops can't happen.
-            if (newInput.Hierarchy.Contains(node))
+            if (newInput.HierarchyRootFirst.Contains(node))
             {
                 Debug.LogError("Can't create a loop in the graph!");
                 return;
@@ -155,7 +211,12 @@ namespace RT.MaterialValue
 
 			//If the node has variable numbers of children
 			//    and this input index doesn't yet exist, add it.
-			if (node != null && inputIndex == node.GetNInputs())
+			//Note that the graph outputs can always be added to.
+			if (node == null && inputIndex == rootValues.Count)
+			{
+				rootValues.Add(newInput);
+			}
+			else if (node != null && inputIndex == node.GetNInputs())
 			{
 				UnityEngine.Assertions.Assert.IsTrue(node.HasVariableNumberOfChildren);
 				node.AddInput(newInput);
@@ -170,19 +231,19 @@ namespace RT.MaterialValue
 			if (node == null)
 			{
 				//If the new input was disconnected from the graph's roots, it obviously isn't now.
-				foreach (MV_Base hierarchyNode in newInput.Hierarchy)
-					ExtraNodes.Remove(hierarchyNode);
+				foreach (MV_Base hierarchyNode in newInput.HierarchyRootFirst)
+					extraNodes.Remove(hierarchyNode);
 
 				//Set the new input.
-				RootValues[inputIndex] = newInput;
+				rootValues[inputIndex] = newInput;
 			}
 			//Otherwise, this is just a regular node getting a new input.
 			else
 			{
 				//If the parent node is connected to the root, the input will be now as well.
 				if (IsConnected(node))
-					foreach (MV_Base hierarchyNode in newInput.Hierarchy)
-						ExtraNodes.Remove(hierarchyNode);
+					foreach (MV_Base hierarchyNode in newInput.HierarchyRootFirst)
+						extraNodes.Remove(hierarchyNode);
 			}
 		}
 		/// <summary>
@@ -202,7 +263,7 @@ namespace RT.MaterialValue
 		private void DisconnectInput(MV_Base node, int inputIndex, bool deleteIndexEntirely, bool replaceInput)
 		{
 			MV_Base oldInput = (node == null ?
-							        RootValues[inputIndex] :
+							        rootValues[inputIndex] :
 									node.GetInput(inputIndex));
 
 			//If we're in the middle of a higher DisconnectInput() operation,
@@ -212,20 +273,21 @@ namespace RT.MaterialValue
 
 			//Nullify the input reference.
 			if (node == null)
-				RootValues[inputIndex] = null;
+				rootValues[inputIndex] = null;
 			else
 				node.ChangeInput(inputIndex, null);
 
 			//Check whether any nodes in the input's graph are now no longer connected to a root.
-			foreach (MV_Base hierarchyNode in oldInput.Hierarchy)
-				if (!ExtraNodes.Contains(hierarchyNode) && !IsConnected(hierarchyNode))
-					ExtraNodes.Add(hierarchyNode);
+			foreach (MV_Base hierarchyNode in oldInput.HierarchyRootFirst)
+				if (!extraNodes.Contains(hierarchyNode) && !IsConnected(hierarchyNode))
+					extraNodes.Add(hierarchyNode);
 
 			//If the input was an inline constant, delete it.
 			if (oldInput is MV_Constant && ((MV_Constant)oldInput).IsInline)
 			{
-				oldInput.Delete(false);
-				ExtraNodes.Remove(oldInput);
+				extraNodes.Remove(oldInput);
+				if (OnNodeDeleted != null)
+					OnNodeDeleted(this, oldInput);
 			}
 
 			//Replace or remove the input.
@@ -241,7 +303,7 @@ namespace RT.MaterialValue
 			}
 		}
 
-		public Graph Clone()
+		public void Clone(Graph destination)
 		{
 			//Serialize to a stream, then deserialize a new graph from that stream.
 
@@ -261,13 +323,11 @@ namespace RT.MaterialValue
 						writer.Structure(this, "data");
 					}
 
-					Graph g = new Graph();
+					destination.Clear(true);
 					var reader = new Serialization.JSONReader(filePath);
-					reader.Structure(this, "data");
+					reader.Structure(destination, "data");
 
 					File.Delete(filePath);
-
-					return g;
 				}
 				catch (Exception e)
 				{
@@ -275,143 +335,93 @@ namespace RT.MaterialValue
 									   "\n" + e.StackTrace);
 				}
 			}
-
-			return null;
 		}
+		public Graph Clone()
+		{
+			Graph g = new Graph();
+			Clone(g);
+			return g;
+		}
+
 		public void Clear(bool deleteNodes)
 		{
 			if (deleteNodes)
 			{
-				foreach (MV_Base node in AllNodes)
-					node.Delete(true);
+				//Clear all nodes in order, starting with the deepest non-root-connected ones.
+				var nodes = new List<MV_Base>(AllNodes);
+				foreach (MV_Base node in MV_Base.SortDeepestFirst(nodes))
+					DeleteNode(node);
 			}
 
-			ExtraNodes.Clear();
-			for (int i = 0; i < RootValues.Count; ++i)
-				RootValues[i] = MV_Constant.MakeFloat(1.0f);
+			//Add some default inline constants to the output.
+			for (int i = 0; i < rootValues.Count; ++i)
+			{
+				MV_Base val = MV_Constant.MakeFloat(1.0f, false, 0.0f, 1.0f,
+													OutputSizes.One, true);
+				AddNode(val);
+				ConnectInput(null, i, val);
+			}
 		}
 
 		public void WriteData(Serialization.DataWriter writer)
 		{
-			writer.Float(OutputNodePos.xMin, "OutputNodePos_XMin");
-			writer.Float(OutputNodePos.yMin, "OutputNodePos_YMin");
-			writer.Float(OutputNodePos.width, "OutputNodePos_XSize");
-			writer.Float(OutputNodePos.height, "OutputNodePos_YSize");
+			writer.Float(OutputNodePos.xMin, "outputNodePos_XMin");
+			writer.Float(OutputNodePos.yMin, "outputNodePos_YMin");
+			writer.Float(OutputNodePos.width, "outputNodePos_XSize");
+			writer.Float(OutputNodePos.height, "outputNodePos_YSize");
 
+			List<MV_Base> allNodes = new List<MV_Base>(AllNodes);
 
 			//Give every node a unique ID.
-
 			Dictionary<MV_Base, uint> mvToID = new Dictionary<MV_Base, uint>();
 			uint nextID = uint.MinValue;
 			uint nNodes = 0;
-
-			Stack<MV_Base> toInvestigate = new Stack<MV_Base>(RootValues.Concat(ExtraNodes));
-			while (toInvestigate.Count > 0)
+			foreach (MV_Base node in allNodes)
 			{
-				var mv = toInvestigate.Pop();
-				nNodes += 1;
-
-				if (mvToID.ContainsKey(mv))
-					continue;
-
-				mvToID.Add(mv, nextID);
+				mvToID.Add(node, nextID);
 				nextID += 1;
-
-				for (int i = 0; i < mv.GetNInputs(); ++i)
-					toInvestigate.Push(mv.GetInput(i));
+				nNodes += 1;
 			}
 
-
-			//Write the nodes in order, from highest tree depth to lowest.
-
-			writer.UInt(nNodes, "NumbNodes");
-			
-			List<MV_Base> toWrite = new List<MV_Base>();
-			Dictionary<MV_Base, bool> processedChildrenYet = new Dictionary<MV_Base, bool>();
-			foreach (MV_Base node in RootValues.Concat(ExtraNodes))
-			{
-				toWrite.Add(node);
-				processedChildrenYet.Add(node, false);
-			}
-
-			uint count = 0;
-			while (toWrite.Count > 0)
-			{
-				var mv = toWrite[toWrite.Count - 1];
-
-				//If this node has already been processed, write it out and pop it off the stack.
-				if (processedChildrenYet[mv])
-				{
-					toWrite.RemoveAt(toWrite.Count - 1);
-					MV_Base.Write(mv, mvToID, count.ToString(), writer);
-					count += 1;
-				}
-				//Otherwise, queue up its children to be processed first.
-				else
-				{
-					processedChildrenYet[mv] = true;
-					for (int i = 0; i < mv.GetNInputs(); ++i)
-					{
-						var childMV = mv.GetInput(i);
-
-						//Add this child to the front of the stack.
-						int stackPos = toWrite.IndexOf(childMV);
-						bool isProcessedAlready = (processedChildrenYet.ContainsKey(childMV) &&
-												   processedChildrenYet[childMV]);
-						if (stackPos == -1)
-						{
-							if (isProcessedAlready)
-							{
-								//We already wrote the node out.
-								continue;
-							}
-							else
-							{
-								//We haven't seen this node yet.
-								toWrite.Add(childMV);
-								processedChildrenYet.Add(childMV, false);
-							}
-						}
-						else
-						{
-							//The node has already been seen, but not processed,
-							//    so move it to the top of the stack.
-							toWrite.RemoveAt(stackPos);
-							toWrite.Add(childMV);
-						}
-					}
-				}
-			}
-
+			//Write the nodes.
+			writer.List(allNodes, "nodes",
+						(wr, outVal, name) => MV_Base.Write(outVal, mvToID, name, wr));
 
 			//Finally, write out the root values as IDs.
-
-			List<uint> rootvalIDs = new List<uint>(RootValues.Select(mv => mvToID[mv]));
+			List<uint> rootvalIDs = new List<uint>(rootValues.Select(mv => mvToID[mv]));
 			writer.List(rootvalIDs, "rootVals", (wr, outVal, name) => wr.UInt(outVal, name));
 		}
 		public void ReadData(Serialization.DataReader reader)
 		{
-			OutputNodePos = new Rect(reader.Float("OutputNodePos_XMin"),
-									 reader.Float("OutputNodePos_YMin"),
-									 reader.Float("OutputNodePos_XSize"),
-									 reader.Float("OutputNodePos_YSize"));
+			nextID = 0;
+
+			//Delete all nodes starting at the deepest inputs.
+			foreach (MV_Base node in MV_Base.SortDeepestFirst(new List<MV_Base>(AllNodes)))
+				DeleteNode(node);
+
+
+			OutputNodePos = new Rect(reader.Float("outputNodePos_XMin"),
+									 reader.Float("outputNodePos_YMin"),
+									 reader.Float("outputNodePos_XSize"),
+									 reader.Float("outputNodePos_YSize"));
 
 
 			Dictionary<MV_Base, List<uint>> childIDs = new Dictionary<MV_Base, List<uint>>();
 			Dictionary<uint, MV_Base> idLookup = new Dictionary<uint, MV_Base>();
 
 			//Read each node.
-			uint nNodes = reader.UInt("NumbNodes");
-			for (uint i = 0; i < nNodes; ++i)
-			{
-				uint id;
-				MV_Base mv = MV_Base.Read(childIDs, i.ToString(), reader, out id);
-				idLookup.Add(id, mv);
-			}
+			List<MV_Base> nodes =
+				reader.List("nodes",
+							(Serialization.DataReader rd, ref MV_Base val, string name) =>
+							{
+								uint id;
+								val = MV_Base.Read(childIDs, name, rd, out id);
+								idLookup.Add(id, val);
+							});
 
 			//Finalize each node.
-			foreach (MV_Base mv in childIDs.Keys)
-				mv.OnDoneReadingData(idLookup, childIDs);
+			foreach (MV_Base node in nodes)
+				node.OnDoneReadingData(idLookup, childIDs);
 
 			//Read in the root values as IDs.
 			List<uint> rootValIDs = reader.List("rootVals",
@@ -419,42 +429,18 @@ namespace RT.MaterialValue
 												{
 													val = rd.UInt(name);
 												});
-			RootValues = new List<MV_Base>(rootValIDs.Select(id => idLookup[id]));
+			rootValues = new List<MV_Base>(rootValIDs.Select(id => idLookup[id]));
 
+			//Find the nodes that belong in "ExtraNodes".
+			HashSet<MV_Base> connectedNodes = new HashSet<MV_Base>(AllConnectedNodes);
+			extraNodes.Clear();
+			foreach (MV_Base node in idLookup.Values.Where(node => !connectedNodes.Contains(node)))
+				extraNodes.Add(node);
 
-			//Figure out which nodes are extra/unused with a depth-first search.
-
-			HashSet<uint> usedNodes = new HashSet<uint>();
-			Stack<KeyValuePair<MV_Base, uint>> toProcess = new Stack<KeyValuePair<MV_Base, uint>>();
-			HashSet<MV_Base> processedAlready = new HashSet<MV_Base>();
-			foreach (uint rootValueID in rootValIDs)
-			{
-				usedNodes.Add(rootValueID);
-				toProcess.Push(new KeyValuePair<MV_Base, uint>(idLookup[rootValueID], rootValueID));
-			}
-
-			while (toProcess.Count > 0)
-			{
-				var mvAndID = toProcess.Pop();
-				for (int i = 0; i < mvAndID.Key.GetNInputs(); ++i)
-				{
-					var inputMV = mvAndID.Key.GetInput(i);
-					if (!processedAlready.Contains(inputMV))
-					{
-						uint inputMVID = idLookup.First(kvp => kvp.Value == inputMV).Key;
-						toProcess.Push(new KeyValuePair<MV_Base, uint>(inputMV, inputMVID));
-						processedAlready.Add(inputMV);
-						usedNodes.Add(inputMVID);
-					}
-				}
-			}
-
-			ExtraNodes.Clear();
-			foreach (var idAndNode in idLookup)
-			{
-				if (!usedNodes.Contains(idAndNode.Key))
-					ExtraNodes.Add(idAndNode.Value);
-			}
+			//Raise the "add" event for all nodes starting at the deepest inputs.
+			if (OnNodeAdded != null)
+				foreach (MV_Base node in MV_Base.SortDeepestFirst(new List<MV_Base>(AllNodes)))
+					OnNodeAdded(this, node);
 		}
 	}
 }

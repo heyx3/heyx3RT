@@ -115,9 +115,6 @@ namespace RT
 		}
 		protected virtual void OnDestroy()
 		{
-			foreach (var node in Graph.RootValues.Concat(Graph.ExtraNodes))
-				node.Delete(true);
-
 			AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myMat));
 			AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myShader));
 		}
@@ -143,9 +140,13 @@ namespace RT
 				AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myShader));
 			}
 
-			HashSet<MaterialValue.MV_Base> toDelete = new HashSet<MaterialValue.MV_Base>();
 			MaterialValue.MV_Base outRGB;
-			GetUnityMaterialOutputs(out outRGB, toDelete);
+			GetUnityMaterialOutputs(out outRGB);
+			HashSet<MaterialValue.MV_Base> tempNodes =
+				new HashSet<MaterialValue.MV_Base>(outRGB.HierarchyRootFirst
+														 .Where(n => !Graph.ContainsNode(n)));
+			foreach (var node in tempNodes)
+				Graph.AddNode(node);
 
 			//Try loading the shader.
 			string shaderFile = "";
@@ -155,7 +156,8 @@ namespace RT
 				string shaderName = Path.GetFileNameWithoutExtension(shaderFile);
 
 				string shaderText =
-					MaterialValue.ShaderGenerator.GenerateShader(shaderName, outRGB, false);
+					MaterialValue.ShaderGenerator.GenerateShader(shaderName, outRGB,
+																 Graph.UniqueNodeIDs, false);
 
 				File.WriteAllText(shaderFile, shaderText);
 				AssetDatabase.ImportAsset(shaderFile);
@@ -174,7 +176,7 @@ namespace RT
 			{
 				matFile = GetNewGeneratedFileName("Mat", ".mat");
 				myMat = new Material(myShader);
-				MaterialValue.ShaderGenerator.SetMaterialParams(myMat, outRGB);
+				MaterialValue.ShaderGenerator.SetMaterialParams(myMat, Graph.UniqueNodeIDs, outRGB);
 
 				AssetDatabase.CreateAsset(myMat, matFile);
 				myMat = AssetDatabase.LoadAssetAtPath<Material>(matFile);
@@ -187,8 +189,8 @@ namespace RT
 			}
 
 			//Clean up.
-			foreach (var tempVal in toDelete)
-				tempVal.Delete(false);
+			foreach (var node in tempNodes)
+				Graph.DeleteNode(node);
 		}
 
 		protected abstract void InitGraph();
@@ -201,8 +203,7 @@ namespace RT
 		/// Any temp MaterialValues used to generate this output.
 		/// They will all need to have their Delete() method called when they are done being used.
 		/// </param>
-		protected abstract void GetUnityMaterialOutputs(out MaterialValue.MV_Base outRGB,
-														HashSet<MaterialValue.MV_Base> toDelete);
+		protected abstract void GetUnityMaterialOutputs(out MaterialValue.MV_Base outRGB);
 		
 		/// <summary>
 		/// Gets the display name of the given root node.

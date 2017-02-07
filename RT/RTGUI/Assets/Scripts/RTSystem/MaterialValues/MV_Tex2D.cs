@@ -27,9 +27,10 @@ namespace RT.MaterialValue
 
 		public override void Emit(StringBuilder shaderlabProperties,
 								  StringBuilder cgDefinitions,
-								  StringBuilder cgFunctionBody)
+								  StringBuilder cgFunctionBody,
+								  Dictionary<MV_Base, uint> idLookup)
 		{
-			string texName = "_tex" + GUID;
+			string texName = "_tex" + idLookup[this];
 
 			shaderlabProperties.Append("\t\t\t");
 			shaderlabProperties.Append(texName);
@@ -42,16 +43,17 @@ namespace RT.MaterialValue
 			cgDefinitions.AppendLine(";");
 
 			cgFunctionBody.Append("float4 ");
-			cgFunctionBody.Append(ShaderValueName);
+			cgFunctionBody.Append(ShaderValueName(idLookup));
 			cgFunctionBody.Append(" = tex2D(");
 			cgFunctionBody.Append(texName);
 			cgFunctionBody.Append(", ");
-			cgFunctionBody.Append(GetInput(0).GetShaderValue(OutputSizes.Two));
+			cgFunctionBody.Append(GetInput(0).GetShaderValue(OutputSizes.Two, idLookup));
 			cgFunctionBody.AppendLine(");");
 		}
-		public override void SetParams(Transform shapeTr, Material unityMat)
+		public override void SetParams(Transform shapeTr, Material unityMat,
+									   Dictionary<MV_Base, uint> idLookup)
 		{
-			unityMat.SetTexture("_tex" + GUID, Tex);
+			unityMat.SetTexture("_tex" + idLookup[this], Tex);
 		}
 
 		public override MV_Base GetDefaultInput(int inputIndex) { return MV_Constant.MakeVec2(0.0f, 0.0f, true, 0.0f, 1.0f, OutputSizes.Two, true); }

@@ -29,18 +29,15 @@ namespace RT.MaterialValue
 			}
 		}
 
-		public override string ShaderValueName
+		public override string ShaderValueName(Dictionary<MV_Base, uint> idLookup)
 		{
-			get
+			switch (OutputSize)
 			{
-				switch (OutputSize)
-				{
-					case OutputSizes.One: return base.ShaderValueName + ".r";
-					case OutputSizes.Two: return base.ShaderValueName + ".rg";
-					case OutputSizes.Three: return base.ShaderValueName + ".rgb";
-					case OutputSizes.Four: return base.ShaderValueName;
-					default: throw new NotImplementedException(OutputSize.ToString());
-				}
+				case OutputSizes.One: return base.ShaderValueName(idLookup) + ".r";
+				case OutputSizes.Two: return base.ShaderValueName(idLookup) + ".rg";
+				case OutputSizes.Three: return base.ShaderValueName(idLookup) + ".rgb";
+				case OutputSizes.Four: return base.ShaderValueName(idLookup);
+				default: throw new NotImplementedException(OutputSize.ToString());
 			}
 		}
 		
@@ -53,7 +50,8 @@ namespace RT.MaterialValue
 
 		public override void Emit(System.Text.StringBuilder shaderlabProperties,
 								  System.Text.StringBuilder cgDefinitions,
-								  System.Text.StringBuilder cgFunctionBody)
+								  System.Text.StringBuilder cgFunctionBody,
+								  Dictionary<MV_Base, uint> idLookup)
 		{
 			//If the noise texture hasn't been declared yet, declare it.
 			if (!cgDefinitions.ToString().Contains("\t\t\t\tsampler2D " + RTSystem.Param_PureNoiseTex))
@@ -70,7 +68,7 @@ namespace RT.MaterialValue
 			//Combine various data to create the UV's to sample the noise texture with.
 			cgFunctionBody.Append(OutputSize.ToHLSLType());
 			cgFunctionBody.Append(" ");
-			cgFunctionBody.Append(ShaderValueName);
+			cgFunctionBody.Append(ShaderValueName(idLookup));
 			cgFunctionBody.Append(" = tex2D(");
 			cgFunctionBody.Append(RTSystem.Param_PureNoiseTex);
 			cgFunctionBody.Append(", ");
@@ -81,7 +79,8 @@ namespace RT.MaterialValue
 			cgFunctionBody.Append(RTSystem.Input_UV);
 			cgFunctionBody.Append("));");
 		}
-		public override void SetParams(Transform tr, Material unityMat)
+		public override void SetParams(Transform tr, Material unityMat,
+									   Dictionary<MV_Base, uint> idLookup)
 		{
 			unityMat.SetTexture(RTSystem.Param_PureNoiseTex, RTSystem.Instance.PureNoiseTex);
 		}

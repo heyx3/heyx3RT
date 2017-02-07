@@ -23,14 +23,13 @@ namespace RT.MaterialValue
 		public override string TypeName { get { return TypeName_Swizzle; } }
 		public override OutputSizes OutputSize { get { return OutputSizesExtensions.FromNumber(NComponents); } }
 
-		public override string ShaderValueName
+		public override string ShaderValueName(Dictionary<MV_Base, uint> idLookup)
 		{
-			get
-			{
 				if (NComponents == 0 || NComponents > 4)
 					Debug.LogError("NComponents is " + NComponents);
 
-				string val = "(" + GetInput(0).ShaderValueName + ")" + "." + ComponentStrings[(int)NewX];
+				string val = "(" + GetInput(0).ShaderValueName(idLookup) + ")" +
+							     "." + ComponentStrings[(int)NewX];
 				if (NComponents > 1)
 					val += ComponentStrings[(int)NewY];
 				if (NComponents > 2)
@@ -39,7 +38,6 @@ namespace RT.MaterialValue
 					val += ComponentStrings[(int)NewW];
 
 				return val;
-			}
 		}
 
 		public override string PrettyName { get { return "Swizzle"; } }
@@ -59,7 +57,10 @@ namespace RT.MaterialValue
 		public override MV_Base GetDefaultInput(int inputIndex) { return MV_Constant.MakeVec2(0.0f, 0.0f, false, 0.0f, 1.0f, OutputSizes.OneOrTwo, true); }
 		public override string GetInputName(int index) { return "Val"; }
 
-		public override void Emit(StringBuilder shaderlabProperties, StringBuilder cgDefinitions, StringBuilder cgFunctionBody) { }
+		public override void Emit(StringBuilder shaderlabProperties,
+								  StringBuilder cgDefinitions,
+								  StringBuilder cgFunctionBody,
+								  Dictionary<MV_Base, uint> idLookup) { }
 
 		public override void WriteData(DataWriter writer, string namePrefix, Dictionary<MV_Base, uint> idLookup)
 		{

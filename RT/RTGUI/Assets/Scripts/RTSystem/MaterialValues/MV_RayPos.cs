@@ -25,25 +25,27 @@ namespace RT.MaterialValue
 
 		public override void Emit(StringBuilder shaderlabProperties,
 								  StringBuilder cgDefinitions,
-								  StringBuilder cgFunctionBody)
+								  StringBuilder cgFunctionBody,
+								  Dictionary<MV_Base, uint> idLookup)
 		{
-			MV_Inputs.RayStart.Emit(shaderlabProperties, cgDefinitions, cgFunctionBody);
-			MV_Inputs.RayDir.Emit(shaderlabProperties, cgDefinitions, cgFunctionBody);
+			MV_Inputs.RayStart.Emit(shaderlabProperties, cgDefinitions, cgFunctionBody, idLookup);
+			MV_Inputs.RayDir.Emit(shaderlabProperties, cgDefinitions, cgFunctionBody, idLookup);
 
 			cgFunctionBody.Append("float3 ");
-			cgFunctionBody.Append(ShaderValueName);
+			cgFunctionBody.Append(ShaderValueName(idLookup));
 			cgFunctionBody.Append(" = ");
-			cgFunctionBody.Append(MV_Inputs.RayStart.ShaderValueName);
+			cgFunctionBody.Append(MV_Inputs.RayStart.ShaderValueName(idLookup));
 			cgFunctionBody.Append(" + (");
-			cgFunctionBody.Append(MV_Inputs.RayStart.ShaderValueName);
+			cgFunctionBody.Append(MV_Inputs.RayStart.ShaderValueName(idLookup));
 			cgFunctionBody.Append(" * ");
-			cgFunctionBody.Append(GetInput(0).GetShaderValue(OutputSizes.Three, true));
+			cgFunctionBody.Append(GetInput(0).GetShaderValue(OutputSizes.Three, idLookup, true));
 			cgFunctionBody.AppendLine(");");
 		}
-		public override void SetParams(Transform shapeTr, Material unityMat)
+		public override void SetParams(Transform shapeTr, Material unityMat,
+									   Dictionary<MV_Base, uint> idLookup)
 		{
-			MV_Inputs.RayStart.SetParams(shapeTr, unityMat);
-			MV_Inputs.RayDir.SetParams(shapeTr, unityMat);
+			MV_Inputs.RayStart.SetParams(shapeTr, unityMat, idLookup);
+			MV_Inputs.RayDir.SetParams(shapeTr, unityMat, idLookup);
 		}
 
 		public override MV_Base GetDefaultInput(int inputIndex) { return MV_Constant.MakeFloat(0.0f, true, 0.0f, 1.0f, OutputSizes.One, true); }

@@ -77,13 +77,14 @@ namespace RT.MaterialValue
 		}
 		public override void Emit(StringBuilder shaderlabProperties,
 								  StringBuilder cgDefinitions,
-								  StringBuilder cgFunctionBody)
+								  StringBuilder cgFunctionBody,
+								  Dictionary<MV_Base, uint> idLookup)
 		{
 			OutputSizes outSize = OutputSize;
 
 			cgFunctionBody.Append(outSize.ToHLSLType());
 			cgFunctionBody.Append(" ");
-			cgFunctionBody.Append(ShaderValueName);
+			cgFunctionBody.Append(ShaderValueName(idLookup));
 			cgFunctionBody.Append(" = ");
 			for (int i = 0; i < GetNInputs(); ++i)
 			{
@@ -93,7 +94,8 @@ namespace RT.MaterialValue
 					cgFunctionBody.Append(symbol);
 					cgFunctionBody.Append(" ");
 				}
-				cgFunctionBody.Append(GetInput(i).GetShaderValue(outSize, canAlwaysUse1DInputs));
+				cgFunctionBody.Append(GetInput(i).GetShaderValue(outSize, idLookup,
+																 canAlwaysUse1DInputs));
 			}
 			cgFunctionBody.AppendLine(";");
 		}
@@ -128,19 +130,20 @@ namespace RT.MaterialValue
 		}
 		public override void Emit(StringBuilder shaderlabProperties,
 								  StringBuilder cgDefinitions,
-								  StringBuilder cgFunctionBody)
+								  StringBuilder cgFunctionBody,
+								  Dictionary<MV_Base, uint> idLookup)
 		{
 			OutputSizes outSize = OutputSize;
 
 			cgFunctionBody.Append(outSize.ToHLSLType());
 			cgFunctionBody.Append(" ");
-			cgFunctionBody.Append(ShaderValueName);
+			cgFunctionBody.Append(ShaderValueName(idLookup));
 			cgFunctionBody.Append(" = ");
 
 			if (GetNInputs() == 0)
 				cgFunctionBody.Append(0.0f);
 			else if (GetNInputs() == 1)
-				cgFunctionBody.Append(GetInput(0).ShaderValueName);
+				cgFunctionBody.Append(GetInput(0).ShaderValueName(idLookup));
 			else
 			{
 				for (int i = 0; i < GetNInputs(); ++i)
@@ -153,7 +156,7 @@ namespace RT.MaterialValue
 						cgFunctionBody.Append("(");
 					}
 
-					cgFunctionBody.Append(GetInput(i).GetShaderValue(outSize, false));
+					cgFunctionBody.Append(GetInput(i).GetShaderValue(outSize, idLookup, false));
 				}
 				for (int i = 0; i < GetNInputs() - 1; ++i)
 					cgFunctionBody.Append(")");

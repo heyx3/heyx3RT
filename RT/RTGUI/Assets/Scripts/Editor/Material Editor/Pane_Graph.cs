@@ -29,29 +29,29 @@ namespace RT.MatEditor
 		private bool draggingMouseDown = false;
 		/// <summary>
 		/// The ID of the window being dragged.
-		/// A value of "ulong.MaxValue" means no window is being dragged.
-		/// A value of "ulong.MaxValue - 1" means the graph's output window is being dragged.
+		/// A value of "uint.MaxValue" means no window is being dragged.
+		/// A value of "uint.MaxValue - 1" means the graph's output window is being dragged.
 		/// </summary>
-		private ulong draggingWindowID = ulong.MaxValue;
+		private uint draggingWindowID = uint.MaxValue;
 
 		/// <summary>
 		/// The window most recently clicked on.
-		/// A value of "ulong.MaxValue" means no window was recently clicked on.
-		/// A value of "ulong.MaxValue - 1" represents the graph's output window.
+		/// A value of "uint.MaxValue" means no window was recently clicked on.
+		/// A value of "uint.MaxValue - 1" represents the graph's output window.
 		/// </summary>
-		private ulong activeWindowID = ulong.MaxValue - 1;
+		private uint activeWindowID = uint.MaxValue - 1;
 
 		/// <summary>
 		/// The ID of the node whose output is currently being connected to something.
-		/// Set to "ulong.MaxValue" if the user isn't connecting a node's output to something.
+		/// Set to "uint.MaxValue" if the user isn't connecting a node's output to something.
 		/// </summary>
-		private ulong reconnectingOutputID = ulong.MaxValue;
+		private uint reconnectingOutputID = uint.MaxValue;
 		/// <summary>
 		/// The ID of the node whose input is currently being connected to something.
-		/// Set to "ulong.MaxValue" if the user isn't connecting a node's input to something.
-		/// Set to "ulong.MaxValue - 1" if the user is connecting a graph output.
+		/// Set to "uint.MaxValue" if the user isn't connecting a node's input to something.
+		/// Set to "uint.MaxValue - 1" if the user is connecting a graph output.
 		/// </summary>
-		private ulong reconnectingInputID = ulong.MaxValue - 1;
+		private uint reconnectingInputID = uint.MaxValue - 1;
 		/// <summary>
 		/// The index of the input being reconnected in the node with ID "reconnectingInputID".
 		/// Set to -1 if the user isn't connecting a node's input to something.
@@ -64,7 +64,7 @@ namespace RT.MatEditor
 			Owner = owner;
 			Graph = Owner.Graph.Clone();
 
-			CamOffset = Owner.position.center - Graph.OutputNodePos.position;
+			CamOffset = -Owner.position.center - Graph.OutputNodePos.position;
 
 			if (Owner.Owner is RT.RTMaterial)
 				RootIndexToDisplayName = ((RT.RTMaterial)Owner.Owner).GetRootNodeDisplayName;
@@ -143,7 +143,7 @@ namespace RT.MatEditor
 
 				case EventType.MouseDrag:
 					//If not dragging a window, pan the camera.
-					if (draggingMouseDown && draggingWindowID == ulong.MaxValue)
+					if (draggingMouseDown && draggingWindowID == uint.MaxValue)
 					{
 						CamOffset -= currEvent.delta;
 						Owner.Repaint();
@@ -169,7 +169,6 @@ namespace RT.MatEditor
 																"', isn't marked with the 'Serializable' attribute! " +
 																"Fix this problem in code before using this node.",
 															"OK");
-								node.Delete(true);
 							}
 							else
 							{
@@ -183,12 +182,12 @@ namespace RT.MatEditor
 						//Otherwise, see whether we're clicking a node or empty space.
 						else
 						{
-							activeWindowID = ulong.MaxValue;
+							activeWindowID = uint.MaxValue;
 							foreach (MV_Base node in Graph.AllNodes)
 								if (node.Pos.Contains(mousePos))//TODO: Shouldn't we use localMousePos?
-									activeWindowID = node.GUID;
+									activeWindowID = Graph.UniqueNodeIDs[node];
 
-							if (activeWindowID == ulong.MaxValue)
+							if (activeWindowID == uint.MaxValue)
 							{
 								EditorGUIUtility.editingTextField = false;
 							}
@@ -205,19 +204,19 @@ namespace RT.MatEditor
 						else
 						{
 							draggingMouseDown = true;
-							draggingWindowID = ulong.MaxValue;
+							draggingWindowID = uint.MaxValue;
 
 							foreach (MV_Base node in Graph.AllNodes)
 							{
 								if (node.Pos.Contains(mousePos))
 								{
-									activeWindowID = node.GUID;
+									activeWindowID = Graph.UniqueNodeIDs[node];
 									draggingWindowID = activeWindowID;
 								}
 							}
 							if (Graph.OutputNodePos.Contains(mousePos))
 							{
-								draggingWindowID = ulong.MaxValue - 1;
+								draggingWindowID = uint.MaxValue - 1;
 							}
 						}
 					}
@@ -271,12 +270,12 @@ namespace RT.MatEditor
 			else
 			{
 				GUI.color = node.GUIColor;
-				if (node.GUID > uint.MaxValue)
+				if (Graph.UniqueNodeIDs[node] > uint.MaxValue)
 				{
 					Debug.LogError("node GUID is too big! " +
 								   "If you get this message, restart the editor immediately.");
 				}
-				nodeID = unchecked((int)(uint)node.GUID);
+				nodeID = unchecked((int)Graph.UniqueNodeIDs[node]);
 				nodeFunc = GUIWindow_Node;
 				nodeText = node.PrettyName;
 			}
@@ -294,12 +293,12 @@ namespace RT.MatEditor
 
 			//Buttons to connect inputs to an output.
 			GUILayout.BeginVertical();
-			for (int i = 0; i < Graph.RootValues.Count; ++i)
+			for (int i = 0; i < Graph.NRoots; ++i)
 			{
 				GUILayout.BeginHorizontal();
 
 				string buttStr = "X";
-				if (reconnectingInputID == ulong.MaxValue - 1 &&
+				if (reconnectingInputID == uint.MaxValue - 1 &&
 					reconnectingInputIndex == i)
 				{
 					buttStr = "x";
@@ -307,17 +306,17 @@ namespace RT.MatEditor
 
 				if (GUILayout.Button(buttStr))
 				{
-					if (reconnectingOutputID != ulong.MaxValue)
+					if (reconnectingOutputID != uint.MaxValue)
 					{
-						Graph.ConnectInput(null, i, MV_Base.GetValue(reconnectingOutputID));
+						Graph.ConnectInput(null, i, Graph.NodesByUniqueID[reconnectingOutputID]);
 
 						//TODO: "Undo" here.
 
-						reconnectingOutputID = ulong.MaxValue;
+						reconnectingOutputID = uint.MaxValue;
 					}
 					else
 					{
-						reconnectingInputID = ulong.MaxValue - 1;
+						reconnectingInputID = uint.MaxValue - 1;
 						reconnectingInputIndex = i;
 					}
 				}
@@ -344,7 +343,7 @@ namespace RT.MatEditor
 			GUILayout.BeginVertical();
 			GUILayout.BeginHorizontal();
 
-			MV_Base node = MV_Base.GetValue(unchecked((uint)(ulong)windowID));
+			MV_Base node = Graph.NodesByUniqueID[unchecked((uint)windowID)];
 			
 			GUILayout.BeginHorizontal();
 			GUILayout.BeginVertical();
@@ -356,19 +355,19 @@ namespace RT.MatEditor
 
 				//Button to select input.
 				string buttStr = "O";
-				if (reconnectingInputID == node.GUID && reconnectingInputIndex == i)
+				if (reconnectingInputID == Graph.UniqueNodeIDs[node] && reconnectingInputIndex == i)
 					buttStr = "o";
 				if (GUILayout.Button(buttStr))
 				{
-					if (reconnectingOutputID != ulong.MaxValue)
+					if (reconnectingOutputID != uint.MaxValue)
 					{
 						//TODO: "Undo" here.
-						Graph.ConnectInput(node, i, MV_Base.GetValue(reconnectingOutputID));
-						reconnectingOutputID = ulong.MaxValue;
+						Graph.ConnectInput(node, i, Graph.NodesByUniqueID[reconnectingOutputID]);
+						reconnectingOutputID = uint.MaxValue;
 					}
 					else
 					{
-						reconnectingInputID = node.GUID;
+						reconnectingInputID = Graph.UniqueNodeIDs[node];
 						reconnectingInputIndex = i;
 					} 
 				}
@@ -433,16 +432,16 @@ namespace RT.MatEditor
 			GUILayout.FlexibleSpace();
 
 			//A button for connecting the node's output.
-			string buttonStr = (reconnectingOutputID == node.GUID ? "o" : "O");
+			string buttonStr = (reconnectingOutputID == Graph.UniqueNodeIDs[node] ? "o" : "O");
 			if (GUILayout.Button(buttonStr))
 			{
-				if (reconnectingInputID == ulong.MaxValue)
+				if (reconnectingInputID == uint.MaxValue)
 				{
-					reconnectingOutputID = node.GUID;
+					reconnectingOutputID = Graph.UniqueNodeIDs[node];
 				}
 				else
 				{
-					Graph.ConnectInput(MV_Base.GetValue(reconnectingInputID),
+					Graph.ConnectInput(Graph.NodesByUniqueID[reconnectingInputID],
 									   reconnectingInputIndex,
 									   node);
 				}

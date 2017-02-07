@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System.Text;
+
 
 namespace RT.MaterialValue
 {
@@ -98,15 +100,16 @@ namespace RT.MaterialValue
 
 		public override void Emit(StringBuilder shaderlabProperties,
 								  StringBuilder cgDefinitions,
-								  StringBuilder cgFunctionBody)
+								  StringBuilder cgFunctionBody,
+								  Dictionary<MV_Base, uint> idLookup)
 		{
 			cgFunctionBody.Append(OutputSize.ToHLSLType());
 			cgFunctionBody.Append(" ");
-			cgFunctionBody.Append(ShaderValueName);
+			cgFunctionBody.Append(ShaderValueName(idLookup));
 			cgFunctionBody.Append(" = (");
-			cgFunctionBody.Append(toDo.Replace("$0", GetInput(0).GetShaderValue(OutputSize))
-								      .Replace("$1", GetInput(1).GetShaderValue(OutputSize))
-									  .Replace("$2", GetInput(2).GetShaderValue(OutputSize, true)));
+			cgFunctionBody.Append(toDo.Replace("$0", GetInput(0).GetShaderValue(OutputSize, idLookup))
+								      .Replace("$1", GetInput(1).GetShaderValue(OutputSize, idLookup))
+									  .Replace("$2", GetInput(2).GetShaderValue(OutputSize, idLookup, true)));
 			cgFunctionBody.AppendLine(");");
 		}
 

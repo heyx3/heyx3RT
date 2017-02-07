@@ -14,28 +14,27 @@ namespace RT
 		protected override string GraphSerializationName { get { return "Color"; } }
 
 
-		public MaterialValue.MV_Base Albedo { get { return Graph.RootValues[0]; }
-											  set { Graph.RootValues[0] = value; } }
+		public MaterialValue.MV_Base Albedo { get { return Graph.GetRootNode(0); }
+											  set { Graph.ConnectInput(null, 0, value); } }
 
 		
 		protected override void InitGraph()
 		{
-			//Albedo.
-			Graph.RootValues.Add(MaterialValue.MV_Constant.MakeFloat(1.0f));
+			var albedo = MaterialValue.MV_Constant.MakeFloat(1.0f, true, 0.0f, 1.0f,
+															 MaterialValue.OutputSizes.OneOrThree,
+															 true);
+			Graph.AddNode(albedo);
+			Graph.ConnectInput(null, 0, albedo);
 		}
 
 
 		protected override void GetUnityMaterialOutputs(out MaterialValue.MV_Base albedo,
 														out MaterialValue.MV_Base metallic,
-														out MaterialValue.MV_Base smoothness,
-														HashSet<MaterialValue.MV_Base> toDelete)
+														out MaterialValue.MV_Base smoothness)
 		{
 			albedo = Albedo;
 			metallic = MaterialValue.MV_Constant.MakeFloat(0.0f);
 			smoothness = MaterialValue.MV_Constant.MakeFloat(0.5f);
-
-			toDelete.Add(metallic);
-			toDelete.Add(smoothness);
 		}
 		
 		public override string GetRootNodeDisplayName(int rootNodeIndex)
