@@ -19,8 +19,10 @@ namespace RT.MatEditor
 		}
 
 
-		private static readonly float LeftPanesWidth = 200.0f,
-									  OptionsPaneHeight = 400.0f;
+		private static readonly float LeftPanesBorder = 5.0f,
+									  LeftPanesWidth = 200.0f,
+									  ControlsPaneHeight = 200.0f;
+		private static readonly Vector2 MinSize = new Vector2(700.0f, 500.0f);
 
 
 		public MonoBehaviour Owner { get; private set; }
@@ -37,7 +39,7 @@ namespace RT.MatEditor
 		{
 			initYet = true;
 
-			minSize = new Vector2(700.0f, 500.0f);
+			minSize = MinSize;
 			titleContent = new GUIContent("RTMaterial Graph");
 
 			Owner = owner;
@@ -71,16 +73,19 @@ namespace RT.MatEditor
 			if (!initYet)
 				return;
 
-			Rect area_chooseMV = new Rect(0.0f, 0.0f, LeftPanesWidth, OptionsPaneHeight),
-				 area_controls = new Rect(0.0f, OptionsPaneHeight,
-										  LeftPanesWidth,
-										  position.height - OptionsPaneHeight),
+			Rect area_chooseMV = new Rect(LeftPanesBorder, LeftPanesBorder,
+										  LeftPanesWidth - LeftPanesBorder,
+										  position.height - ControlsPaneHeight - (LeftPanesBorder * 2.0f)),
+				 area_controls = new Rect(LeftPanesBorder,
+										  position.height - ControlsPaneHeight + LeftPanesBorder,
+										  LeftPanesWidth - LeftPanesBorder,
+										  ControlsPaneHeight - (LeftPanesBorder * 2.0f)),
 				 area_graph = new Rect(LeftPanesWidth, 0.0f,
 									   position.width - LeftPanesWidth,
 									   position.height);
 			ChooseMVPane.DoGUI(area_chooseMV);
-			ControlsPane.DoGUI(area_controls);
 			GraphPane.DoGUI(area_graph);
+			ControlsPane.DoGUI(area_controls);
 		}
 	}
 }

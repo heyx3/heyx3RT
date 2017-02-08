@@ -118,6 +118,37 @@ namespace RT.MaterialValue
 								  StringBuilder cgFunctionBody,
 								  Dictionary<MV_Base, uint> idLookup) { }
 
+		public override GUIResults DoCustomGUI()
+		{
+			//If this is an inline constant, its GUI will show up in the parent node.
+			if (IsInline)
+				return base.DoCustomGUI();
+
+			//Do base class's logic.
+			var result = base.DoCustomGUI();
+			if (result != GUIResults.Nothing)
+				return result;
+
+			//Show the editor for the value.
+			if (valueEditor.DoGUI())
+				result = GUIResults.Other;
+
+			//Show options for how the value is edited.
+			EditorGUI.BeginChangeCheck();
+			GUILayout.BeginHorizontal();
+			valueEditor.UseSliders = GUILayout.Toggle(valueEditor.UseSliders, "Use Slider");
+			GUILayout.Label("Min:");
+			valueEditor.Min = EditorGUILayout.FloatField(valueEditor.Min);
+			GUILayout.Label("Max:");
+			valueEditor.Max = EditorGUILayout.FloatField(valueEditor.Max);
+			GUILayout.FlexibleSpace();
+			GUILayout.EndHorizontal();
+			if (EditorGUI.EndChangeCheck())
+				result = GUIResults.Other;
+
+			return result;
+		}
+
 		public override void WriteData(DataWriter writer, string namePrefix,
 									   Dictionary<MV_Base, uint> idLookup)
 		{

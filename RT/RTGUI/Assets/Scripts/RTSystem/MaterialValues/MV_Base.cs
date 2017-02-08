@@ -233,6 +233,7 @@ namespace RT.MaterialValue
 											"The class " + GetType().Name + " isn't marked [Serializable]",
 											"OK");
 			}
+			pos = new Rect(0.0f, 0.0f, 0.1f, 0.1f);
 		}
 		
 

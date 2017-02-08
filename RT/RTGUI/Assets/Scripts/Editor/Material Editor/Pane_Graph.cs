@@ -10,13 +10,15 @@ using MV_Constant = RT.MaterialValue.MV_Constant;
 
 namespace RT.MatEditor
 {
+	//TODO: Bug when deleting input: parent node doesn't disconnect (maybe just graph output?)
+	//TODO: Whenever something happens (i.e. Undo stack is modified), set all the nodes' sizes to 0.1 to force them to be recomputed.
+
 	public class Pane_Graph
 	{
 		public MatEditorWindow Owner { get; private set; }
 		public RT.MaterialValue.Graph Graph { get; private set; }
 		public Func<int, string> RootIndexToDisplayName { get; private set; }
 
-		//public event Action<Vector2> OnClickEmptySpace;
 
 		/// <summary>
 		/// The position of the "camera" viewing the nodes.
@@ -51,7 +53,7 @@ namespace RT.MatEditor
 		/// Set to "uint.MaxValue" if the user isn't connecting a node's input to something.
 		/// Set to "uint.MaxValue - 1" if the user is connecting a graph output.
 		/// </summary>
-		private uint reconnectingInputID = uint.MaxValue - 1;
+		private uint reconnectingInputID = uint.MaxValue;
 		/// <summary>
 		/// The index of the input being reconnected in the node with ID "reconnectingInputID".
 		/// Set to -1 if the user isn't connecting a node's input to something.
@@ -95,6 +97,10 @@ namespace RT.MatEditor
             //Do each node's GUI window.
             foreach (MV_Base node in Graph.AllNodes)
             {
+				//Don't give inline constants their own window.
+				if (node is MV_Constant && ((MV_Constant)node).IsInline)
+					continue;
+
                 Rect oldPos = new Rect(node.Pos.position - CamOffset,
                                        node.Pos.size);
                 Rect newPos = GUINode(oldPos, node);
@@ -269,6 +275,9 @@ namespace RT.MatEditor
 			}
 			else
 			{
+				if (!Graph.UniqueNodeIDs.ContainsKey(node))
+					return nodeRect;
+
 				GUI.color = node.GUIColor;
 				if (Graph.UniqueNodeIDs[node] > uint.MaxValue)
 				{
@@ -279,7 +288,7 @@ namespace RT.MatEditor
 				nodeFunc = GUIWindow_Node;
 				nodeText = node.PrettyName;
 			}
-
+			
 			nodeRect = GUILayout.Window(nodeID, nodeRect, nodeFunc, nodeText,
 										GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
 
@@ -290,148 +299,49 @@ namespace RT.MatEditor
 		{
 			GUILayout.BeginVertical();
 			GUILayout.BeginHorizontal();
-
-			//Buttons to connect inputs to an output.
+			
 			GUILayout.BeginVertical();
 			for (int i = 0; i < Graph.NRoots; ++i)
-			{
-				GUILayout.BeginHorizontal();
-
-				string buttStr = "X";
-				if (reconnectingInputID == uint.MaxValue - 1 &&
-					reconnectingInputIndex == i)
-				{
-					buttStr = "x";
-				}
-
-				if (GUILayout.Button(buttStr))
-				{
-					if (reconnectingOutputID != uint.MaxValue)
-					{
-						Graph.ConnectInput(null, i, Graph.NodesByUniqueID[reconnectingOutputID]);
-
-						//TODO: "Undo" here.
-
-						reconnectingOutputID = uint.MaxValue;
-					}
-					else
-					{
-						reconnectingInputID = uint.MaxValue - 1;
-						reconnectingInputIndex = i;
-					}
-				}
-
-				if (GUILayout.Button("Disconnect"))
-				{
-					//TODO: "Undo" here.
-					Graph.DisconnectInput(null, i, false);
-				}
-
-				GUILayout.Label(RootIndexToDisplayName(i));
-
-				GUILayout.EndHorizontal();
-			}
+				GUIWindowInput(null, i, false);
 			GUILayout.EndVertical();
 
 			GUILayout.EndHorizontal();
 			GUILayout.EndVertical();
+
+			GUI.DragWindow();
 		}
 		private void GUIWindow_Node(int windowID)
 		{
-			//TODO: I feel like these horizontal GUILayout sections are too heavily-used.
-
-			GUILayout.BeginVertical();
-			GUILayout.BeginHorizontal();
-
 			MV_Base node = Graph.NodesByUniqueID[unchecked((uint)windowID)];
-			
+
+			//The overall layout of the window is vertical.
+			GUILayout.BeginVertical();
+
+			//Inputs should be across from the output.
 			GUILayout.BeginHorizontal();
 			GUILayout.BeginVertical();
+
+			//Show the inputs.
 			for (int i = 0; i < node.GetNInputs(); ++i)
 			{
-				GUILayout.BeginHorizontal();
-
-				GUILayout.Label(node.GetInputName(i));
-
-				//Button to select input.
-				string buttStr = "O";
-				if (reconnectingInputID == Graph.UniqueNodeIDs[node] && reconnectingInputIndex == i)
-					buttStr = "o";
-				if (GUILayout.Button(buttStr))
-				{
-					if (reconnectingOutputID != uint.MaxValue)
-					{
-						//TODO: "Undo" here.
-						Graph.ConnectInput(node, i, Graph.NodesByUniqueID[reconnectingOutputID]);
-						reconnectingOutputID = uint.MaxValue;
-					}
-					else
-					{
-						reconnectingInputID = Graph.UniqueNodeIDs[node];
-						reconnectingInputIndex = i;
-					} 
-				}
-
-				//If this input is a constant, expose a little inline GUI to edit it more easily.
-				var constInput = node.GetInput(i) as MV_Constant;
-				if (constInput != null && constInput.IsInline)
-				{
-					if (constInput.ValueEditor.DoGUI())
-					{
-						//TODO: "Undo" here.
-					}
-				}
-				//Otherwise, draw a line to it and expose a button to release the connection.
-				else
-				{
-					const float OutputHeight = 30.0f,
-								TitleBarHeight = 30.0f,
-								InputSpacing = 20.0f;
-					Rect otherPos = node.GetInput(i).Pos;
-					Vector2 endPos = new Vector2(otherPos.xMax, otherPos.yMin + OutputHeight) -
-									   node.Pos.min;
-					MyGUI.DrawLine(new Vector2(0.0f, TitleBarHeight + (i * InputSpacing)),
-								   endPos, 2.0f, Color.white);
-
-					if (GUILayout.Button("Disconnect"))
-					{
-						//TODO: "Undo" here.
-						Graph.ConnectInput(node, i, node.GetDefaultInput(i));
-					}
-				}
-
-				//A button to remove this input.
-				if (node.HasVariableNumberOfChildren)
-				{
-					if (GUILayout.Button("X"))
-					{
-						//TODO: "Undo" here.
-						Graph.DisconnectInput(node, i, true);
-						i -= 1;
-					}
-				}
-
-				GUILayout.EndHorizontal();
+				if (GUIWindowInput(node, i, node.HasVariableNumberOfChildren))
+					i -= 1;
 			}
-
 			//A button to add a new input.
+			GUILayout.BeginHorizontal();
 			if (node.HasVariableNumberOfChildren && GUILayout.Button("Add input"))
 			{
 				//TODO: "Undo" here.
 				Graph.ConnectInput(node, node.GetNInputs(), node.GetDefaultInput(node.GetNInputs()));
 			}
-			
-			//Custom GUI.
-			MV_Base.GUIResults subResult = node.DoCustomGUI();
-			if (subResult != MaterialValue.MV_Base.GUIResults.Nothing)
-			{
-				//TODO: "Undo" here.
-			}
-			
+			GUILayout.FlexibleSpace();
+			GUILayout.EndHorizontal();
+
 			GUILayout.EndVertical();
+
 			GUILayout.FlexibleSpace();
 
-			//A button for connecting the node's output.
+			//Show a button for connecting the node's output.
 			string buttonStr = (reconnectingOutputID == Graph.UniqueNodeIDs[node] ? "o" : "O");
 			if (GUILayout.Button(buttonStr))
 			{
@@ -441,15 +351,22 @@ namespace RT.MatEditor
 				}
 				else
 				{
-					Graph.ConnectInput(Graph.NodesByUniqueID[reconnectingInputID],
-									   reconnectingInputIndex,
-									   node);
+					MV_Base rootNode = (reconnectingInputID == uint.MaxValue - 1 ?
+											null :
+											Graph.NodesByUniqueID[reconnectingInputID]);
+					Graph.ConnectInput(rootNode, reconnectingInputIndex, node);
 				}
 			}
 
 			GUILayout.EndHorizontal();
-
-
+			
+			//Custom GUI.
+			MV_Base.GUIResults subResult = node.DoCustomGUI();
+			if (subResult != MaterialValue.MV_Base.GUIResults.Nothing)
+			{
+				//TODO: "Undo" here.
+			}
+			
 			//"Duplicate" and "Delete" buttons.
 			//TODO: A "Duplicate" button basically requires an abstract "Clone()" method on MV_Base.
 			GUILayout.BeginHorizontal();
@@ -465,9 +382,106 @@ namespace RT.MatEditor
 				Graph.DeleteNode(node);
 			}
 			GUILayout.EndHorizontal();
+			
+			GUILayout.EndVertical();
+
+			GUI.DragWindow();
+		}
+
+		/// <summary>
+		/// Displays a node's input for a GUI window.
+		/// Returns whether the input was deleted.
+		/// </summary>
+		private bool GUIWindowInput(MV_Base node, int inputIndex, bool allowDeletion)
+		{
+			GUILayout.BeginHorizontal();
+
+			//Get some data about this node.
+			MV_Base inputNode = (node == null ?
+									 Graph.GetRootNode(inputIndex) :
+									 node.GetInput(inputIndex));
+			uint nodeID = (node == null ?
+							   uint.MaxValue - 1 :
+							   Graph.UniqueNodeIDs[node]);
+			Rect nodePos = (node == null ?
+								Graph.OutputNodePos :
+								node.Pos);
+
+			//The input's name.
+			GUILayout.Label(node == null ?
+								RootIndexToDisplayName(inputIndex) :
+								node.GetInputName(inputIndex));
+
+			//Button to select input.
+			string buttStr = "O";
+			if (reconnectingInputID == nodeID && reconnectingInputIndex == inputIndex)
+			{
+				buttStr = "o";
+			}
+			if (GUILayout.Button(buttStr))
+			{
+				if (reconnectingOutputID != uint.MaxValue)
+				{
+					//TODO: "Undo" here.
+					Graph.ConnectInput(node, inputIndex,
+									   Graph.NodesByUniqueID[reconnectingOutputID]);
+					reconnectingOutputID = uint.MaxValue;
+				}
+				else
+				{
+					reconnectingInputID = nodeID;
+					reconnectingInputIndex = inputIndex;
+				}
+			}
+
+			GUILayout.FlexibleSpace();
+
+			//If this input is a constant, expose a little inline GUI to edit it more easily.
+			var constInput = inputNode as MV_Constant;
+			if (constInput != null && constInput.IsInline)
+			{
+				if (constInput.ValueEditor.DoGUI())
+				{
+					//TODO: "Undo" here.
+				}
+			}
+			//Otherwise, draw a line to it and expose a button to release the connection.
+			else
+			{
+				const float OutputHeight = 30.0f,
+							TitleBarHeight = 30.0f,
+							InputSpacing = 20.0f;
+				Rect otherPos = inputNode.Pos;
+				Vector2 endPos = new Vector2(otherPos.xMax, otherPos.yMin + OutputHeight) -
+								   nodePos.min;
+				MyGUI.DrawLine(new Vector2(0.0f, TitleBarHeight + (inputIndex * InputSpacing)),
+							   endPos, 2.0f, Color.white);
+
+				if (GUILayout.Button("Disconnect"))
+				{
+					//TODO: "Undo" here.
+					var defaultInput = (node == null ?
+											MV_Constant.MakeFloat(1.0f, true, 0.0f, 1.0f,
+																  MaterialValue.OutputSizes.All,
+																  true) :
+											node.GetDefaultInput(inputIndex));
+					Graph.ConnectInput(node, inputIndex, defaultInput);
+				}
+			}
+
+			if (allowDeletion)
+			{
+				if (GUILayout.Button("X"))
+				{
+					//TODO: "Undo" here.
+					Graph.DisconnectInput(node, inputIndex, true);
+					return true;
+				}
+			}
 
 			GUILayout.EndHorizontal();
-			GUILayout.EndVertical();
+
+			return false;
 		}
 	}
 }

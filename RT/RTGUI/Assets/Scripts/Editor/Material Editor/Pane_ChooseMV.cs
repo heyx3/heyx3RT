@@ -31,6 +31,8 @@ namespace RT.MatEditor
 
 		public event Action OnCurrentOptionChanged;
 
+		private Vector2 scrollPos = Vector2.zero;
+
 
 		public Pane_ChooseMV(MatEditorWindow owner)
 		{
@@ -41,7 +43,10 @@ namespace RT.MatEditor
 		
 		public void DoGUI(Rect area)
 		{
+			GUI.Box(area, GlobalTextures.WhitePixel);
+
 			GUILayout.BeginArea(area);
+			scrollPos = GUILayout.BeginScrollView(scrollPos);
 
 			if (CurrentlyPlacing == null)
 			{
@@ -67,6 +72,7 @@ namespace RT.MatEditor
 					CurrentlyPlacing = null;
 			}
 
+			GUILayout.EndScrollView();
 			GUILayout.EndArea();
 		}
 	}

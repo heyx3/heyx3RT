@@ -357,7 +357,9 @@ namespace RT.MaterialValue
 
 			if (UseSliders)
 			{
-				if (V.OutputSize == OutputSizes.Three)
+				//If the min is 0, max is 1, and number of inputs is 3 or 4,
+				//    use a color editor.
+				if (Min == 0.0f && Max == 1.0f && V.OutputSize == OutputSizes.Three)
 				{
 					Color newRGB = EditorGUILayout.ColorField(V.RGB);
 					if (newRGB != V.RGB)
@@ -366,7 +368,7 @@ namespace RT.MaterialValue
 						V.RGB = newRGB;
 					}
 				}
-				else if (V.OutputSize == OutputSizes.Four)
+				else if (Min == 0.0f && Max == 1.0f && V.OutputSize == OutputSizes.Four)
 				{
 					Color newRGBA = EditorGUILayout.ColorField(V.RGBA);
 					if (newRGBA != V.RGBA)
@@ -375,13 +377,18 @@ namespace RT.MaterialValue
 						V.RGBA = newRGBA;
 					}
 				}
+				//Otherwise, just use one slider for each component.
 				else
 				{
 					GUILayout.BeginHorizontal();
 
 					for (uint i = 0; i < V.OutputSize.ToNumber(); ++i)
 					{
-						float newVal = GUILayout.HorizontalSlider(V[i], Min, Max);
+						if (i > 0)
+							GUILayout.Space(15.0f);
+
+						float newVal = GUILayout.HorizontalSlider(V[i], Min, Max,
+																  GUILayout.MinWidth(20.0f));
 						if (newVal != V[i])
 						{
 							changed = true;
@@ -398,7 +405,8 @@ namespace RT.MaterialValue
 
 				for (uint i = 0; i < V.OutputSize.ToNumber(); ++i)
 				{
-					string valueStr = GUILayout.TextField(V[i].ToString());
+					string valueStr = GUILayout.TextField(V[i].ToString(),
+														  GUILayout.MinWidth(30.0f));
 					float f;
 					if (float.TryParse(valueStr, out f) && f != V[i])
 					{

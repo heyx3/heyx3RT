@@ -106,6 +106,9 @@ namespace RT.MaterialValue
 			};
 			OnNodeDeleted += (_this, node) =>
 			{
+				if (!nodeToID.ContainsKey(node))
+					return;
+
 				if (nextID == nodeToID[node] + 1)
 					nextID -= 1;
 
@@ -134,16 +137,7 @@ namespace RT.MaterialValue
 		/// </summary>
 		public bool IsConnected(MV_Base node)
 		{
-			if (extraNodes.Contains(node))
-			{
-				UnityEngine.Assertions.Assert.IsFalse(AllConnectedNodes.Contains(node));
-				return true;
-			}
-			else
-			{
-				UnityEngine.Assertions.Assert.IsTrue(AllConnectedNodes.Contains(node));
-				return true;
-			}
+			return extraNodes.Contains(node);
 		}
 		/// <summary>
 		/// Gets whether the given node exists in this graph at all.
@@ -293,16 +287,16 @@ namespace RT.MaterialValue
 					OnNodeDeleted(this, oldInput);
 			}
 
-			//Replace or remove the input.
-			if (replaceInput)
+			//Replace or remove the input. 
+			if (deleteIndexEntirely)
+			{
+				node.RemoveInput(inputIndex);
+			}
+			else if (replaceInput)
 			{
 				MV_Base newInput = node.GetDefaultInput(inputIndex);
 				AddNode(newInput);
 				ConnectInput(node, inputIndex, newInput);
-			}
-			else if (deleteIndexEntirely)
-			{
-				node.RemoveInput(inputIndex);
 			}
 		}
 

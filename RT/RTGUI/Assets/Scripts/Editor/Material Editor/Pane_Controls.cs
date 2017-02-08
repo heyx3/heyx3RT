@@ -22,6 +22,8 @@ namespace RT.MatEditor
 
 		public void DoGUI(Rect area)
 		{
+			GUI.Box(area, GlobalTextures.WhitePixel);
+
 			GUILayout.BeginArea(area);
 
 			if (GUILayout.Button("Save Graph"))
