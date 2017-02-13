@@ -146,7 +146,7 @@ void MaterialValue::ReadData(DataReader& data, const String& namePrefix,
                                 {
                                     rd.ReadUInt((*(IDList*)pList)[listIndex], name);
                                 },
-        namePrefix + "childrenIDs");
+                                namePrefix + "childrenIDs");
     childIDLookup[this] = childIDs;
 }
 void MaterialValue::OnDoneReadingData(const IDToMaterialValue& mvLookup,

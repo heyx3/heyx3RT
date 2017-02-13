@@ -118,7 +118,7 @@ namespace RT
         }
 
         float LengthSqr() const { return Dot(*this); }
-        float Length() const { return sqrt(LengthSqr()); }
+        float Length() const { return sqrtf(LengthSqr()); }
 
         float DistanceSqr(const Vector3f& other) const { return (*this - other).LengthSqr(); }
         float Distance(const Vector3f& other) const { return sqrtf(DistanceSqr(other)); }
@@ -134,7 +134,7 @@ namespace RT
         {
             Vector3f crossed = normal.Cross(*this);
             return ((normal.Cross(-crossed)) * invIndex) -
-                   (normal * sqrt(1.0f - (invIndex * invIndex * crossed.Dot(crossed))));
+                   (normal * sqrtf(1.0f - (invIndex * invIndex * crossed.Dot(crossed))));
         }
 
         Vector3f Reciprocal() const { return Vector3f(1.0f / x, 1.0f / y, 1.0f / z); }
@@ -203,7 +203,7 @@ namespace RT
         }
 
         float LengthSqr() const { return Dot(*this); }
-        float Length() const { return sqrt(LengthSqr()); }
+        float Length() const { return sqrtf(LengthSqr()); }
 
         float DistanceSqr(const Vector4f& other) const { return (*this - other).LengthSqr(); }
         float Distance(const Vector4f& other) const { return sqrtf(DistanceSqr(other)); }

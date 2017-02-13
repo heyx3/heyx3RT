@@ -8,7 +8,17 @@ namespace RT
 	[ExecuteInEditMode]
 	public abstract class RTShape : MonoBehaviour, Serialization.ISerializableRT
 	{
-		public static HashSet<RTShape> Shapes = new HashSet<RTShape>();
+		public static HashSet<RTShape> Shapes
+		{
+			get
+			{
+				if (shapes == null)
+					shapes = new HashSet<RTShape>(GameObject.FindObjectsOfType<RTShape>());
+				return shapes;
+			}
+		}
+		private static HashSet<RTShape> shapes = null;
+
 
 		protected const string TypeName_Sphere = "Sphere",
 		                       TypeName_Plane = "Plane",
@@ -57,7 +67,8 @@ namespace RT
 
 		public virtual void Awake()
 		{
-			Shapes.Add(this);
+			if (shapes != null)
+				shapes.Add(this); 
 
 			MeshFilter mf = GetComponent<MeshFilter>();
 			if (mf == null)
@@ -66,7 +77,8 @@ namespace RT
 		}
 		protected virtual void OnDestroy()
 		{
-			Shapes.Remove(this);
+			if (shapes != null)
+				shapes.Remove(this); 
 		}
 		
 		public virtual void WriteData(Serialization.DataWriter writer)

@@ -64,7 +64,7 @@ namespace RT
         virtual void WriteBool(bool value, const String& name) = 0;
         virtual void WriteByte(unsigned char value, const String& name) = 0;
         virtual void WriteInt(int value, const String& name) = 0;
-        virtual void WriteUInt(size_t value, const String& name) = 0;
+        virtual void WriteUInt(unsigned int value, const String& name) = 0;
         virtual void WriteFloat(float value, const String& name) = 0;
         virtual void WriteDouble(double value, const String& name) = 0;
         virtual void WriteString(const String& value, const String& name) = 0;
@@ -129,7 +129,7 @@ namespace RT
 
             virtual void WriteData(DataWriter& writer) const override
             {
-                writer.WriteUInt(NValues, "NValues");
+                writer.WriteUInt((unsigned int)NValues, "NValues");
                 for (size_t i = 0; i < NValues; ++i)
                 {
                     Writer(writer, Values[i], String(i + 1), PData);
@@ -167,7 +167,7 @@ namespace RT
         virtual void ReadBool(bool& outB, const String& name) = 0;
         virtual void ReadByte(unsigned char& outB, const String& name) = 0;
         virtual void ReadInt(int& outI, const String& name) = 0;
-        virtual void ReadUInt(size_t& outU, const String& name) = 0;
+        virtual void ReadUInt(unsigned int& outU, const String& name) = 0;
         virtual void ReadFloat(float& outF, const String& name) = 0;
         virtual void ReadDouble(double& outD, const String& name) = 0;
         virtual void ReadString(String& outStr, const String& name) = 0;
@@ -242,7 +242,7 @@ namespace RT
 
             virtual void ReadData(DataReader& reader) override
             {
-                size_t nValues;
+                unsigned int nValues;
                 reader.ReadUInt(nValues, "NValues");
                 Resizer(List, nValues);
 

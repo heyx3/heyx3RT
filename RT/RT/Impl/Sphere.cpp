@@ -132,12 +132,12 @@ void Sphere::FillInData(Vertex& v, const Vector3f& localPos) const
 void Sphere::WriteData(DataWriter& writer) const
 {
     Shape::WriteData(writer);
-    writer.WriteUInt(WrapAxis, "WrapAxis");
+    writer.WriteByte(WrapAxis, "WrapAxis");
 }
 void Sphere::ReadData(DataReader& reader)
 {
     Shape::ReadData(reader);
-    reader.ReadUInt(WrapAxis, "WrapAxis");
+    reader.ReadByte(WrapAxis, "WrapAxis");
     if (WrapAxis > 2)
     {
         reader.ErrorMessage = "Sphere wrap axis should be [0, 2] but it was ";

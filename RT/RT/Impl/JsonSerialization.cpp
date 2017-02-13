@@ -123,7 +123,7 @@ void JsonWriter::WriteInt(int value, const String& name)
 {
     GetToUse()[name.CStr()] = value;
 }
-void JsonWriter::WriteUInt(size_t value, const String& name)
+void JsonWriter::WriteUInt(unsigned int value, const String& name)
 {
     GetToUse()[name.CStr()] = value;
 }
@@ -226,7 +226,7 @@ void JsonReader::ReadInt(int& outI, const String& name)
     Assert(element->is_number_integer(), "Expected an integer but got something else");
     outI = element->get<int>();
 }
-void JsonReader::ReadUInt(size_t& outU, const String& name)
+void JsonReader::ReadUInt(unsigned int& outU, const String& name)
 {
     auto& element = GetItem(name);
     Assert(element->is_number_unsigned(), "Expected an unsigned integer but got something else");

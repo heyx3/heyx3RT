@@ -21,7 +21,7 @@ namespace RT.MaterialValue
 
 
 		public override string TypeName { get { return TypeName_Swizzle; } }
-		public override OutputSizes OutputSize { get { return OutputSizesExtensions.FromNumber(NComponents); } }
+		public override OutputSizes OutputSize { get { return OutputSizesExtensions.ToOutputSize(NComponents); } }
 
 		public override string ShaderValueName(Dictionary<MV_Base, uint> idLookup)
 		{

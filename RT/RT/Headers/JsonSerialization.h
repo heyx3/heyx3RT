@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "DataSerialization.h"
 #include "ThirdParty\json.hpp"
 
@@ -52,7 +51,7 @@ namespace RT
         virtual void WriteBool(bool value, const String& name) override;
         virtual void WriteByte(unsigned char value, const String& name) override;
         virtual void WriteInt(int value, const String& name) override;
-        virtual void WriteUInt(size_t value, const String& name) override;
+        virtual void WriteUInt(unsigned int value, const String& name) override;
         virtual void WriteFloat(float value, const String& name) override;
         virtual void WriteDouble(double value, const String& name) override;
         virtual void WriteString(const String& value, const String& name) override;
@@ -93,7 +92,7 @@ namespace RT
         virtual void ReadBool(bool& outB, const String& name) override;
         virtual void ReadByte(unsigned char& outB, const String& name) override;
         virtual void ReadInt(int& outI, const String& name) override;
-        virtual void ReadUInt(size_t& outU, const String& name) override;
+        virtual void ReadUInt(unsigned int& outU, const String& name) override;
         virtual void ReadFloat(float& outF, const String& name) override;
         virtual void ReadDouble(double& outD, const String& name) override;
         virtual void ReadString(String& outStr, const String& name) override;

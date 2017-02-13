@@ -60,12 +60,14 @@ public:
         //Skip the first argument, which is the program path.
         for (size_t i = 1; i < nArgs; ++i)
         {
-            std::cout << "Parsing option \"" << args[i] << "\"\n\t";
-            if (args[i] == "-interactive")
+            std::string arg = args[i];
+
+            std::cout << "Parsing option \"" << arg << "\"\n\t";
+            if (arg == "-interactive")
             {
                 isInteractive = true;
             }
-            else if (args[i] == "-cPos")
+            else if (arg == "-cPos")
             {
                 if (i > nArgs - 4)
                 {
@@ -81,7 +83,7 @@ public:
                                     CamPos.GetValue().z << "\n";
                 }
             }
-            else if (args[i] == "-cForward")
+            else if (arg == "-cForward")
             {
                 if (i > nArgs - 4)
                 {
@@ -99,7 +101,7 @@ public:
                                     CamForward.GetValue().z << "\n";
                 }
             }
-            else if (args[i] == "-cUp")
+            else if (arg == "-cUp")
             {
                 if (i > nArgs - 4)
                 {
@@ -117,7 +119,7 @@ public:
                                     CamUp.GetValue().z << "\n";
                 }
             }
-            else if (args[i] == "-gamma")
+            else if (arg == "-gamma")
             {
                 if (i > nArgs - 2)
                 {
@@ -130,7 +132,7 @@ public:
                     i += 1;
                 }
             }
-            else if (args[i] == "-fovScale")
+            else if (arg == "-fovScale")
             {
                 if (i > nArgs - 2)
                 {
@@ -143,7 +145,7 @@ public:
                     i += 1;
                 }
             }
-            else if (args[i] == "-nSamples")
+            else if (arg == "-nSamples")
             {
                 if (i > nArgs - 2)
                 {
@@ -156,7 +158,7 @@ public:
                     i += 1;
                 }
             }
-            else if (args[i] == "-nBounces")
+            else if (arg == "-nBounces")
             {
                 if (i > nArgs - 2)
                 {
@@ -169,7 +171,7 @@ public:
                     i += 1;
                 }
             }
-            else if (args[i] == "-outputPath")
+            else if (arg == "-outputPath")
             {
                 if (i > nArgs - 2)
                 {
@@ -182,7 +184,7 @@ public:
                     i += 1;
                 }
             }
-            else if (args[i] == "-outputSize")
+            else if (arg == "-outputSize")
             {
                 if (i > nArgs - 3)
                 {
@@ -196,7 +198,7 @@ public:
                     i += 2;
                 }
             }
-            else if (args[i] == "-scene")
+            else if (arg == "-scene")
             {
                 if (i > nArgs - 2)
                 {
@@ -209,7 +211,7 @@ public:
                     i += 1;
                 }
             }
-            else if (args[i] == "-nThreads")
+            else if (arg == "-nThreads")
             {
                 if (i > nArgs - 2)
                 {
@@ -224,7 +226,7 @@ public:
             }
             else
             {
-                outErrorMsg += std::string() + "\nUnrecognized option \"" + args[i] + "\"";
+                outErrorMsg += std::string() + "\nUnrecognized option \"" + arg + "\"";
             }
         }
 

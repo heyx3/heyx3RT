@@ -12,7 +12,7 @@ namespace RT
 
         //The axis that the UV's are wrapped around.
         //0 = X, 1 = Y, 2 = Z.
-        size_t WrapAxis = 1;
+        unsigned char WrapAxis = 1;
 
 
         Sphere() { }

@@ -93,7 +93,7 @@ void Vectorf_Writable::WriteData(DataWriter& writer) const
 }
 void Vectorf_Readable::ReadData(DataReader& reader)
 {
-    size_t nVals;
+    unsigned int nVals;
     reader.ReadUInt(nVals, "Dimensions");
     V.NValues = (Dimensions)nVals;
 

@@ -29,8 +29,6 @@ Exit codes:
 
 */
 
-//TODO: Test that this works.
-
 #include <RT.hpp>
 
 #include "RTCmdIO.h"

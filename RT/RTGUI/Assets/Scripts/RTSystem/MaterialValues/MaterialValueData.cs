@@ -42,7 +42,7 @@ namespace RT.MaterialValue
 	}
 	public static class OutputSizesExtensions
 	{
-		public static OutputSizes FromNumber(uint i)
+		public static OutputSizes ToOutputSize(this uint i)
 		{
 			switch (i)
 			{
@@ -261,13 +261,13 @@ namespace RT.MaterialValue
 			if (!OutputSize.IsSingleOption())
 				throw new Serialization.DataWriter.WriteException("Output size is " + OutputSize.ToString());
 
-			writer.UInt((uint)OutputSize, "Dimensions");
+			writer.UInt(OutputSize.ToNumber(), "Dimensions");
 			for (uint i = 0; i < OutputSize.ToNumber(); ++i)
 				writer.Float(this[i], ComponentStrings[i]);
 		}
 		public void ReadData(Serialization.DataReader reader)
 		{
-			OutputSize = (OutputSizes)reader.UInt("Dimensions");
+			OutputSize = reader.UInt("Dimensions").ToOutputSize();
 			for (uint i = 0; i < OutputSize.ToNumber(); ++i)
 				this[i] = reader.Float(ComponentStrings[i]);
 
