@@ -9,7 +9,6 @@ using RT.Serialization;
 
 namespace RT.MaterialValue
 {
-	[Serializable]
 	public class MV_Tex2D : MV_Base
 	{
 		public override string TypeName { get { return TypeName_Tex2D; } }

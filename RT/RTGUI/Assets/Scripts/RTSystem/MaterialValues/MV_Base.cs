@@ -11,7 +11,6 @@ using Assert = UnityEngine.Assertions.Assert;
 
 namespace RT.MaterialValue
 {
-	[Serializable]
 	public abstract class MV_Base
 	{
 		public static void Write(MV_Base val, Dictionary<MV_Base, uint> idLookup, string name,
@@ -167,11 +166,9 @@ namespace RT.MaterialValue
 							   TypeName_ShapeScale = "ShapeScale",
 							   TypeName_ShapeRot = "ShapeRot";
 		#endregion
-
-		[SerializeField]
+        
 		private Rect pos;
-
-		[SerializeField]
+        
 		private List<MV_Base> inputs = new List<MV_Base>();
 
 		
@@ -225,14 +222,6 @@ namespace RT.MaterialValue
 
 		public MV_Base()
 		{
-			//Double-check that this sub-class is serializable.
-			if ((GetType().Attributes & System.Reflection.TypeAttributes.Serializable) !=
-					System.Reflection.TypeAttributes.Serializable)
-			{
-				EditorUtility.DisplayDialog("Not marked serializable",
-											"The class " + GetType().Name + " isn't marked [Serializable]",
-											"OK");
-			}
 			pos = new Rect(0.0f, 0.0f, 0.1f, 0.1f);
 		}
 		

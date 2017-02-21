@@ -10,7 +10,6 @@ namespace RT.MaterialValue
 	/// <summary>
 	/// A MaterialValue that only takes one parameter.
 	/// </summary>
-	[Serializable]
 	public class MV_Simple1 : MV_Base
 	{
 		public static MV_Simple1 Normalize(MV_Base x)
@@ -103,11 +102,8 @@ namespace RT.MaterialValue
 		}
 
 		
-		[SerializeField]
 		private string toDo, prettyName, typeName, inputName;
-		[SerializeField]
 		private EditableVectorf defaultValue;
-		[SerializeField]
 		private bool outputSizeIsOne;
 
 

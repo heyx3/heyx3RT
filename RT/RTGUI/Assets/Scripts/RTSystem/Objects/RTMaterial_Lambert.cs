@@ -28,11 +28,12 @@ namespace RT
 		}
 
 
-		protected override void GetUnityMaterialOutputs(out MaterialValue.MV_Base albedo,
+		protected override void GetUnityMaterialOutputs(MaterialValue.Graph tempGraph,
+														out MaterialValue.MV_Base albedo,
 														out MaterialValue.MV_Base metallic,
 														out MaterialValue.MV_Base smoothness)
 		{
-			albedo = Albedo;
+			albedo = tempGraph.GetRootNode(0);
 			metallic = MaterialValue.MV_Constant.MakeFloat(0.0f);
 			smoothness = MaterialValue.MV_Constant.MakeFloat(0.5f);
 		}

@@ -47,21 +47,7 @@ namespace RT
 		public float FovScale = 1.0f,
 					 Gamma = 2.2f;
 
-
-		public void OnValidate()
-		{
-			//Reinitialize all shapes/materials so that they definitely are using the correct meshes.
-
-			//if (RTSkyMaterial.Instance != null)
-				//RTSkyMaterial.Instance.Start();
-
-			//foreach (RTShape shpe in RTShape.Shapes)
-			//{
-			//	shpe.Awake();
-			//	shpe.GetComponent<RTMaterial>().Awake();
-			//}
-		}
-
+		
 		/// <summary>
 		/// Saves the scene to the given JSON file.
 		/// Returns an error message, or the empty string if everything went fine.
@@ -96,10 +82,15 @@ namespace RT
 			string errMsg = "";
 			try
 			{
-				//Remove all objects from the current scene.
+				//Remove all objects from the current scene except for reflection probes.
 				foreach (GameObject go in FindObjectsOfType<GameObject>())
-					if (go.transform.parent == null && go != gameObject)
+				{
+					if (go.transform.parent == null && go != gameObject &&
+						go.GetComponentInChildren<ReflectionProbe>() == null)
+					{
 						DestroyImmediate(go);
+					}
+				}
 
 				//Read in the new scene.
 				Serialization.JSONReader reader = new Serialization.JSONReader(filePath);

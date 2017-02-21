@@ -120,6 +120,7 @@ namespace RT.MatEditor
 						new Option(() => MV_Inputs.SurfaceNormal, "Surface normal", "The normal of the surface hit by the ray"),
 						new Option(() => MV_Inputs.SurfaceTangent, "Surface tangent", "The tangent of the surface hit by the ray"),
 						new Option(() => MV_Inputs.SurfaceBitangent, "Surface bitangent", "The bitangent of the surface hit by the ray"),
+                        new Option(() => MV_Inputs.SurfaceUV, "Surface UV", "The UV of the surface hit by the ray"),
 						new Option(() => MV_Inputs.RayStart, "Ray start", "The initial position of the ray"),
 						new Option(() => MV_Inputs.RayDir, "Ray dir", "The direction of the ray"),
 						new Option(() => new MV_RayPos(F()), "Ray pos", "The ray's position at time t"),

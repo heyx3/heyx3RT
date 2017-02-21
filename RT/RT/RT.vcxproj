@@ -173,7 +173,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y "$(TargetDir)*" "$(SolutionDir)RTGUI\Assets\Plugins\$(Platform)"</Command>
+      <Command>xcopy /Y "$(TargetDir)*.dll" "$(SolutionDir)RTGUI\Assets\Plugins\$(Platform)"</Command>
       <Message>Copy build products to RTGUI project</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -188,7 +188,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y "$(TargetDir)*" "$(SolutionDir)RTGUI\Assets\Plugins\$(Platform)"</Command>
+      <Command>xcopy /Y "$(TargetDir)*.dll" "$(SolutionDir)RTGUI\Assets\Plugins\$(Platform)"</Command>
       <Message>Copy build products to RTGUI project</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -207,7 +207,7 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y "$(TargetDir)*" "$(SolutionDir)RTGUI\Assets\Plugins\$(Platform)"</Command>
+      <Command>xcopy /Y "$(TargetDir)*.dll" "$(SolutionDir)RTGUI\Assets\Plugins\$(Platform)"</Command>
       <Message>Copy build products to RTGUI project</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -226,7 +226,7 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y "$(TargetDir)*" "$(SolutionDir)RTGUI\Assets\Plugins\$(Platform)"</Command>
+      <Command>xcopy /Y "$(TargetDir)*.dll" "$(SolutionDir)RTGUI\Assets\Plugins\$(Platform)"</Command>
       <Message>Copy build products to RTGUI project</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>

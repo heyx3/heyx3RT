@@ -11,10 +11,10 @@ namespace RT.MatEditor
 {
 	public class MatEditorWindow : EditorWindow
 	{
-		public static MatEditorWindow Create(MonoBehaviour owner, RT.MaterialValue.Graph graph)
+		public static MatEditorWindow Create(RTBaseMaterial owner)
 		{
 			var wnd = GetWindow<MatEditorWindow>();
-			wnd.Init(owner, graph);
+			wnd.Init(owner);
 			return wnd;
 		}
 
@@ -25,8 +25,7 @@ namespace RT.MatEditor
 		private static readonly Vector2 MinSize = new Vector2(700.0f, 500.0f);
 
 
-		public MonoBehaviour Owner { get; private set; }
-		public RT.MaterialValue.Graph Graph { get; private set; }
+		public RTBaseMaterial Owner { get; private set; }
 		
 		public Pane_ChooseMV ChooseMVPane { get; private set; }
 		public Pane_Controls ControlsPane { get; private set; }
@@ -35,7 +34,7 @@ namespace RT.MatEditor
 		private bool initYet = false;
 
 		
-		public void Init(MonoBehaviour owner, RT.MaterialValue.Graph graph)
+		public void Init(RTBaseMaterial owner)
 		{
 			initYet = true;
 
@@ -43,7 +42,6 @@ namespace RT.MatEditor
 			titleContent = new GUIContent("RTMaterial Graph");
 
 			Owner = owner;
-			Graph = graph;
 
 			ChooseMVPane = new Pane_ChooseMV(this);
 			ControlsPane = new Pane_Controls(this);
@@ -59,7 +57,9 @@ namespace RT.MatEditor
 		public void Save()
 		{
 			//Set the original graph to have the same layout as the editor pane's copy.
-			GraphPane.Graph.Clone(Graph);
+			GraphPane.Graph.Clone(Owner.Graph);
+			
+			Owner.RegenerateMaterial();
 		}
 		
 		private void OnFocus()
@@ -70,6 +70,10 @@ namespace RT.MatEditor
 		}
 		private void OnGUI()
 		{
+            //If Unity just recompiled, the non-serializable stuff will be left "null".
+            if (ChooseMVPane == null)
+                Close();
+
 			if (!initYet)
 				return;
 

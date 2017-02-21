@@ -21,16 +21,17 @@ namespace RT
 								set { Graph.ConnectInput(null, 2, value); } }
 
 
-		protected override void GetUnityMaterialOutputs(out MV_Base outRGB)
+		protected override void GetUnityMaterialOutputs(Graph tempGraph, out MV_Base outRGB)
 		{
-			MV_Base normalizedSkyDir = MV_Simple1.Normalize(SkyDir),
+			MV_Base normalizedSkyDir = MV_Simple1.Normalize(tempGraph.GetRootNode(2)),
 					dotRaySky = MV_Simple2.Dot(normalizedSkyDir, MV_Inputs.RayDir),
 					constantHalf = MV_Constant.MakeFloat(0.5f),
 					constantHalf2 = MV_Constant.MakeFloat(0.5f),
 					halfRaySky = MV_Arithmetic.Multiply(constantHalf, dotRaySky),
 					dotRaySkyMapped = MV_Arithmetic.Add(constantHalf2, halfRaySky);
 
-			outRGB = MV_Simple3.Lerp(BottomColor, TopColor, dotRaySkyMapped);
+			outRGB = MV_Simple3.Lerp(tempGraph.GetRootNode(0), tempGraph.GetRootNode(1),
+									 dotRaySkyMapped);
 		}
 
 		protected override void InitGraph()

@@ -10,7 +10,6 @@ namespace RT.MaterialValue
 	/// <summary>
 	/// A MaterialValue that takes three parameters.
 	/// </summary>
-	[Serializable]
 	public class MV_Simple3 : MV_Base
 	{
 		public static MV_Simple3 Lerp(MV_Base a, MV_Base b, MV_Base t)
@@ -29,10 +28,8 @@ namespace RT.MaterialValue
 		}
 
 		
-		[SerializeField]
 		private string toDo, prettyName, typeName,
 					   inputName1, inputName2, inputName3;
-		[SerializeField]
 		private EditableVectorf defaultValue1, defaultValue2, defaultValue3;
 
 

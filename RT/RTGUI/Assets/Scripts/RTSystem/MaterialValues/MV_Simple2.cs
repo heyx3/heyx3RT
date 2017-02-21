@@ -9,7 +9,6 @@ namespace RT.MaterialValue
 	/// <summary>
 	/// A MaterialValue that takes two parameters.
 	/// </summary>
-	[Serializable]
 	public class MV_Simple2 : MV_Base
 	{
 		public static MV_Simple2 Distance(MV_Base a, MV_Base b)
@@ -41,9 +40,7 @@ namespace RT.MaterialValue
 		}
 
 		
-		[SerializeField]
 		private string toDo, prettyName, typeName, inputName1, inputName2;
-		[SerializeField]
 		private EditableVectorf defaultValue1, defaultValue2;
 
 

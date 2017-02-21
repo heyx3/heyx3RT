@@ -22,9 +22,10 @@ namespace RT
 			Graph.ConnectInput(null, 0, col);
 		}
 
-		protected override void GetUnityMaterialOutputs(out MaterialValue.MV_Base outRGB)
+		protected override void GetUnityMaterialOutputs(MaterialValue.Graph tempGraph,
+														out MaterialValue.MV_Base outRGB)
 		{
-			outRGB = Color;
+			outRGB = tempGraph.GetRootNode(0);
 		}
 
 		public override string GetRootNodeDisplayName(int rootNodeIndex)

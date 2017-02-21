@@ -34,16 +34,17 @@ namespace RT
 			Graph.ConnectInput(null, 1, roughness);
 		}
 
-		protected override void GetUnityMaterialOutputs(out MaterialValue.MV_Base albedo,
+		protected override void GetUnityMaterialOutputs(MaterialValue.Graph tempGraph,
+														out MaterialValue.MV_Base albedo,
 														out MaterialValue.MV_Base metallic,
 														out MaterialValue.MV_Base smoothness)
 		{
-			albedo = Albedo;
+			albedo = tempGraph.GetRootNode(0);
 
 			metallic = MaterialValue.MV_Constant.MakeFloat(1.0f);
 
 			var constant1 = MaterialValue.MV_Constant.MakeFloat(1.0f);
-			smoothness = MaterialValue.MV_Arithmetic.Subtract(constant1, Roughness);
+			smoothness = MaterialValue.MV_Arithmetic.Subtract(constant1, tempGraph.GetRootNode(1));
 		}
 		
 		public override string GetRootNodeDisplayName(int rootNodeIndex)

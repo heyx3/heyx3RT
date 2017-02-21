@@ -4,12 +4,12 @@ using System.Linq;
 using System.IO;
 using UnityEngine;
 using UnityEditor;
-
+using RT.MaterialValue;
 
 namespace RT
 {
 	[ExecuteInEditMode]
-	public abstract class RTMaterial : MonoBehaviour, Serialization.ISerializableRT
+	public abstract class RTMaterial : RTBaseMaterial, Serialization.ISerializableRT
 	{
 		public static HashSet<RTMaterial> Materials = new HashSet<RTMaterial>();
 
@@ -47,164 +47,54 @@ namespace RT
 			return mat;
 		}
 		
-
-		private const string GeneratedFolderPath = "Generated";
-		private string GetNewGeneratedFileName(string namePrefix, string nameSuffix)
-		{
-			string fullDir = Path.Combine(Application.dataPath, GeneratedFolderPath);
-			if (!Directory.Exists(fullDir))
-				Directory.CreateDirectory(fullDir);
-
-			int i = 0;
-			while (File.Exists(Path.Combine(fullDir, namePrefix + i + nameSuffix)))
-				i += 1;
-			return Path.Combine(fullDir, namePrefix + i + nameSuffix).MakePathRelative("Assets");
-		}
-
-		
-		[SerializeField]
-		private Material myMat = null;
-		[SerializeField]
-		private Shader myShader = null;
-
-
 		public abstract string TypeName { get; }
-		protected abstract string GraphSerializationName { get; }
 		
-		public MaterialValue.Graph Graph
-		{
-			get
-			{
-				if (graph == null)
-				{
-					graph = new MaterialValue.Graph();
-					InitGraph();
-				}
-				return graph;
-			}
-		}
-		private MaterialValue.Graph graph = null;
-
 
 		public virtual void Awake()
 		{
 			Materials.Add(this);
-
-			//Create/update the mesh renderer.
-			MeshRenderer mr = GetComponent<MeshRenderer>();
-			if (mr == null)
-				mr = gameObject.AddComponent<MeshRenderer>();
 		}
-		public virtual void Start()
-		{
-			RegenerateMaterial(GetComponent<MeshRenderer>());
-		}
-		protected virtual void OnDestroy()
+		private void OnDestroy()
 		{
 			Materials.Remove(this);
-			
-			AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myMat));
-			AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myShader));
 		}
 
-		public void RegenerateMaterial(MeshRenderer mr)
+		protected override string GenerateShader(string shaderName, Graph tempGraph,
+												 List<MV_Base> outTopLevelMVs)
 		{
-			//Clear out the old shader/material if they exist.
-			if (myShader != null)
-			{
-				UnityEngine.Assertions.Assert.IsNotNull(myMat);
-				AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myMat));
-				AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myShader));
-			}
-
-
-			MaterialValue.MV_Base albedo, metallic, smoothness;
-			GetUnityMaterialOutputs(out albedo, out metallic, out smoothness);
-			HashSet<MaterialValue.MV_Base> tempNodes =
-				new HashSet<MaterialValue.MV_Base>(albedo.HierarchyRootFirst
-														 .Concat(metallic.HierarchyRootFirst)
-														 .Concat(smoothness.HierarchyRootFirst)
-														 .Where(n => !Graph.ContainsNode(n)));
-			foreach (var node in tempNodes)
-				Graph.AddNode(node);
-
-			//Try loading the shader.
-			string shaderFile = "";
 			try
 			{
-				shaderFile = GetNewGeneratedFileName("Shad", ".shader");
-				string shaderName = Path.GetFileNameWithoutExtension(shaderFile);
+				MaterialValue.MV_Base albedo, metallic, smoothness;
+				GetUnityMaterialOutputs(tempGraph, out albedo, out metallic, out smoothness);
 
-				string shaderText = MaterialValue.ShaderGenerator.GenerateShader(shaderName,
-																				 Graph.UniqueNodeIDs,
-																				 albedo,
-																				 metallic,
-																				 smoothness);
+				var tempNodes = new HashSet<MV_Base>(albedo.HierarchyRootFirst
+														   .Concat(metallic.HierarchyRootFirst)
+														   .Concat(smoothness.HierarchyRootFirst)
+														   .Where(n => !tempGraph.ContainsNode(n)));
+				foreach (var node in tempNodes)
+					tempGraph.AddNode(node);
 
-				File.WriteAllText(shaderFile, shaderText);
-				AssetDatabase.ImportAsset(shaderFile);
-				myShader = AssetDatabase.LoadAssetAtPath<Shader>(shaderFile);
 
-				UnityEngine.Assertions.Assert.IsNotNull(myShader, "Shader compilation failed!");
+				outTopLevelMVs.Add(albedo);
+				outTopLevelMVs.Add(metallic);
+				outTopLevelMVs.Add(smoothness);
+
+				return MaterialValue.ShaderGenerator.GenerateShader(shaderName, tempGraph.UniqueNodeIDs,
+																	albedo, metallic, smoothness);
 			}
 			catch (Exception e)
 			{
-				Debug.LogError("Unable to create shader file \"" + shaderFile + "\": " + e.Message);
+				Debug.LogError("Unable to create shader \"" + shaderName + "\": " + e.Message);
+				return null;
 			}
-
-			//Try loading the material.
-			string matFile = "";
-			try
-			{
-				matFile = GetNewGeneratedFileName("Mat", ".mat");
-				myMat = new Material(myShader);
-				MaterialValue.ShaderGenerator.SetMaterialParams(transform, myMat, graph.UniqueNodeIDs,
-																albedo, metallic, smoothness);
-
-				AssetDatabase.CreateAsset(myMat, matFile);
-				myMat = AssetDatabase.LoadAssetAtPath<Material>(matFile);
-
-				mr.sharedMaterial = myMat;
-			}
-			catch (Exception e)
-			{
-				Debug.LogError("Unable to create material file \"" + matFile + "\": " + e.Message);
-			}
-
-			//Clean up.
-			foreach (var node in tempNodes)
-				Graph.DeleteNode(node);
 		}
-
-		protected abstract void InitGraph();
-
 		/// <summary>
 		/// Gets the outputs of this material in terms of the Unity standard shader.
 		/// </summary>
-		/// <param name="toDelete">
-		/// Any temporary MaterialValues that were created just for this method call.
-		/// These should all have their Delete() method called once they're done being used.
-		/// </param>
-		protected abstract void GetUnityMaterialOutputs(out MaterialValue.MV_Base albedo,
+		/// <param name="tempGraph">A copy of this instance's Graph that can be modified at will.</param>
+		protected abstract void GetUnityMaterialOutputs(Graph tempGraph,
+														out MaterialValue.MV_Base albedo,
 														out MaterialValue.MV_Base metallic,
 														out MaterialValue.MV_Base smoothness);
-
-		/// <summary>
-		/// Gets the display name of the given root node.
-		/// </summary>
-		/// <param name="rootNodeIndex">
-		/// The index of the node in "Graph.RootValues" to get the name of.
-		/// </param>
-		public abstract string GetRootNodeDisplayName(int rootNodeIndex);
-
-
-		public virtual void WriteData(Serialization.DataWriter writer)
-		{
-			writer.Structure(Graph, GraphSerializationName);
-		}
-		public virtual void ReadData(Serialization.DataReader reader)
-		{
-			reader.Structure(Graph, GraphSerializationName);
-		}
 	}
 }

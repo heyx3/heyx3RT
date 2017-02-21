@@ -11,17 +11,13 @@ namespace RT.Serialization
 	{
 		private Newtonsoft.Json.JsonTextWriter writer;
 
+
 		public JSONWriter(string filePath)
 		{
 			try
 			{
 				writer = new Newtonsoft.Json.JsonTextWriter(new System.IO.StreamWriter(filePath));
-				writer.Indentation = 4;
-				writer.Formatting = Newtonsoft.Json.Formatting.Indented;
-				writer.IndentChar = '\t';
-				writer.IndentChar = ' ';
-
-				writer.WriteStartObject();
+				Init();
 			}
 			catch (Exception e)
 			{
@@ -29,6 +25,29 @@ namespace RT.Serialization
 				throw new WriteException("Unable to open " + filePath + ": " + e.Message);
 			}
 		}
+		public JSONWriter(System.IO.TextWriter streamWriter)
+		{
+			try
+			{
+				writer = new Newtonsoft.Json.JsonTextWriter(streamWriter);
+				Init();
+			}
+			catch (Exception e)
+			{
+				writer = null;
+				throw new WriteException("Unable to create stream: " + e.Message);
+			}
+		}
+		private void Init()
+		{
+			writer.Indentation = 4;
+			writer.Formatting = Newtonsoft.Json.Formatting.Indented;
+			writer.IndentChar = '\t';
+			writer.IndentChar = ' ';
+
+			writer.WriteStartObject();
+		}
+
 
 		public override void Bool(bool value, string name)
 		{
@@ -103,7 +122,19 @@ namespace RT.Serialization
 			catch (Exception e)
 			{
 				root = null;
-				throw new ReadException("Error reading " + filePath + ": " + e.Message);
+				throw new ReadException("Error parsing " + filePath + ": " + e.Message);
+			}
+		}
+		public JSONReader(System.IO.TextReader jsonStream)
+		{
+			try
+			{
+				root = Newtonsoft.Json.Linq.JObject.Parse(jsonStream.ReadToEnd());
+			}
+			catch (Exception e)
+			{
+				root = null;
+				throw new ReadException("Error parsing JSON: " + e.Message);
 			}
 		}
 		private JSONReader(Newtonsoft.Json.Linq.JObject _root) { root = _root; }

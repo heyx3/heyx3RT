@@ -8,7 +8,6 @@ using RT.Serialization;
 
 namespace RT.MaterialValue
 {
-	[Serializable]
 	public class MV_RayPos : MV_Base
 	{
 		//Note that this class has a "secret" dependency on the RayStartPos and RayDir MaterialValues.

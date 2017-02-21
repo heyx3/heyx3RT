@@ -12,7 +12,6 @@ namespace RT.MaterialValue
 	/// <summary>
 	/// A set of singletons for the various input data -- surface, shape, and ray.
 	/// </summary>
-	[Serializable]
 	public class MV_Inputs : MV_Base
 	{
 		public static readonly MV_Inputs SurfacePos = new MV_Inputs(0),
@@ -37,15 +36,14 @@ namespace RT.MaterialValue
 											  "Surface Tangent", "Surface Bitangent",
 											  "Surface UV",
 											  "Ray Start", "Ray Dir",
-											  "Shape Pos", "Shape Scale", "Shape Rot Axis/Angle" };
+											  "Shape Pos", "Shape Scale", "Shape Rot Axis-Angle" };
 		public static string[] OptionsType = { TypeName_SurfPos, TypeName_SurfNormal,
 											   TypeName_SurfTangent, TypeName_SurfBitangent,
 											   TypeName_SurfUV,
 											   TypeName_RayStartPos, TypeName_RayDir,
 											   TypeName_ShapePos, TypeName_ShapeRot, TypeName_ShapeScale };
 
-
-		[SerializeField]
+        
 		private int selectedOption = 0;
 
 

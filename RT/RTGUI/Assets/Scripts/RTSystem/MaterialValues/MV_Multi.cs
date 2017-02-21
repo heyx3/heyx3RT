@@ -10,7 +10,6 @@ namespace RT.MaterialValue
 	/// <summary>
 	/// A MaterialValue that has a variable number of children.
 	/// </summary>
-	[Serializable]
 	public abstract class MV_MultiType : MV_Base
 	{
 		public override bool HasVariableNumberOfChildren { get { return true; } }
@@ -19,8 +18,7 @@ namespace RT.MaterialValue
 		
 		public override string GetInputName(int index) { return (index + 1).ToString(); }
 	}
-
-	[Serializable]
+    
 	public class MV_Arithmetic : MV_MultiType
 	{
 		public static MV_Arithmetic Add(MV_Base a, MV_Base b)
@@ -40,12 +38,9 @@ namespace RT.MaterialValue
 			return new MV_Arithmetic(a, b, TypeName_Divide, "Divide", "/", 1.0f, true);
 		}
 
-
-		[SerializeField]
+        
 		private string typeName, prettyName, symbol;
-		[SerializeField]
 		private float identity;
-		[SerializeField]
 		private bool canAlwaysUse1DInputs;
 
 
@@ -101,11 +96,9 @@ namespace RT.MaterialValue
 		}
 	}
 
-
-	[Serializable]
+    
 	public class MV_MinMax : MV_MultiType
 	{
-		[SerializeField]
 		private bool isMin;
 
 

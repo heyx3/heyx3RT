@@ -11,7 +11,6 @@ namespace RT.MaterialValue
 	/// <summary>
 	/// A MaterialValue that just outputs a constant value.
 	/// </summary>
-	[Serializable]
 	public class MV_Constant : MV_Base
 	{
 		public static MV_Constant MakeFloat(float f,
@@ -27,7 +26,7 @@ namespace RT.MaterialValue
 										   OutputSizes allowable = OutputSizes.One | OutputSizes.Two,
 										   bool isInline = false)
 		{
-			return MakeVec2(v, useSlider, min, max, allowable, isInline);
+			return new MV_Constant(new EditableVectorf(v, useSlider, allowable, min, max), isInline);
 		}
 		public static MV_Constant MakeVec2(float x, float y,
 										   bool useSlider = true, float min = 0.0f, float max = 1.0f,
@@ -94,8 +93,7 @@ namespace RT.MaterialValue
 		///     and should not be given its own node in the editor GUI.
 		/// </summary>
 		public bool IsInline = false;
-
-		[SerializeField]
+        
 		private EditableVectorf valueEditor;
 		public EditableVectorf ValueEditor { get { return valueEditor; } }
 
@@ -157,7 +155,7 @@ namespace RT.MaterialValue
 			writer.Structure(Value, namePrefix + "Value");
 			valueEditor.WriteData(writer, namePrefix + "Editor");
 
-			writer.Bool(IsInline, "IsInline");
+			writer.Bool(IsInline, namePrefix + "IsInline");
 		}
 		public override void ReadData(DataReader reader, string namePrefix,
 									  Dictionary<MV_Base, List<uint>> childIDsLookup)
@@ -167,7 +165,7 @@ namespace RT.MaterialValue
 			reader.Structure(Value, namePrefix + "Value");
 			valueEditor.ReadData(reader, namePrefix + "Editor");
 
-			IsInline = reader.Bool("IsInline");
+			IsInline = reader.Bool(namePrefix + "IsInline");
 		}
 	}
 }

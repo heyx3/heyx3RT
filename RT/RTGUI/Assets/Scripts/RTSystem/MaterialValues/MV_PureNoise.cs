@@ -6,10 +6,8 @@ using RT.Serialization;
 
 namespace RT.MaterialValue
 {
-	[Serializable]
 	public class MV_PureNoise : MV_Base
 	{
-		[SerializeField]
 		public byte NChannels;
 
 

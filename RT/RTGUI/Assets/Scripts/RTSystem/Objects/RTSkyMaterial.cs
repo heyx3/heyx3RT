@@ -4,12 +4,12 @@ using System.Linq;
 using System.IO;
 using UnityEngine;
 using UnityEditor;
-
+using RT.MaterialValue;
 
 namespace RT
 {
 	[ExecuteInEditMode]
-	public abstract class RTSkyMaterial : MonoBehaviour, Serialization.ISerializableRT
+	public abstract class RTSkyMaterial : RTBaseMaterial, Serialization.ISerializableRT
 	{
 		public static RTSkyMaterial Instance
 		{
@@ -21,6 +21,7 @@ namespace RT
 			}
 		}
 		private static RTSkyMaterial instance = null;
+
 
 		protected const string TypeName_SimpleColor = "SimpleColor",
 		                       TypeName_VerticalGradient = "VerticalGradient";
@@ -56,49 +57,14 @@ namespace RT
 			reader.Structure(skyMat, name + "Value");
 			return skyMat;
 		}
-		
-		
-		private const string GeneratedFolderPath = "Generated";
-		private string GetNewGeneratedFileName(string namePrefix, string nameSuffix)
-		{
-			string fullDir = Path.Combine(Application.dataPath, GeneratedFolderPath);
-			if (!Directory.Exists(fullDir))
-				Directory.CreateDirectory(fullDir);
-
-			int i = 0;
-			while (File.Exists(Path.Combine(fullDir, namePrefix + i + nameSuffix)))
-				i += 1;
-			return Path.Combine(fullDir, namePrefix + i + nameSuffix).MakePathRelative("Assets");
-		}
 
 
 		public float Distance = 2000.0f;
 
-		[SerializeField]
-		private Material myMat = null;
-		[SerializeField]
-		private Shader myShader = null;
-
-
 		public abstract string TypeName { get; }
-		protected abstract string GraphSerializationName { get; }
 
-		public MaterialValue.Graph Graph
-		{
-			get
-			{
-				if (graph == null)
-				{
-					graph = new MaterialValue.Graph();
-					InitGraph();
-				}
-				return graph;
-			}
-		}
-		private MaterialValue.Graph graph = null;
 		
-		
-		public virtual void Start()
+		protected override void Start()
 		{
 			//Create/update the mesh filter.
 			MeshFilter mf = GetComponent<MeshFilter>();
@@ -106,17 +72,7 @@ namespace RT
 				mf = gameObject.AddComponent<MeshFilter>();
 			mf.sharedMesh = RTSystem.Instance.SkySphere;
 			
-			//Create/update the mesh renderer.
-			MeshRenderer mr = GetComponent<MeshRenderer>();
-			if (mr == null)
-				mr = gameObject.AddComponent<MeshRenderer>();
-
-			RegenerateMaterial(mr);
-		}
-		protected virtual void OnDestroy()
-		{
-			AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myMat));
-			AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myShader));
+			base.Start();
 		}
 		private void Update()
 		{
@@ -129,98 +85,51 @@ namespace RT
 			tr.position = currentSV.camera.transform.position;
 			tr.localScale = Vector3.one * Distance;
 		}
-
-		public void RegenerateMaterial(MeshRenderer mr)
+		public void OnValidate()
 		{
-			//Clear out the old shader/material if they exist.
-			if (myShader != null)
-			{
-				UnityEngine.Assertions.Assert.IsNotNull(myMat);
-				AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myMat));
-				AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myShader));
-			}
-
-			MaterialValue.MV_Base outRGB;
-			GetUnityMaterialOutputs(out outRGB);
-			HashSet<MaterialValue.MV_Base> tempNodes =
-				new HashSet<MaterialValue.MV_Base>(outRGB.HierarchyRootFirst
-														 .Where(n => !Graph.ContainsNode(n)));
-			foreach (var node in tempNodes)
-				Graph.AddNode(node);
-
-			//Try loading the shader.
-			string shaderFile = "";
-			try
-			{
-				shaderFile = GetNewGeneratedFileName("Shad", ".shader");
-				string shaderName = Path.GetFileNameWithoutExtension(shaderFile);
-
-				string shaderText =
-					MaterialValue.ShaderGenerator.GenerateShader(shaderName, outRGB,
-																 Graph.UniqueNodeIDs, false);
-
-				File.WriteAllText(shaderFile, shaderText);
-				AssetDatabase.ImportAsset(shaderFile);
-				myShader = AssetDatabase.LoadAssetAtPath<Shader>(shaderFile);
-
-				UnityEngine.Assertions.Assert.IsNotNull(myShader, "Shader compilation failed!");
-			}
-			catch (Exception e)
-			{
-				Debug.LogError("Unable to create shader file \"" + shaderFile + "\": " + e.Message);
-			}
-
-			//Try loading the material.
-			string matFile = "";
-			try
-			{
-				matFile = GetNewGeneratedFileName("Mat", ".mat");
-				myMat = new Material(myShader);
-				MaterialValue.ShaderGenerator.SetMaterialParams(myMat, Graph.UniqueNodeIDs, outRGB);
-
-				AssetDatabase.CreateAsset(myMat, matFile);
-				myMat = AssetDatabase.LoadAssetAtPath<Material>(matFile);
-
-				mr.sharedMaterial = myMat;
-			}
-			catch (Exception e)
-			{
-				Debug.LogError("Unable to create material file \"" + matFile + "\": " + e.Message);
-			}
-
-			//Clean up.
-			foreach (var node in tempNodes)
-				Graph.DeleteNode(node);
+			Update();
 		}
 
-		protected abstract void InitGraph();
+		protected override string GenerateShader(string shaderName, Graph tempGraph, List<MV_Base> outTopLevelMVs)
+		{
+			try
+			{
+				MaterialValue.MV_Base rgb;
+				GetUnityMaterialOutputs(tempGraph, out rgb);
+
+				var tempNodes = new HashSet<MV_Base>(rgb.HierarchyRootFirst);
+				foreach (var node in tempNodes.Where(n => !tempGraph.ContainsNode(n)))
+					tempGraph.AddNode(node);
+
+
+				outTopLevelMVs.Add(rgb);
+
+				return MaterialValue.ShaderGenerator.GenerateShader(shaderName, rgb,
+																	tempGraph.UniqueNodeIDs,
+																	false);
+			}
+			catch (Exception e)
+			{
+				Debug.LogError("Unable to create shader \"" + shaderName + "\": " + e.Message);
+				return null;
+			}
+		}
 
 		/// <summary>
 		/// Gets the final output color of the sky.
 		/// Used to compile a Unity material for the sky.
 		/// </summary>
-		/// <param name="toDelete">
-		/// Any temp MaterialValues used to generate this output.
-		/// They will all need to have their Delete() method called when they are done being used.
-		/// </param>
-		protected abstract void GetUnityMaterialOutputs(out MaterialValue.MV_Base outRGB);
+		/// <param name="tempGraph">A copy of this instance's Graph that can be modified at will.</param>
+		protected abstract void GetUnityMaterialOutputs(Graph tempGraph, out MaterialValue.MV_Base outRGB);
 		
-		/// <summary>
-		/// Gets the display name of the given root node.
-		/// </summary>
-		/// <param name="rootNodeIndex">
-		/// The index of the node in "Graph.RootValues" to get the name of.
-		/// </param>
-		public abstract string GetRootNodeDisplayName(int rootNodeIndex);
-
-		public virtual void WriteData(Serialization.DataWriter writer)
+		public override void WriteData(Serialization.DataWriter writer)
 		{
-			writer.Structure(Graph, GraphSerializationName);
+			base.WriteData(writer);
 			writer.Float(Distance, "DrawDistance");
 		}
-		public virtual void ReadData(Serialization.DataReader reader)
+		public override void ReadData(Serialization.DataReader reader)
 		{
-			reader.Structure(Graph, GraphSerializationName);
+			base.ReadData(reader);
 			Distance = reader.Float("DrawDistance");
 		}
 	}

@@ -64,22 +64,17 @@ namespace RT.MatEditor
 		public Pane_Graph(MatEditorWindow owner)
 		{
 			Owner = owner;
-			Graph = Owner.Graph.Clone();
+			Graph = Owner.Owner.Graph.Clone();
 
 			CamOffset = -Owner.position.center - Graph.OutputNodePos.position;
 
-			if (Owner.Owner is RT.RTMaterial)
-				RootIndexToDisplayName = ((RT.RTMaterial)Owner.Owner).GetRootNodeDisplayName;
-			else if (Owner.Owner is RT.RTSkyMaterial)
-				RootIndexToDisplayName = ((RT.RTSkyMaterial)Owner.Owner).GetRootNodeDisplayName;
-			else
-				Debug.LogError("Owner of graph must be RTMaterial or RTSkyMaterial!");
+			RootIndexToDisplayName = Owner.Owner.GetRootNodeDisplayName;
 		}
 
 
 		public void DiscardChanges()
 		{
-			Graph = Owner.Graph.Clone();
+			Graph = Owner.Owner.Graph.Clone();
 		}
 		public void Clear()
 		{
@@ -160,44 +155,33 @@ namespace RT.MatEditor
 
 					if (currEvent.button == 0)
 					{
-						//If the user is placing a node down, do that.
-						if (Owner.ChooseMVPane.CurrentlyPlacing != null)
-						{
-							var node = Owner.ChooseMVPane.CurrentlyPlacing.NodeFactory();
-							node.Pos = new Rect(localMousePos, Vector2.one);
+                        //If the user is placing a node down, do that.
+                        if (Owner.ChooseMVPane.CurrentlyPlacing != null)
+                        {
+                            var node = Owner.ChooseMVPane.CurrentlyPlacing.NodeFactory();
+                            node.Pos = new Rect(localMousePos, Vector2.one);
 
-							//Take the opportunity to verify that the node is serializable.
-							if ((node.GetType().Attributes &
-								 System.Reflection.TypeAttributes.Serializable) == 0)
-							{
-								EditorUtility.DisplayDialog("Not serializable!",
-															"This node, type '" + node.GetType().Name +
-																"', isn't marked with the 'Serializable' attribute! " +
-																"Fix this problem in code before using this node.",
-															"OK");
-							}
-							else
-							{
-								Graph.AddNode(node);
-								//TODO: "Undo" here.
-								Owner.Repaint();
-							}
+                            Graph.AddNode(node);
 
-							Owner.ChooseMVPane.CurrentlyPlacing = null;
-						}
-						//Otherwise, see whether we're clicking a node or empty space.
-						else
-						{
-							activeWindowID = uint.MaxValue;
-							foreach (MV_Base node in Graph.AllNodes)
-								if (node.Pos.Contains(mousePos))//TODO: Shouldn't we use localMousePos?
-									activeWindowID = Graph.UniqueNodeIDs[node];
+                            //TODO: "Undo" here.
 
-							if (activeWindowID == uint.MaxValue)
-							{
-								EditorGUIUtility.editingTextField = false;
-							}
-						}
+                            Owner.Repaint();
+
+                            Owner.ChooseMVPane.CurrentlyPlacing = null;
+                        }
+                        //Otherwise, see whether we're clicking a node or empty space.
+                        else
+                        {
+                            activeWindowID = uint.MaxValue;
+                            foreach (MV_Base node in Graph.AllNodes)
+                                if (node.Pos.Contains(mousePos))//TODO: Shouldn't we use localMousePos?
+                                    activeWindowID = Graph.UniqueNodeIDs[node];
+
+                            if (activeWindowID == uint.MaxValue)
+                            {
+                                EditorGUIUtility.editingTextField = false;
+                            }
+                        }
 					}
 					else if (currEvent.button == 1)
 					{
