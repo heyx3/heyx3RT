@@ -32,7 +32,9 @@ namespace RT
 		{
 			RTSkyMaterial.Serialize(RTSkyMaterial.Instance, "SkyMaterial", writer);
 
-			List<ShapeAndMat> objs = RTShape.Shapes.Select(shpe => new ShapeAndMat(shpe.gameObject)).ToList();
+			var objs = UnityEngine.Object.FindObjectsOfType<RTShape>()
+										 .Select(shpe => new ShapeAndMat(shpe.gameObject))
+										 .ToList();
 			writer.List(objs, "Objects", (wr, val, name) => wr.Structure(val, name));
 		}
 		public void ReadData(Serialization.DataReader reader)

@@ -15,6 +15,7 @@ namespace RT.CustomInspectors
 		{
 			RTBaseMaterial mat = (RTBaseMaterial)target;
 
+			//TODO: Remove this when done testing.
 			MyGUI.BeginCompact();
 			if (GUILayout.Button("Regenerate material"))
 				mat.RegenerateMaterial();
@@ -23,8 +24,15 @@ namespace RT.CustomInspectors
 			MyGUI.BeginCompact();
 			if (GUILayout.Button("Edit material"))
 				MatEditor.MatEditorWindow.Create(mat);
+			GUILayout.Space(25.0f);
+			if (GUILayout.Button("Clear material") && EditorUtility.DisplayDialog("Confirm clear material", "Are you sure?", "OK"))
+			{
+				mat.Graph.Wipe();
+				mat.RegenerateMaterial();
+			}
 			MyGUI.EndCompact();
-
+			
+			//TODO: Remove this when done testing.
 			MyGUI.BeginCompact();
 			if (GUILayout.Button("Save JSON"))
 			{

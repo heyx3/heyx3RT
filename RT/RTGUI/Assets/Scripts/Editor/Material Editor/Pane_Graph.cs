@@ -10,7 +10,6 @@ using MV_Constant = RT.MaterialValue.MV_Constant;
 
 namespace RT.MatEditor
 {
-	//TODO: Bug when deleting input: parent node doesn't disconnect (maybe just graph output?)
 	//TODO: Whenever something happens (i.e. Undo stack is modified), set all the nodes' sizes to 0.1 to force them to be recomputed.
 
 	public class Pane_Graph
@@ -339,6 +338,8 @@ namespace RT.MatEditor
 											null :
 											Graph.NodesByUniqueID[reconnectingInputID]);
 					Graph.ConnectInput(rootNode, reconnectingInputIndex, node);
+
+					reconnectingInputID = uint.MaxValue;
 				}
 			}
 
@@ -352,7 +353,7 @@ namespace RT.MatEditor
 			}
 			
 			//"Duplicate" and "Delete" buttons.
-			//TODO: A "Duplicate" button basically requires an abstract "Clone()" method on MV_Base.
+			//TODO: Duplicate by serializing the node to a stream, then deserializing a new node. Then add to its position.
 			GUILayout.BeginHorizontal();
 			/*if (GUILayout.Button("Duplicate"))
 			{

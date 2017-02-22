@@ -104,7 +104,7 @@ namespace RT.MatEditor
 		{
 			return new List<NodeTree_Element>()
 			{
-				new Option(() => new MV_Tex2D(), "Texture2D"),
+				new Option(() => new MV_Tex2D(MV_Inputs.SurfaceUV), "Texture2D"),
 				new Option(() => new MV_Swizzle(F(), MV_Swizzle.Components.X), "Swizzle"),
 				new Option(() => new MV_PureNoise(1), "Noise", "Generates up to 4 random values between 0 and 1"),
 				new Option(() => new MV_Constant(new EditableVectorf(0.0f, false, OutputSizes.All,
@@ -156,7 +156,7 @@ namespace RT.MatEditor
 			};
 		}
 
-		private static MV_Base F(float f = 0.0f, bool inline = true) { return MV_Constant.MakeFloat(f, false, 0.0f, 1.0f, OutputSizes.One, inline); }
+		private static MV_Base F(float f = 0.0f, bool inline = true) { return MV_Constant.MakeFloat(f, false, float.NegativeInfinity, float.PositiveInfinity, OutputSizes.One, inline); }
 		private static MV_Base V3(float x = 0.0f, float y = 0.0f, float z = 0.0f) { return MV_Constant.MakeVec3(x, y, z, 0.0f, 1.0f, OutputSizes.Three, true); }
 	}
 }

@@ -31,7 +31,7 @@ namespace RT
 								   camForward.x, camForward.y, camForward.z,
 								   camUp.x, camUp.y, camUp.z, sceneJSONPath);
 			if (err == rt_ERRORCODE_BAD_JSON())
-				return "Badly-forced JSON in " + sceneJSONPath;
+				return "Badly-formed JSON in " + sceneJSONPath;
 			else if (err == rt_ERRORCODE_BAD_SIZE())
 				return "Image size is too small to render";
 			else if (err == rt_ERRORCODE_BAD_VALUE())
@@ -55,12 +55,15 @@ namespace RT
 			for (uint y = 0; y < imgHeight; ++y)
 				for (uint x = 0; x < imgWidth; ++x)
 				{
-					uint i = (x * 3) + (y * imgWidth * 3);
+					//Flip the X value.
+					uint flippedX = imgWidth - x - 1;
+					uint i = (flippedX * 3) + (y * imgWidth * 3);
 					cols[x + (y * imgWidth)] = new Color(floatArr[i], floatArr[i + 1], floatArr[i + 2], 1.0f);
 				}
 
 			//Output the color array into the texture.
 			outTex.SetPixels(cols);
+			outTex.Apply();
 
 			return "";
 		}

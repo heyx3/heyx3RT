@@ -21,7 +21,11 @@ namespace RT.MaterialValue
 		public Texture2D Tex;
 
 
-		public MV_Tex2D(Texture2D tex = null) { Tex = tex; }
+		public MV_Tex2D(MV_Base uv, Texture2D tex = null)
+		{
+			AddInput(uv);
+			Tex = tex;
+		}
 
 
 		public override void Emit(StringBuilder shaderlabProperties,
@@ -75,7 +79,8 @@ namespace RT.MaterialValue
 			else
 				throw new NotImplementedException("Only BMP and PNG textures are supported: " + texturePath);
 
-			writer.String(texturePath, namePrefix + "FilePath");
+			writer.String(Path.GetFullPath(texturePath).Replace('\\', '/'),
+						  namePrefix + "FilePath");
 		}
 		public override void ReadData(DataReader reader, string namePrefix,
 									  Dictionary<MV_Base, List<uint>> childIDsLookup)
@@ -91,14 +96,15 @@ namespace RT.MaterialValue
 				throw new Serialization.DataReader.ReadException("Can't find 'Assets' folder in path " + texPath);
 			texPath = texPath.Substring(index);
 
-			Tex = AssetDatabase.LoadAssetAtPath<Texture2D>(texPath);
+			Tex = AssetDatabase.LoadAssetAtPath<Texture2D>(texPath.MakePathRelative("Assets"));
 		}
 
 		public override GUIResults DoCustomGUI()
 		{
 			GUIResults results = GUIResults.Nothing;
 
-			Texture2D newTex = (Texture2D)EditorGUILayout.ObjectField(Tex, typeof(Texture2D), false);
+			Texture2D newTex = (Texture2D)EditorGUILayout.ObjectField(Tex, typeof(Texture2D), false,
+																	  GUILayout.MinWidth(200.0f));
 			if (newTex != Tex)
 			{
 				Tex = newTex;

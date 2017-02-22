@@ -56,7 +56,7 @@ namespace RT.MaterialValue
 		/// <summary>
 		/// All nodes in this graph, in the order they were added to the graph.
 		/// </summary>
-		public IEnumerable<MV_Base> AllNodes { get { return allNodes; } }
+		public IEnumerable<MV_Base> AllNodes { get { List<MV_Base> _allNodes = new List<MV_Base>(allNodes.Count); _allNodes.AddRange(allNodes); return _allNodes; } }
 
 		public Dictionary<MV_Base, uint> UniqueNodeIDs { get { return nodeToID; } }
 		public Dictionary<uint, MV_Base> NodesByUniqueID {  get { return idToNode; } }
@@ -293,6 +293,9 @@ namespace RT.MaterialValue
 			return g;
 		}
 
+		/// <summary>
+		/// Reset the root values of this graph, and optionally delete every node currently in it.
+		/// </summary>
 		public void Clear(bool deleteNodes)
 		{
 			if (deleteNodes)
@@ -301,6 +304,23 @@ namespace RT.MaterialValue
 				foreach (MV_Base node in MV_Base.SortDeepestFirst(new HashSet<MV_Base>(allNodes)))
 					DeleteNode(node);
 			}
+
+			//Add some default inline constants to the output.
+			for (int i = 0; i < rootValues.Count; ++i)
+			{
+				MV_Base val = MV_Constant.MakeFloat(1.0f, false, 0.0f, 1.0f,
+													OutputSizes.One, true);
+				AddNode(val);
+				ConnectInput(null, i, val);
+			}
+		}
+		/// <summary>
+		/// A less "nice" version of "Clear()" for fixing bugs like null references in the graph.
+		/// Note that this version doesn't raise the "OnNodeDeleted" event for any nodes.
+		/// </summary>
+		public void Wipe()
+		{
+			allNodes.Clear();
 
 			//Add some default inline constants to the output.
 			for (int i = 0; i < rootValues.Count; ++i)
@@ -342,14 +362,14 @@ namespace RT.MaterialValue
 		public void ReadData(Serialization.DataReader reader)
 		{
 			//Delete all nodes starting at the deepest inputs.
-			foreach (MV_Base node in MV_Base.SortDeepestFirst(new List<MV_Base>(AllNodes)))
+			var allNodesList = AllNodes.ToList();
+			foreach (MV_Base node in MV_Base.SortDeepestFirst(allNodesList))
 				DeleteNode(node);
 
 			allNodes.Clear();
 			idToNode.Clear();
 			nodeToID.Clear();
 			nextID = 0;
-
 
 			OutputNodePos = new Rect(reader.Float("outputNodePos_XMin"),
 									 reader.Float("outputNodePos_YMin"),

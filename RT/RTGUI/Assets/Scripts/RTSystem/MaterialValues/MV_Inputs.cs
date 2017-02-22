@@ -36,7 +36,7 @@ namespace RT.MaterialValue
 											  "Surface Tangent", "Surface Bitangent",
 											  "Surface UV",
 											  "Ray Start", "Ray Dir",
-											  "Shape Pos", "Shape Scale", "Shape Rot Axis-Angle" };
+											  "Shape Pos", "Shape Rot Axis-Angle", "Shape Scale" };
 		public static string[] OptionsType = { TypeName_SurfPos, TypeName_SurfNormal,
 											   TypeName_SurfTangent, TypeName_SurfBitangent,
 											   TypeName_SurfUV,
@@ -169,7 +169,8 @@ namespace RT.MaterialValue
 		{
 			GUIResults results = GUIResults.Nothing;
 
-			int newChoice = EditorGUILayout.Popup(selectedOption, OptionsGUI);
+			int newChoice = EditorGUILayout.Popup(selectedOption, OptionsGUI,
+												  GUILayout.MinWidth(100.0f));
 			if (newChoice != selectedOption)
 			{
 				selectedOption = newChoice;

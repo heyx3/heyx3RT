@@ -8,9 +8,10 @@ using UnityEditor;
 
 namespace RT
 {
+	[ExecuteInEditMode]
 	public abstract class RTBaseMaterial : MonoBehaviour, Serialization.ISerializableRT
 	{
-		private const string GeneratedFolderPath = "Generated";
+		public const string GeneratedFolderPath = "Generated";
 		private string GetNewGeneratedFileName(string namePrefix, string nameSuffix)
 		{
 			string fullDir = Path.Combine(Application.dataPath, GeneratedFolderPath);
@@ -71,23 +72,48 @@ namespace RT
 
 			RegenerateMaterial();
 		}
+		
 
+		public void NullifyMaterial()
+		{
+			if (myMat != null)
+			{
+				AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myMat));
+				myMat = null;
+			}
+			if (myShader != null)
+			{
+				AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myShader));
+			}
+		}
 		public void RegenerateMaterial()
 		{
 			Undo.RecordObject(this, "Update material/graph");
+			
+			//Make sure nobody shares this object's material/shader.
+			//This can happen if a copy/paste was done.
+			if (myMat != null || myShader != null)
+			{
+				foreach (RTBaseMaterial mat in FindObjectsOfType<RTBaseMaterial>())
+					if (mat != this)
+					{
+						if (myMat != null && mat.myMat == myMat)
+							myMat = null;
+						if (myShader != null && mat.myShader == myShader)
+							myShader = null;
+					}
+			}
 
 			//Clear out the old shader/material if they exist.
-			if (myShader != null)
-			{
-				AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myMat));
-				AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(myShader));
-			}
+			NullifyMaterial();
 
 			//If the graph doesn't exist yet, load it.
 			if (graph == null)
 				ReloadGraph();
 			//Make sure it's up-to-date.
 			SaveGraph();
+
+			var graphCopy = Graph.Clone();
 
 			//Try loading the shader.
 			string shaderFile = "";
@@ -97,8 +123,7 @@ namespace RT
 				shaderFile = GetNewGeneratedFileName("Shad", ".shader");
 				string shaderName = Path.GetFileNameWithoutExtension(shaderFile);
 
-				string shaderText = GenerateShader(shaderName,
-												   Graph.Clone(), outTopLevelMVs);
+				string shaderText = GenerateShader(shaderName, graphCopy, outTopLevelMVs);
 				if (shaderText == null)
 					return;
 					
@@ -110,7 +135,8 @@ namespace RT
 			}
 			catch (Exception e)
 			{
-				Debug.LogError("Unable to create shader file \"" + shaderFile + "\": " + e.Message);
+				Debug.LogError("Unable to create shader file \"" + shaderFile + "\": " +
+							       e.Message + "\n\n" + e.StackTrace);
 			}
 
 			//Try loading the material.
@@ -119,7 +145,7 @@ namespace RT
 			{
 				matFile = GetNewGeneratedFileName("Mat", ".mat");
 				myMat = new Material(myShader);
-				MaterialValue.ShaderGenerator.SetMaterialParams(transform, myMat, graph.UniqueNodeIDs,
+				MaterialValue.ShaderGenerator.SetMaterialParams(transform, myMat, graphCopy.UniqueNodeIDs,
 																outTopLevelMVs.ToArray());
 
 				AssetDatabase.CreateAsset(myMat, matFile);
@@ -129,7 +155,8 @@ namespace RT
 			}
 			catch (Exception e)
 			{
-				Debug.LogError("Unable to create material file \"" + matFile + "\": " + e.Message);
+				Debug.LogError("Unable to create material file \"" + matFile + "\": " +
+							   e.Message + "\n\n" + e.StackTrace);
 			}
 		}
 		/// <summary>

@@ -28,9 +28,10 @@ namespace RT.MaterialValue
 			switch (typeName)
 			{
 				case TypeName_Constant: mv = MV_Constant.MakeFloat(0.0f); break;
-				case TypeName_Tex2D: mv = new MV_Tex2D(); break;
+				case TypeName_Tex2D: mv = new MV_Tex2D(null); break;
 				case TypeName_Add: mv = MV_Arithmetic.Add(null, null); break;
 				case TypeName_Subtract: mv = MV_Arithmetic.Subtract(null, null); break;
+				case TypeName_Multiply: mv = MV_Arithmetic.Multiply(null, null); break;
 				case TypeName_Divide: mv = MV_Arithmetic.Divide(null, null); break;
 				case TypeName_Normalize: mv = MV_Simple1.Normalize(null); break;
 				case TypeName_Length: mv = MV_Simple1.Length(null); break;
@@ -103,7 +104,7 @@ namespace RT.MaterialValue
 				else
 				{
 					alreadyChecked.Add(node);
-
+					
 					for (int i = 0; i < node.inputs.Count; ++i)
 					{
 						//If this node is still queued up to be checked, move it to the front.

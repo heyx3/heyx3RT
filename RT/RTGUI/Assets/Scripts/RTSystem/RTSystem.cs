@@ -23,7 +23,7 @@ namespace RT
 									  Param_ShapeRot = "_ShapeRot";
 		public static readonly string Input_WorldPos = "IN.worldPos",
 									  Input_ScreenPos = "(IN.screenPos.xy)",
-									  Input_UV = "(IN.screenPos.zw)",
+									  Input_UV = "IN.rtUVs",
 									  Input_WorldNormal = "IN.worldNormal",
 									  Input_Tangent = "(IN.tangent.xyz)",
 									  Input_Bitangent = "(cross(IN.worldNormal, IN.tangent.xyz) * IN.tangent.w)",

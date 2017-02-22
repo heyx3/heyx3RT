@@ -66,7 +66,7 @@ namespace RT.MaterialValue
 			//Combine various data to create the UV's to sample the noise texture with.
 			cgFunctionBody.Append(OutputSize.ToHLSLType());
 			cgFunctionBody.Append(" ");
-			cgFunctionBody.Append(ShaderValueName(idLookup));
+			cgFunctionBody.Append(base.ShaderValueName(idLookup));
 			cgFunctionBody.Append(" = tex2D(");
 			cgFunctionBody.Append(RTSystem.Param_PureNoiseTex);
 			cgFunctionBody.Append(", ");

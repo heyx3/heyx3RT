@@ -299,6 +299,8 @@ namespace RT.MaterialValue
 			V = initialValue;
 			AllowedDimensions = allowedDimensions;
 			UseSliders = useSliders;
+			Min = min;
+			Max = max;
 		}
 
 
@@ -405,14 +407,8 @@ namespace RT.MaterialValue
 
 				for (uint i = 0; i < V.OutputSize.ToNumber(); ++i)
 				{
-					string valueStr = GUILayout.TextField(V[i].ToString(),
-														  GUILayout.MinWidth(30.0f));
-					float f;
-					if (float.TryParse(valueStr, out f) && f != V[i])
-					{
-						changed = true;
-						V[i] = Mathf.Clamp(f, Min, Max);
-					}
+					V[i] = Mathf.Clamp(EditorGUILayout.DelayedFloatField(V[i], GUILayout.MinWidth(30.0f)),
+									   Min, Max);
 				}
 
 				GUILayout.EndHorizontal();

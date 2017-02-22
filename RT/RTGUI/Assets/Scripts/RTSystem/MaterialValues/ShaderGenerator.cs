@@ -95,14 +95,14 @@ namespace RT.MaterialValue
 			
 			//The following will be filled in via the vertex shader.
 			float4 tangent;
-			//UV will be packed into screenPos.zw.
+			float2 rtUVs;
 		};
 
 		void vert(inout appdata_full v, out Input o)
 		{
 			UNITY_INITIALIZE_OUTPUT(Input, o);
-			o.screenPos.zw = v.texcoord.xy;
 
+			o.rtUVs = v.texcoord.xy;
 			float3 worldTangent = normalize(mul(_Object2World,
 												float4(v.tangent.xyz, 0.0)).xyz);
 			o.tangent = float4(worldTangent, v.tangent.w);
@@ -138,7 +138,7 @@ namespace RT.MaterialValue
 	Fallback ""Diffuse""
 }");
 
-			return shader.ToString();
+			return shader.ToString().Replace('\r', '\n');
 		}
 		/// <summary>
 		/// Sets the parameters of the given Unity PBR material,
@@ -257,7 +257,7 @@ namespace RT.MaterialValue
 	Fallback ""Diffuse""
 }");
 
-			return shader.ToString();
+			return shader.ToString().Replace('\r', '\n');
 		}
 		/// <summary>
 		/// Sets the parameters of the given Unity unlit material,

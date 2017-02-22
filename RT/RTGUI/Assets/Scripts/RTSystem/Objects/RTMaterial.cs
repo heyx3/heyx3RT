@@ -11,8 +11,6 @@ namespace RT
 	[ExecuteInEditMode]
 	public abstract class RTMaterial : RTBaseMaterial, Serialization.ISerializableRT
 	{
-		public static HashSet<RTMaterial> Materials = new HashSet<RTMaterial>();
-
 		protected const string TypeName_Lambert = "Lambert",
 		                       TypeName_Metal = "Metal";
 
@@ -48,16 +46,7 @@ namespace RT
 		}
 		
 		public abstract string TypeName { get; }
-		
 
-		public virtual void Awake()
-		{
-			Materials.Add(this);
-		}
-		private void OnDestroy()
-		{
-			Materials.Remove(this);
-		}
 
 		protected override string GenerateShader(string shaderName, Graph tempGraph,
 												 List<MV_Base> outTopLevelMVs)
@@ -67,13 +56,9 @@ namespace RT
 				MaterialValue.MV_Base albedo, metallic, smoothness;
 				GetUnityMaterialOutputs(tempGraph, out albedo, out metallic, out smoothness);
 
-				var tempNodes = new HashSet<MV_Base>(albedo.HierarchyRootFirst
-														   .Concat(metallic.HierarchyRootFirst)
-														   .Concat(smoothness.HierarchyRootFirst)
-														   .Where(n => !tempGraph.ContainsNode(n)));
-				foreach (var node in tempNodes)
-					tempGraph.AddNode(node);
-
+				tempGraph.AddNode(albedo);
+				tempGraph.AddNode(metallic);
+				tempGraph.AddNode(smoothness);
 
 				outTopLevelMVs.Add(albedo);
 				outTopLevelMVs.Add(metallic);
@@ -96,5 +81,28 @@ namespace RT
 														out MaterialValue.MV_Base albedo,
 														out MaterialValue.MV_Base metallic,
 														out MaterialValue.MV_Base smoothness);
+
+		private Vector3 lastPos = Vector3.zero;
+		private Vector3 lastScale = Vector3.one;
+		private Quaternion lastRot = Quaternion.identity;
+		private void Update()
+		{
+			Transform tr = transform;
+			if (tr.position != lastPos || tr.lossyScale != lastScale || tr.rotation != lastRot)
+			{
+				//Get the final material graph.
+				MaterialValue.Graph tempGraph = Graph.Clone();
+				MV_Base[] mvOuts = new MV_Base[3];
+				GetUnityMaterialOutputs(tempGraph, out mvOuts[0], out mvOuts[1], out mvOuts[2]);
+
+				ShaderGenerator.SetMaterialParams(tr, GetComponent<Renderer>().sharedMaterial, 
+												  tempGraph.UniqueNodeIDs, mvOuts);
+
+				//Remember this position/scale/rotation.
+				lastPos = tr.position;
+				lastScale = tr.lossyScale;
+				lastRot = tr.rotation;
+			}
+		}
 	}
 }

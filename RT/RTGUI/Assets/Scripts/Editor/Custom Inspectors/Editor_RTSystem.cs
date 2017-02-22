@@ -9,14 +9,14 @@ using UnityEditor;
 
 namespace RT.CustomInspectors
 {
-	//TODO: A button to generate and show the ray-traced image right in the inspector.
-
-
 	[Serializable]
 	[CustomEditor(typeof(RTSystem))]
 	public class Editor_RTSystem : Editor
 	{
-		public bool ShowSceneOptions = false;
+		public Texture2D TraceResult = null;
+		public float TraceResultScale = 1.0f;
+		private GUIStyle titleStyle = null,
+						 traceResultStyle = null;
 
 
 		public override void OnInspectorGUI()
@@ -31,7 +31,7 @@ namespace RT.CustomInspectors
 			}
 
 			GUILayout.Space(15.0f);
-			
+
 			//"Save scene" button.
 			MyGUI.BeginCompact();
 			if (GUILayout.Button("Save scene to file"))
@@ -46,7 +46,7 @@ namespace RT.CustomInspectors
 				}
 			}
 			MyGUI.EndCompact();
-			
+
 			//"Load scene" button.
 			MyGUI.BeginCompact();
 			if (GUILayout.Button("Load scene from file"))
@@ -62,118 +62,172 @@ namespace RT.CustomInspectors
 			}
 			MyGUI.EndCompact();
 
-			GUILayout.Space(15.0f);
-			
-			//"Render scene" section.
-			ShowSceneOptions = EditorGUILayout.Foldout(ShowSceneOptions, "Render scene to file");
-			if (ShowSceneOptions)
+			//"Clean up scene" button.
+			MyGUI.BeginCompact();
+			if (GUILayout.Button("Regenerate scene materials"))
 			{
-				MyGUI.BeginTab(15.0f);
+				foreach (RTBaseMaterial mat in FindObjectsOfType<RTBaseMaterial>())
+					mat.NullifyMaterial();
 
-				//Edit the various rendering options.
+				string generatedDir = Path.Combine(Application.dataPath,
+												   RTBaseMaterial.GeneratedFolderPath);
+				if (Directory.Exists(generatedDir))
+					Directory.Delete(generatedDir, true);
+				AssetDatabase.Refresh();
 
-				int newI;
-				float newF;
+				foreach (RTBaseMaterial mat in FindObjectsOfType<RTBaseMaterial>())
+					mat.RegenerateMaterial();
+			}
+			MyGUI.EndCompact();
 
-				newI = Math.Max(1, EditorGUILayout.IntField("Image width", sys.ImgSizeX));
-				if (newI != sys.ImgSizeX)
+			GUILayout.Space(25.0f);
+
+
+			//"Render scene" section.
+			//Edit the various rendering options.
+
+			if (titleStyle == null)
+			{
+				titleStyle = new GUIStyle(GUI.skin.label);
+				titleStyle.fontSize = 22;
+				titleStyle.fontStyle = FontStyle.Bold;
+			}
+			GUILayout.Label("Render", titleStyle);
+
+			GUILayout.Space(15.0f);
+
+			int newI;
+			float newF;
+
+			newI = Math.Max(1, EditorGUILayout.IntField("Image width", sys.ImgSizeX));
+			if (newI != sys.ImgSizeX)
+			{
+				Undo.RecordObject(sys, "Inspector");
+				sys.ImgSizeX = newI;
+			}
+
+			newI = Math.Max(1, EditorGUILayout.IntField("Image height", sys.ImgSizeY));
+			if (newI != sys.ImgSizeY)
+			{
+				Undo.RecordObject(sys, "Inspector");
+				sys.ImgSizeY = newI;
+			}
+
+			newI = Math.Max(1, EditorGUILayout.IntField("Number of threads", sys.NThreads));
+			if (newI != sys.NThreads)
+			{
+				Undo.RecordObject(sys, "Inspector");
+				sys.NThreads = newI;
+			}
+
+			newI = Math.Max(1, EditorGUILayout.IntField("Samples per pixel", sys.SamplesPerPixel));
+			if (newI != sys.SamplesPerPixel)
+			{
+				Undo.RecordObject(sys, "Inspector");
+				sys.SamplesPerPixel = newI;
+			}
+
+			newI = Math.Max(0, EditorGUILayout.IntField("Max ray bounces", sys.MaxBounces));
+			if (newI != sys.MaxBounces)
+			{
+				Undo.RecordObject(sys, "Inspector");
+				sys.MaxBounces = newI;
+			}
+
+			newF = Math.Max(0.0001f, EditorGUILayout.FloatField("FOV scale", sys.FovScale));
+			if (newF != sys.FovScale)
+			{
+				Undo.RecordObject(sys, "Inspector");
+				sys.FovScale = newF;
+			}
+
+			newF = EditorGUILayout.FloatField("Gamma", sys.Gamma);
+			if (newF != sys.Gamma)
+			{
+				Undo.RecordObject(sys, "Inspector");
+				sys.Gamma = newF;
+			}
+
+
+			//"Render" button.
+			MyGUI.BeginCompact();
+			if (GUILayout.Button("Render"))
+			{
+				try
 				{
-					Undo.RecordObject(sys, "Inspector");
-					sys.ImgSizeX = newI;
-				}
+					//Write the JSON to a temporary file.
 
-				newI = Math.Max(1, EditorGUILayout.IntField("Image height", sys.ImgSizeY));
-				if (newI != sys.ImgSizeY)
+					string tempDir = Path.Combine(Application.dataPath, "..\\TempJSON");
+					if (!Directory.Exists(tempDir))
+						Directory.CreateDirectory(tempDir);
+
+					int i = 0;
+					string tempPath = Path.Combine(tempDir, i.ToString() + ".json");
+					while (File.Exists(tempPath))
+					{
+						i += 1;
+						tempPath = Path.Combine(tempDir, i.ToString() + ".json");
+					}
+
+					sys.ToFile(tempPath);
+
+					//Generate the texture.
+					Camera c = UnityEditor.SceneView.lastActiveSceneView.camera;
+					TraceResult = sys.GenerateImage(c.transform, tempPath);
+					TraceResult.filterMode = FilterMode.Point;
+
+					//Clean up temp files.
+					File.Delete(tempPath);
+				}
+				catch (Exception e)
 				{
-					Undo.RecordObject(sys, "Inspector");
-					sys.ImgSizeY = newI;
+					Debug.LogError("Unable to render image: (" + e.GetType().Name +
+									   ") " + e.Message);
 				}
+			}
+			MyGUI.EndCompact();
 
-				newI = Math.Max(1, EditorGUILayout.IntField("Number of threads", sys.NThreads));
-				if (newI != sys.NThreads)
+			//Results of the render.
+			if (TraceResult != null)
+			{
+				TraceResultScale = EditorGUILayout.Slider(TraceResultScale, 0.1f, 10.0f);
+
+				//Draw the render.
+				if (traceResultStyle == null)
 				{
-					Undo.RecordObject(sys, "Inspector");
-					sys.NThreads = newI;
+					traceResultStyle = new GUIStyle(GUI.skin.box);
+					traceResultStyle.stretchWidth = true;
+					traceResultStyle.stretchHeight = true;
 				}
-
-				newI = Math.Max(1, EditorGUILayout.IntField("Samples per pixel", sys.SamplesPerPixel));
-				if (newI != sys.SamplesPerPixel)
-				{
-					Undo.RecordObject(sys, "Inspector");
-					sys.SamplesPerPixel = newI;
-				}
-
-				newI = Math.Max(0, EditorGUILayout.IntField("Max ray bounces", sys.MaxBounces));
-				if (newI != sys.MaxBounces)
-				{
-					Undo.RecordObject(sys, "Inspector");
-					sys.MaxBounces = newI;
-				}
-
-				newF = Math.Max(0.0001f, EditorGUILayout.FloatField("FOV scale", sys.FovScale));
-				if (newF != sys.FovScale)
-				{
-					Undo.RecordObject(sys, "Inspector");
-					sys.FovScale = newF;
-				}
-
-				newF = EditorGUILayout.FloatField("Gamma", sys.Gamma);
-				if (newF != sys.Gamma)
-				{
-					Undo.RecordObject(sys, "Inspector");
-					sys.Gamma = newF;
-				}
-
-
-				//The "Render scene" button.
 				MyGUI.BeginCompact();
-				if (GUILayout.Button("Render scene"))
+				traceResultStyle.normal.background = TraceResult;
+				GUILayout.Box("", traceResultStyle,
+							  GUILayout.Width(TraceResult.width * TraceResultScale),
+							  GUILayout.Height(TraceResult.height * TraceResultScale));
+				MyGUI.EndCompact();
+				
+				MyGUI.BeginCompact();
+				if (GUILayout.Button("Save render"))
 				{
 					string filePath = EditorUtility.SaveFilePanel("Choose where to save the image",
 																  Application.dataPath, "Img", "png");
 					if (filePath != null && filePath != "")
 					{
-						//Write the JSON to a temporary file.
-
-						string tempDir = Path.Combine(Application.dataPath, "..\\TempJSON");
-						if (!Directory.Exists(tempDir))
-							Directory.CreateDirectory(tempDir);
-
-						int i = 0;
-						string tempPath = Path.Combine(tempDir, i.ToString() + ".json");
-						while (File.Exists(tempPath))
+						try
 						{
-							i += 1;
-							tempPath = Path.Combine(tempDir, i.ToString() + ".json");
+							File.WriteAllBytes(filePath, TraceResult.EncodeToPNG());
 						}
-
-						sys.ToFile(tempPath);
-
-						//Generate the texture.
-						Camera c = UnityEditor.SceneView.lastActiveSceneView.camera;
-						Texture2D tex = sys.GenerateImage(c.transform, tempPath);
-						if (tex != null)
+						catch (Exception e)
 						{
-							try
-							{
-								File.WriteAllBytes(filePath, tex.EncodeToPNG());
-							}
-							catch (Exception e)
-							{
-								Debug.LogError("Unable to write image to " + filePath +
-											       ": (" + e.GetType() + ") " + e.Message);
-							}
-						}
+							Debug.LogError("Unable to write image to " + filePath +
+											   ": (" + e.GetType() + ") " + e.Message);
 
-						//Clean up temp files.
-						File.Delete(tempPath);
-						if (Directory.GetFiles(filePath).Length == 0)
-							Directory.Delete(filePath, true);
+							if (Directory.GetFiles(filePath).Length == 0)
+								Directory.Delete(filePath, true);
+						}
 					}
 				}
 				MyGUI.EndCompact();
-
-				MyGUI.EndTab();
 			}
 		}
 	}

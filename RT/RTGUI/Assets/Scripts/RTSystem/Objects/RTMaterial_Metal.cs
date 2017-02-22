@@ -28,7 +28,7 @@ namespace RT
 			Graph.AddNode(albedo);
 			Graph.ConnectInput(null, 0, albedo);
 
-			var roughness = MaterialValue.MV_Constant.MakeFloat(1.0f, true, 0.0f, 1.0f,
+			var roughness = MaterialValue.MV_Constant.MakeFloat(0.15f, true, 0.0f, 1.0f,
 																MaterialValue.OutputSizes.One, true);
 			Graph.AddNode(roughness);
 			Graph.ConnectInput(null, 1, roughness);

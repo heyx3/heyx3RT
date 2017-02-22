@@ -205,8 +205,8 @@ namespace RT
         operator Vector4f() const;
 
 
-        const float& operator[](size_t i) const { switch (i) { case 1: return x; case 2: return y; case 3: return z; case 4: return w; default: assert(false); return x; } }
-        float& operator[](size_t i) { switch (i) { case 1: return x; case 2: return y; case 3: return z; case 4: return w; default: assert(false); return x; } }
+        const float& operator[](size_t i) const { switch (i) { case 0: return x; case 1: return y; case 2: return z; case 3: return w; default: assert(false); return x; } }
+        float& operator[](size_t i) { switch (i) { case 0: return x; case 1: return y; case 2: return z; case 3: return w; default: assert(false); return x; } }
 
         Vectorf& operator=(float f)    { NValues = One; x = f; return *this; }
         Vectorf& operator=(Vector2f v) { NValues = Two; x = v.x; y = v.y; return *this; }

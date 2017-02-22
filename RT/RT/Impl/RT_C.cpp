@@ -2,10 +2,10 @@
 
 using namespace RT;
 
-
 #define C_RT_API_IMPL
 
-C_RT_API_IMPL float* rt_GenerateImage(unsigned int imgWidth, unsigned int imgHeight, unsigned int samplesPerPixel,
+C_RT_API_IMPL float* rt_GenerateImage(unsigned int imgWidth, unsigned int imgHeight,
+                                      unsigned int samplesPerPixel,
                                       unsigned int maxBounces, unsigned int nThreads,
                                       float fovScale, float gamma,
                                       float camPosX, float camPosY, float camPosZ,
@@ -24,8 +24,6 @@ C_RT_API_IMPL float* rt_GenerateImage(unsigned int imgWidth, unsigned int imgHei
     Tracer tracer;
     String err;
     JsonSerialization::FromJSONFile(sceneJSONPath, tracer, err);
-
-    return new float[imgWidth * 3 * imgHeight];
 
     tracer.PrecalcData();
 

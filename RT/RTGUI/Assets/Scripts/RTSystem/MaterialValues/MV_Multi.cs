@@ -13,7 +13,7 @@ namespace RT.MaterialValue
 	public abstract class MV_MultiType : MV_Base
 	{
 		public override bool HasVariableNumberOfChildren { get { return true; } }
-		public override OutputSizes OutputSize { get { return Inputs.Aggregate(OutputSizes.One, (o, i) => o.Max(i.OutputSize)); } }
+		public override OutputSizes OutputSize { get { return Inputs.Aggregate(OutputSizes.One, (o, i) => (i == null ? o : o.Max(i.OutputSize))); } }
 		public override Color GUIColor { get { return new Color(0.95f, 0.95f, 0.95f); } }
 		
 		public override string GetInputName(int index) { return (index + 1).ToString(); }

@@ -165,7 +165,7 @@ namespace RT
         ADD_MVAL_REFLECTION_DATA_H(MV_RayPos, RayPos);
     };
 
-
+     
     //Gets a totally random value between 0 and 1.
     //The value may have 1-4 dimensions.
     class RT_API MV_PureNoise : public MaterialValue
