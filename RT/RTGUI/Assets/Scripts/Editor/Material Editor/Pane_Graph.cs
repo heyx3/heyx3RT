@@ -315,7 +315,9 @@ namespace RT.MatEditor
 			if (node.HasVariableNumberOfChildren && GUILayout.Button("Add input"))
 			{
 				//TODO: "Undo" here.
-				Graph.ConnectInput(node, node.GetNInputs(), node.GetDefaultInput(node.GetNInputs()));
+				var newInput = node.GetDefaultInput(node.GetNInputs());
+				Graph.AddNode(newInput);
+				Graph.ConnectInput(node, node.GetNInputs(), newInput);
 			}
 			GUILayout.FlexibleSpace();
 			GUILayout.EndHorizontal();

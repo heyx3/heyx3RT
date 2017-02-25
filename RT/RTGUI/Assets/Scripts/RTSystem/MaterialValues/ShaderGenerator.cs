@@ -77,8 +77,8 @@ namespace RT.MaterialValue
 		//Use a custom function to pass per-vertex data into the surface shader.
 		#pragma surface surf Standard fullforwardshadows vertex:vert
 
-		//Use shader model 3.0 target, to get nice lighting.
-		#pragma target 3.0
+		//Use shader model 4.0 target, to get more interpolators.
+		#pragma target 4.0
 
 		//Using appdata_tan struct for vertex data.
 		#include ""UnityCG.cginc""
@@ -88,24 +88,25 @@ namespace RT.MaterialValue
 		shader.Append(@"
 		struct Input
 		{
-			//The following are filled in by Unity automatically.
-			float4 screenPos;
-			float3 worldPos;
-			float3 worldNormal;
-			
-			//The following will be filled in via the vertex shader.
-			float4 tangent;
-			float2 rtUVs;
+			float4 vertex : SV_POSITION;
+
+			float4 rtUV_ScreenPos : TEXCOORD0;
+			float3 worldPos : TEXCOORD1;
+			float3 worldNormal : TEXCOORD2;
+			float4 tangent : TEXCOORD3;
 		};
 
 		void vert(inout appdata_full v, out Input o)
 		{
-			UNITY_INITIALIZE_OUTPUT(Input, o);
+			o.vertex = mul(UNITY_MATRIX_MVP, v.vertex);
+			o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
+			o.worldNormal = UnityObjectToWorldNormal(v.normal);
 
-			o.rtUVs = v.texcoord.xy;
-			float3 worldTangent = normalize(mul(_Object2World,
-												float4(v.tangent.xyz, 0.0)).xyz);
-			o.tangent = float4(worldTangent, v.tangent.w);
+			o.rtUV_ScreenPos = float4(v.texcoord.xy, o.vertex.xy);
+
+			o.tangent = float4(normalize(mul(_Object2World,
+										 float4(v.tangent.xyz, 0.0)).xyz),
+							   v.tangent.w);
 		}
 		void surf(Input IN, inout SurfaceOutputStandard o)
 		{
@@ -138,7 +139,7 @@ namespace RT.MaterialValue
 	Fallback ""Diffuse""
 }");
 
-			return shader.ToString().Replace('\r', '\n');
+			return shader.ToString().Replace("\r", "");
 		}
 		/// <summary>
 		/// Sets the parameters of the given Unity PBR material,
@@ -257,7 +258,7 @@ namespace RT.MaterialValue
 	Fallback ""Diffuse""
 }");
 
-			return shader.ToString().Replace('\r', '\n');
+			return shader.ToString().Replace("\r", "");
 		}
 		/// <summary>
 		/// Sets the parameters of the given Unity unlit material,
