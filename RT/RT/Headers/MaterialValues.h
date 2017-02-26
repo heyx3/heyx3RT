@@ -459,14 +459,23 @@ namespace RT
     MAKE_MULTI_MV(Min, ToUse);
     //Gets the largest of an arbitrary number of inputs for each component.
     MAKE_MULTI_MV(Max, ToUse);
+    //Gets the average of a set of inputs for each component.
+    MAKE_MULTI_MV(Average, ToAverage);
+    //Combines the components of multiple inputs to make one bigger input.
+    MAKE_MULTI_MV(Append, ToCombine);
     #pragma warning (default: 4251)
 
     MAKE_SIMPLE_FUNC1(Normalize, X);
     MAKE_COMPLEX_FUNC1(Length, X, return One; );
     MAKE_SIMPLE_FUNC2(Distance, A, B);
     MAKE_SIMPLE_FUNC2(Dot, A, B);
+    MAKE_SIMPLE_FUNC2(Reflect, V, Normal);
+    MAKE_SIMPLE_FUNC3(Refract, V, Normal, IndexOfRefraction);
 
     MAKE_SIMPLE_FUNC1(Sqrt, X);
+    MAKE_SIMPLE_FUNC2(Pow, Base, Exp);
+    MAKE_SIMPLE_FUNC1(Ln, X);
+
     MAKE_SIMPLE_FUNC1(Sin, X); MAKE_SIMPLE_FUNC1(Cos, X); MAKE_SIMPLE_FUNC1(Tan, X);
     MAKE_SIMPLE_FUNC1(Asin, X); MAKE_SIMPLE_FUNC1(Acos, X); MAKE_SIMPLE_FUNC1(Atan, X);
     MAKE_SIMPLE_FUNC2(Atan2, Y, X);
@@ -483,11 +492,7 @@ namespace RT
 
     MAKE_SIMPLE_FUNC3(Clamp, Min, Max, X);
 
-    //TODO: Reflection/refraction MV's.
-    //TODO: "Average" MV.
     //TODO: Noise generation MV's.
-    //TODO: Append MV.
-    //TODO: Pow/Exp/Exp2/Log2/LogN MV's.
     //TODO: Modulo MV.
     //TODO: Cross MV.
     //TODO: Fract/Int MV's.

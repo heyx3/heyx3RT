@@ -69,7 +69,8 @@ namespace RT
 			}
 			catch (Exception e)
 			{
-				Debug.LogError("Unable to create shader \"" + shaderName + "\": " + e.Message);
+				Debug.LogError("Unable to create shader \"" + shaderName + "\": " +
+							       e.Message + "\n" + e.StackTrace);
 				return null;
 			}
 		}

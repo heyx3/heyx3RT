@@ -37,7 +37,11 @@ namespace RT.MaterialValue
 				case TypeName_Length: mv = MV_Simple1.Length(null); break;
 				case TypeName_Distance: mv = MV_Simple2.Distance(null, null); break;
 				case TypeName_Dot: mv = MV_Simple2.Dot(null, null); break;
+				case TypeName_Reflect: mv = MV_Simple2.Reflect(null, null); break;
+				case TypeName_Refract: mv = MV_Simple3.Refract(null, null, null); break;
 				case TypeName_Sqrt: mv = MV_Simple1.Sqrt(null); break;
+				case TypeName_Ln: mv = MV_Simple1.Ln(null); break;
+				case TypeName_Pow: mv = MV_Simple2.Pow(null, null); break;
 				case TypeName_Sin: mv = MV_Simple1.Sin(null); break;
 				case TypeName_Cos: mv = MV_Simple1.Cos(null); break;
 				case TypeName_Tan: mv = MV_Simple1.Tan(null); break;
@@ -55,6 +59,8 @@ namespace RT.MaterialValue
 				case TypeName_Abs: mv = MV_Simple1.Abs(null); break;
 				case TypeName_Min: mv = new MV_MinMax(null, null, true); break;
 				case TypeName_Max: mv = new MV_MinMax(null, null, false); break;
+				case TypeName_Average: mv = new MV_Average(null, null); break;
+				case TypeName_Append: mv = new MV_Append(null, null); break;
 				case TypeName_Swizzle: mv = new MV_Swizzle(null, MV_Swizzle.Components.X); break;
 				case TypeName_PureNoise: mv = new MV_PureNoise(1); break;
 				case TypeName_SurfUV: mv = MV_Inputs.SurfaceUV; break;
@@ -135,7 +141,11 @@ namespace RT.MaterialValue
 							   TypeName_Length = "Length",
 							   TypeName_Distance = "Distance",
 							   TypeName_Dot = "Dot",
+							   TypeName_Reflect = "Reflect",
+							   TypeName_Refract = "Refract",
 							   TypeName_Sqrt = "Sqrt",
+						       TypeName_Ln = "Ln",
+							   TypeName_Pow = "Pow",
 							   TypeName_Sin = "Sin",
 							   TypeName_Cos = "Cos",
 							   TypeName_Tan = "Tan",
@@ -153,6 +163,8 @@ namespace RT.MaterialValue
 							   TypeName_Abs = "Abs",
 							   TypeName_Min = "Min",
 							   TypeName_Max = "Max",
+							   TypeName_Average = "Average",
+							   TypeName_Append = "Append",
 							   TypeName_Swizzle = "Swizzle",
 							   TypeName_PureNoise = "PureNoise",
 							   TypeName_SurfUV = "SurfUV",

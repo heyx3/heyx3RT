@@ -152,7 +152,7 @@ void MV_PureNoise::ReadData(DataReader& data, const String& namePrefix,
 #define EQUALS3(thing1, thing2, thing3) (thing1 == thing2 && thing2 == thing3)
 
 
-#define IMPL_MULTI_MV(name, listParamName, defaultVal, accumVal) \
+#define IMPL_MULTI_MV_FULL(name, listParamName, defaultVal, accumVal, finalizeVal) \
     ADD_MVAL_REFLECTION_DATA_CPP(MV_##name); \
     Dimensions MV_##name::GetNDims() const \
     { \
@@ -169,6 +169,7 @@ void MV_PureNoise::ReadData(DataReader& data, const String& namePrefix,
         Vectorf val = GET_VAL(listParamName[0]); \
         for (size_t i = 1; i < listParamName.size(); ++i) \
             accumVal; \
+        finalizeVal; \
         return val; \
     } \
     void MV_##name::RemoveElement(const MaterialValue* ptr) \
@@ -192,6 +193,9 @@ void MV_PureNoise::ReadData(DataReader& data, const String& namePrefix,
             listParamName.push_back(newChild); \
         } \
     }
+#define IMPL_MULTI_MV(name, listParamName, defaultVal, accumVal) \
+    IMPL_MULTI_MV_FULL(name, listParamName, defaultVal, accumVal, );
+
 #define IMPL_SIMPLE_FUNC1(name, valFuncBody) \
     ADD_MVAL_REFLECTION_DATA_CPP(MV_##name); \
     Vectorf MV_##name::GetValue(const Ray& ray, FastRand& prng, \
@@ -223,6 +227,61 @@ IMPL_MULTI_MV(Min, ToUse, Vectorf(0.0f),
 IMPL_MULTI_MV(Max, ToUse, Vectorf(0.0f),
               val = GET_VAL(ToUse[i]).OperateOn(COMMA3(&GetMax<float>, val,
                                                        std::numeric_limits<float>::max())); );
+IMPL_MULTI_MV_FULL(Average, ToAverage,
+                   Vectorf(0.0f), val = val + GET_VAL(ToAverage[i]),
+                   val = val / (float)ToAverage.size());
+
+#pragma region MV_Append
+
+ADD_MVAL_REFLECTION_DATA_CPP(MV_Append);
+Dimensions MV_Append::GetNDims() const
+{
+    Dimensions d = (Dimensions)0;
+    for (size_t i = 0; i < ToCombine.size(); ++i)
+        d = (Dimensions)((unsigned char)d + ToCombine[i]->GetNDims());
+    return d;
+}
+Vectorf MV_Append::GetValue(const Ray& ray, FastRand& prng,
+                            const Shape* shpe, const Vertex* surface) const
+{
+    if (ToCombine.size() == 0)
+        return 0.0f;
+
+    Vectorf val = GET_VAL(ToCombine[0]);
+    for (size_t i = 1; i < ToCombine.size(); ++i)
+    {
+        Vectorf tempVal = GET_VAL(ToCombine[1]);
+        for (size_t componentI = 0; componentI < tempVal.NValues; ++componentI)
+        {
+            val.NValues = (Dimensions)((unsigned char)val.NValues + 1);
+            val[val.NValues - 1] = tempVal[componentI];
+        }
+    }
+    return val;
+}
+void MV_Append::RemoveElement(const MaterialValue* ptr)
+{
+    for (size_t i = 0; i < ToCombine.size(); ++i)
+    {
+        if (ToCombine[i].Get() == ptr)
+        {
+            ToCombine.erase(ToCombine.begin() + i);
+            return;
+        }
+    }
+}
+void MV_Append::SetChild(size_t i, const Ptr& newChild)
+{
+    if (ToCombine.size() > i)
+        ToCombine[i] = newChild;
+    else
+    {
+        assert(ToCombine.size() == i);
+        ToCombine.push_back(newChild);
+    }
+}
+
+#pragma endregion
 
 IMPL_SIMPLE_FUNC1(Normalize, return GET_VAL(X).Normalized(); );
 IMPL_SIMPLE_FUNC1(Length, return GET_VAL(X).Length(););
@@ -231,8 +290,18 @@ IMPL_SIMPLE_FUNC(Distance,
                  return One; );
 IMPL_SIMPLE_FUNC(Dot, return GET_VAL(A).Dot(GET_VAL(B)); ,
                  return One; );
+IMPL_SIMPLE_FUNC(Reflect, return GET_VAL(V).Reflect(GET_VAL(Normal)); ,
+                 return Max(V->GetNDims(), Normal->GetNDims()); );
+IMPL_SIMPLE_FUNC(Refract,
+                 return GET_VAL(V).Refract(COMMA(GET_VAL(Normal),
+                                                 (float)GET_VAL(IndexOfRefraction))); ,
+                 return Max(V->GetNDims(), Normal->GetNDims()); );
 
 IMPL_SIMPLE_FUNC1(Sqrt, return GET_VAL(X).OperateOn(&sqrtf); );
+IMPL_SIMPLE_FUNC(Pow, return GET_VAL(Base).OperateOn(COMMA(&powf, GET_VAL(Exp))); ,
+                 return Max(COMMA(Base->GetNDims(), Exp->GetNDims())); );
+IMPL_SIMPLE_FUNC1(Ln, return GET_VAL(X).OperateOn(&logf); );
+
 IMPL_SIMPLE_FUNC1(Sin, return GET_VAL(X).OperateOn(&sinf); );
 IMPL_SIMPLE_FUNC1(Cos, return GET_VAL(X).OperateOn(&cosf); );
 IMPL_SIMPLE_FUNC1(Tan, return GET_VAL(X).OperateOn(&tanf); );

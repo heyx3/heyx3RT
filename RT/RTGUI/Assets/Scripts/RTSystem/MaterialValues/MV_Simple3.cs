@@ -15,16 +15,25 @@ namespace RT.MaterialValue
 		public static MV_Simple3 Lerp(MV_Base a, MV_Base b, MV_Base t)
 		{
 			return new MV_Simple3("lerp($0, $1, $2)", "Lerp", TypeName_Lerp, "A", "B", "T", a, b, t,
-								  new EditableVectorf(new Vectorf(0.0f), false, OutputSizes.All, float.NegativeInfinity, float.PositiveInfinity),
-								  new EditableVectorf(new Vectorf(1.0f), false, OutputSizes.All, float.NegativeInfinity, float.PositiveInfinity),
-								  new EditableVectorf(new Vectorf(0.5f), false, OutputSizes.All, float.NegativeInfinity, float.PositiveInfinity));
+								  new EditableVectorf(0.0f, false, OutputSizes.All, float.NegativeInfinity, float.PositiveInfinity),
+								  new EditableVectorf(1.0f, false, OutputSizes.All, float.NegativeInfinity, float.PositiveInfinity),
+								  new EditableVectorf(0.5f, false, OutputSizes.All, float.NegativeInfinity, float.PositiveInfinity));
 		}
 		public static MV_Simple3 Clamp(MV_Base min, MV_Base max, MV_Base x)
 		{
 			return new MV_Simple3("clamp($2, $0, $1)", "Clamp", TypeName_Clamp, "Min", "Max", "X", min, max, x,
-								  new EditableVectorf(new Vectorf(0.0f), false, OutputSizes.All, float.NegativeInfinity, float.PositiveInfinity),
-								  new EditableVectorf(new Vectorf(1.0f), false, OutputSizes.All, float.NegativeInfinity, float.PositiveInfinity),
-								  new EditableVectorf(new Vectorf(0.5f), false, OutputSizes.All, float.NegativeInfinity, float.PositiveInfinity));
+								  new EditableVectorf(0.0f, false, OutputSizes.All, float.NegativeInfinity, float.PositiveInfinity),
+								  new EditableVectorf(1.0f, false, OutputSizes.All, float.NegativeInfinity, float.PositiveInfinity),
+								  new EditableVectorf(0.5f, false, OutputSizes.All, float.NegativeInfinity, float.PositiveInfinity));
+		}
+		public static MV_Simple3 Refract(MV_Base v, MV_Base normal, MV_Base indexOfRefraction)
+		{
+			return new MV_Simple3("refract($0, $1, $2)", "Refract", TypeName_Refract,
+								  "V", "Normal", "Refract Index",
+								  v, normal, indexOfRefraction,
+								  new EditableVectorf(new Vector3(1.0f, 0.0f, 0.0f), false, OutputSizes.All),
+								  new EditableVectorf(new Vector3(1.0f, 0.0f, 0.0f), false, OutputSizes.All),
+								  new EditableVectorf(1.0f, false, OutputSizes.One));
 		}
 
 		

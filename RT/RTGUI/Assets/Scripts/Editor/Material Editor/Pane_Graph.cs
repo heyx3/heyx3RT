@@ -65,7 +65,7 @@ namespace RT.MatEditor
 			Owner = owner;
 			Graph = Owner.Owner.Graph.Clone();
 
-			CamOffset = -Owner.position.center - Graph.OutputNodePos.position;
+			CamOffset = Graph.OutputNodePos.position - (Owner.position.center);
 
 			RootIndexToDisplayName = Owner.Owner.GetRootNodeDisplayName;
 		}
@@ -86,7 +86,7 @@ namespace RT.MatEditor
 
             GUILayout.BeginArea(area);
             Owner.BeginWindows();
-            
+
 
             //Do each node's GUI window.
             foreach (MV_Base node in Graph.AllNodes)

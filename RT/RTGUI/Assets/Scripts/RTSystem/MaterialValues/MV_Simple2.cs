@@ -11,6 +11,15 @@ namespace RT.MaterialValue
 	/// </summary>
 	public class MV_Simple2 : MV_Base
 	{
+		public static MV_Simple2 Pow(MV_Base baseMV, MV_Base expMV)
+		{
+			return new MV_Simple2("pow($0, $1)", "Power", TypeName_Pow,
+								  "Base", "Exp", baseMV, expMV,
+								  new EditableVectorf(0.0f, false, OutputSizes.All,
+													  float.NegativeInfinity, float.PositiveInfinity),
+								  new EditableVectorf(1.0f, false, OutputSizes.One,
+													  float.NegativeInfinity, float.PositiveInfinity));
+		}
 		public static MV_Simple2 Distance(MV_Base a, MV_Base b)
 		{
 			return new MV_Simple2("distance($0, $1)", "Distance", TypeName_Distance, "A", "B", a, b,
@@ -37,6 +46,12 @@ namespace RT.MaterialValue
 			return new MV_Simple2("dot($0, $1)", "Dot Product", TypeName_Dot, "A", "B", a, b,
 								  new EditableVectorf(new Vectorf(1.0f, OutputSizes.One),
 													  false, OutputSizes.All));
+		}
+		public static MV_Simple2 Reflect(MV_Base a, MV_Base b)
+		{
+			return new MV_Simple2("reflect($0, $1)", "Reflect Along Normal", TypeName_Reflect,
+								  "V", "Normal", a, b,
+								  new EditableVectorf(new Vectorf(Vector3.up), false, OutputSizes.Three));
 		}
 
 		

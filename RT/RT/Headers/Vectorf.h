@@ -37,6 +37,7 @@ namespace RT
         Vectorf(Vector2f v) { *this = v; }
         Vectorf(Vector3f v) { *this = v; }
         Vectorf(Vector4f v) { *this = v; }
+        Vectorf(float f, Dimensions nDims) { x = f; y = f; z = f; w = f; NValues = nDims; }
 
 
         Vectorf Reciprocal() const { return Vectorf(1.0f / x, 1.0f / y, 1.0f / z, 1.0f / w, NValues); }
@@ -50,6 +51,9 @@ namespace RT
         float Dot(const Vectorf& other) const;
 
         Vectorf Normalized() const { return *this / Length(); }
+
+        Vectorf Reflect(const Vectorf& normal) const;
+        Vectorf Refract(const Vectorf& normal, float indexOfRefraction) const;
 
 
         //"Func" is of the type "float f(float myF, float otherF)".

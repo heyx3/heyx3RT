@@ -16,6 +16,20 @@ float Vectorf::Dot(const Vectorf& other) const
     return f;
 }
 
+Vectorf Vectorf::Reflect(const Vectorf& normal) const
+{
+    return (*this) + (normal * 2.0 * (-normal).Dot(*this));
+}
+Vectorf Vectorf::Refract(const Vectorf& normal, float indexOfRefraction) const
+{
+    float nDotV = Dot(normal);
+    float k = 1.0f - (indexOfRefraction * indexOfRefraction * (1.0f - (nDotV * nDotV)));
+    if (k < 0.0f)
+        return Vectorf(0.0f, NValues);
+    else
+        return (*this * indexOfRefraction) - (normal * ((indexOfRefraction * nDotV) + sqrtf(k)));
+}
+
 
 Vectorf::operator Vector2f() const
 {

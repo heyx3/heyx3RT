@@ -30,8 +30,14 @@ namespace RT.MaterialValue
 		public static MV_Simple1 Sqrt(MV_Base x)
 		{
 			return new MV_Simple1("sqrt($0)", "Square Root", TypeName_Sqrt, "X", x,
-								  new EditableVectorf(new Vectorf(0.0f), false, OutputSizes.All,
+								  new EditableVectorf(0.0f, false, OutputSizes.All,
 													  float.NegativeInfinity, float.PositiveInfinity));
+		}
+		public static MV_Simple1 Ln(MV_Base x)
+		{
+			return new MV_Simple1("ln($0)", "Natural Log", TypeName_Ln, "X", x,
+								  new EditableVectorf(1.0f, false, OutputSizes.One,
+													  1.0f, float.PositiveInfinity));
 		}
 		public static MV_Simple1 Sin(MV_Base x)
 		{
