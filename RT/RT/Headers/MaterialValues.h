@@ -75,6 +75,7 @@ namespace RT
 
     class MV_PureNoise;
     class MV_PerlinNoise;
+    class MV_WorleyNoise;
 
 
     //Just outputs a constant value.
@@ -215,6 +216,43 @@ namespace RT
     private:
         MV_PerlinNoise() { }
         ADD_MVAL_REFLECTION_DATA_H(MV_PerlinNoise, PerlinNoise);
+    };
+
+    class RT_API MV_WorleyNoise : public MaterialValue
+    {
+    public:
+        //InvSub and InvDiv switch the order: d2 - d1 and d2 / d1.
+        enum Ops { Add, Sub, Mul, Div, InvSub, InvDiv };
+        enum Params { One, Zero, D1, D2, InvD1, InvD2 };
+        enum DistFuncs { StraightLine, Manhattan };
+
+        Ptr X, Variation;
+
+        Ops DistCombineOp = Add;
+        Params DistParam1 = One,
+               DistParam2 = Zero;
+        DistFuncs DistFunc = StraightLine;
+
+
+        MV_WorleyNoise(Ptr x, Ptr variation) : X(x), Variation(variation) { }
+
+        virtual Dimensions GetNDims() const override { return Dimensions::One; }
+        virtual Vectorf GetValue(const Ray& ray, FastRand& prng,
+                                 const Shape* shpe = nullptr,
+                                 const Vertex* surface = nullptr) const override;
+
+        virtual size_t GetNChildren() const override { return 2; }
+        virtual const MaterialValue* GetChild(size_t i) const override { return (i == 0 ? X : Variation).Get(); }
+        virtual void SetChild(size_t i, const Ptr& newChild) override { (i == 0 ? X : Variation) = newChild; }
+
+        virtual void WriteData(DataWriter& data, const String& namePrefix,
+                               const ConstMaterialValueToID& idLookup) const override;
+        virtual void ReadData(DataReader& data, const String& namePrefix,
+                              NodeToChildIDs& childIDLookup) override;
+
+    private:
+        MV_WorleyNoise() { }
+        ADD_MVAL_REFLECTION_DATA_H(MV_WorleyNoise, WorleyNoise);
     };
 
 
@@ -572,7 +610,6 @@ namespace RT
 
     MAKE_SIMPLE_FUNC3(Clamp, Min, Max, X);
 
-    //TODO: Worley Noise MV.
     //TODO: Modulo MV.
     //TODO: Fract/Int MV's.
 

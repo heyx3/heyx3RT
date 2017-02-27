@@ -9,7 +9,6 @@ namespace RT.MaterialValue
 	public class MV_Perlin : MV_Base
 	{
 		#region Definition of perlin functions
-
 		
 		public static readonly string HashingFuncs = @"
 			float hashValue1(float x)

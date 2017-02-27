@@ -30,6 +30,7 @@ ADD_MVAL_REFLECTION_DATA_CPP(MV_Cross);
 
 ADD_MVAL_REFLECTION_DATA_CPP(MV_PureNoise);
 ADD_MVAL_REFLECTION_DATA_CPP(MV_PerlinNoise);
+ADD_MVAL_REFLECTION_DATA_CPP(MV_WorleyNoise);
 
 
 namespace
@@ -211,9 +212,6 @@ namespace NoiseFuncs
         }
     }
 
-    const float MAX_PERLIN = sqrtf(0.5f),
-                HALF_MAX_PERLIN = 0.5 * MAX_PERLIN,
-                PERLIN_SCALE_TO_NORM = 1.0f / MAX_PERLIN;
     float Perlin(float x)
     {
         float minX = floorf(x),
@@ -229,7 +227,7 @@ namespace NoiseFuncs
         float outVal = Mathf::Lerp(minX_V * toMin,
                                    maxX_V * toMax,
                                    Mathf::SmoothLerp(t));
-        return PERLIN_SCALE_TO_NORM * (HALF_MAX_PERLIN + (HALF_MAX_PERLIN * outVal));
+        return 0.5 + (0.5 * outVal);
     }
     float Perlin(Vector2f v)
     {
@@ -265,7 +263,7 @@ namespace NoiseFuncs
                                                maxXY_V.Dot(toMaxXY),
                                                t.x),
                                    t.y);
-        return PERLIN_SCALE_TO_NORM * (HALF_MAX_PERLIN + (HALF_MAX_PERLIN * outVal));
+        return 0.5 + (0.5 * outVal);
     }
     float Perlin(Vector3f v)
     {
@@ -311,7 +309,7 @@ namespace NoiseFuncs
                                    t.z);
 #undef DOT
 
-        return PERLIN_SCALE_TO_NORM * (HALF_MAX_PERLIN + (HALF_MAX_PERLIN * outVal));
+        return 0.5 + (0.5 * outVal);
     }
     float Perlin(Vector4f v)
     {
@@ -408,8 +406,190 @@ namespace NoiseFuncs
 #undef LERP
 #undef DOT
 
-        return PERLIN_SCALE_TO_NORM * (HALF_MAX_PERLIN + (HALF_MAX_PERLIN * outVal));
+        return 0.5 + (0.5 * outVal);
     }
+
+    struct WorleyResult { float Dists[2]; };
+    WorleyResult Worley(float x, float variance, float(*distFunc)(float p1, float p2))
+    {
+        float cellThis = floorf(x),
+              cellLess = cellThis - 1.0f,
+              cellMore = cellThis + 1.0f;
+
+#define POINT(var) (var + Mathf::Lerp(0.5f - variance, 0.5f + variance, Hash(var)))
+        const int N_CELLS = 3;
+        float distances[N_CELLS] = { distFunc(x, POINT(cellThis)),
+                                     distFunc(x, POINT(cellLess)),
+                                     distFunc(x, POINT(cellMore)) };
+#undef POINT
+
+        //Get the 2 closest distances.
+        WorleyResult result;
+        int exclude = -1;
+        for (int i = 0; i < 2; ++i)
+        {
+            int smallest = 0;
+            for (int j = 0; j < N_CELLS; ++j)
+            {
+                if (j != exclude && distances[j] < distances[smallest])
+                    smallest = j;
+            }
+            result.Dists[i] = distances[smallest];
+            exclude = smallest;
+        }
+        return result;
+    }
+    WorleyResult Worley(Vector2f v, Vector2f variance, float(*distFunc)(Vector2f p1, Vector2f p2))
+    {
+        Vector2f cellMid(floorf(v.x), floorf(v.y)),
+                 cellMin = cellMid - 1.0f,
+                 cellMax = cellMid + 1.0f,
+                 cellMidXMinY(cellMid.x, cellMin.y),
+                 cellMaxXMinY(cellMax.x, cellMin.y),
+                 cellMinXMidY(cellMin.x, cellMid.y),
+                 cellMaxXMidY(cellMax.x, cellMid.y),
+                 cellMinXMaxY(cellMin.x, cellMax.y),
+                 cellMidXMaxY(cellMid.x, cellMax.y);
+
+        Vector2f minPos = -variance + 0.5f,
+                 maxPos = variance + 0.5f;
+#define POINT(var) (var + Vector2f::Lerp(minPos, maxPos, Hash(var)))
+#define DIST(var) distFunc(v, POINT(var))
+        const int N_CELLS = 3 * 3;
+        float distances[N_CELLS] = { DIST(cellMin), DIST(cellMidXMinY), DIST(cellMaxXMinY),
+                                     DIST(cellMinXMidY), DIST(cellMid), DIST(cellMaxXMidY),
+                                     DIST(cellMinXMaxY), DIST(cellMidXMaxY), DIST(cellMax) };
+#undef POINT
+
+        //Get the 2 closest distances.
+        WorleyResult result;
+        int exclude = -1;
+        for (int i = 0; i < 2; ++i)
+        {
+            int smallest = 0;
+            for (int j = 0; j < N_CELLS; ++j)
+            {
+                if (j != exclude && distances[j] < distances[smallest])
+                    smallest = j;
+            }
+            result.Dists[i] = distances[smallest];
+            exclude = smallest;
+        }
+        return result;
+    }
+    WorleyResult Worley(Vector3f v, Vector3f variance, float(*distFunc)(Vector3f p1, Vector3f p2))
+    {
+        const int N_CELLS = 3 * 3 * 3;
+
+        //Get the position of every cell.
+        Vector3f cellPoses[N_CELLS];
+        float Xs[] = { 0.0f, floorf(v.x), 0.0f },
+              Ys[] = { 0.0f, floorf(v.y), 0.0f },
+              Zs[] = { 0.0f, floorf(v.z), 0.0f };
+        Xs[0] = Xs[1] - 1.0f;
+        Xs[2] = Xs[1] + 1.0f;
+        Ys[0] = Ys[1] - 1.0f;
+        Ys[2] = Ys[1] + 1.0f;
+        Zs[0] = Zs[1] - 1.0f;
+        Zs[2] = Zs[1] + 1.0f;
+        int cellI = 0;
+        for (int x = -1; x < 2; ++x)
+            for (int y = -1; y < 2; ++y)
+                for (int z = -1; z < 2; ++z)
+                    cellPoses[cellI++] = Vector3f(Xs[x + 1], Ys[y + 1], Zs[z + 1]);
+
+        //Get the randomized point inside each cell and calculate its distance to the given point.
+        Vector3f minPos = -variance + 0.5f,
+                 maxPos = variance + 0.5f;
+        float distances[N_CELLS];
+        for (int i = 0; i < N_CELLS; ++i)
+        {
+            Vector3f point = cellPoses[i] + Vector3f::Lerp(minPos, maxPos, Hash(cellPoses[i]));
+            distances[i] = distFunc(v, point);
+        }
+
+        //Get the 2 closest distances.
+        WorleyResult result;
+        int exclude = -1;
+        for (int i = 0; i < 2; ++i)
+        {
+            int smallest = 0;
+            for (int j = 0; j < N_CELLS; ++j)
+            {
+                if (j != exclude && distances[j] < distances[smallest])
+                    smallest = j;
+            }
+            result.Dists[i] = distances[smallest];
+            exclude = smallest;
+        }
+        return result;
+    }
+    WorleyResult Worley(Vector4f v, Vector4f variance, float(*distFunc)(Vector4f p1, Vector4f p2))
+    {
+        const int N_CELLS = 3 * 3 * 3 * 3;
+
+        //Get the position of every cell.
+        Vector4f cellPoses[N_CELLS];
+        float Xs[] = { 0.0f, floorf(v.x), 0.0f },
+              Ys[] = { 0.0f, floorf(v.y), 0.0f },
+              Zs[] = { 0.0f, floorf(v.z), 0.0f },
+              Ws[] = { 0.0f, floorf(v.w), 0.0f };
+        Xs[0] = Xs[1] - 1.0f;
+        Xs[2] = Xs[1] + 1.0f;
+        Ys[0] = Ys[1] - 1.0f;
+        Ys[2] = Ys[1] + 1.0f;
+        Zs[0] = Zs[1] - 1.0f;
+        Zs[2] = Zs[1] + 1.0f;
+        Ws[0] = Ws[1] - 1.0f;
+        Ws[2] = Ws[1] + 1.0f;
+        int cellI = 0;
+        for (int x = -1; x < 2; ++x)
+            for (int y = -1; y < 2; ++y)
+                for (int z = -1; z < 2; ++z)
+                    for (int w = -1; w < 2; ++w)
+                        cellPoses[cellI++] = Vector4f(Xs[x + 1], Ys[y + 1], Zs[z + 1], Ws[w + 1]);
+
+        //Get the randomized point inside each cell and calculate its distance to the given point.
+        Vector4f minPos = -variance + 0.5f,
+                 maxPos = variance + 0.5f;
+        float distances[N_CELLS];
+        for (int i = 0; i < N_CELLS; ++i)
+        {
+            Vector4f point = cellPoses[i] + Vector4f::Lerp(minPos, maxPos, Hash(cellPoses[i]));
+            distances[i] = distFunc(v, point);
+        }
+
+        //Get the 2 closest distances.
+        WorleyResult result;
+        int exclude = -1;
+        for (int i = 0; i < 2; ++i)
+        {
+            int smallest = 0;
+            for (int j = 0; j < N_CELLS; ++j)
+            {
+                if (j != exclude && distances[j] < distances[smallest])
+                    smallest = j;
+            }
+            result.Dists[i] = distances[smallest];
+            exclude = smallest;
+        }
+        return result;
+    }
+
+    float WorleyDist_StraightLine1(float p1, float p2) { return std::fabsf(p1 - p2); }
+    float WorleyDist_StraightLine2(Vector2f p1, Vector2f p2) { return p1.Distance(p2); }
+    float WorleyDist_StraightLine3(Vector3f p1, Vector3f p2) { return p1.Distance(p2); }
+    float WorleyDist_StraightLine4(Vector4f p1, Vector4f p2) { return p1.Distance(p2); }
+    float WorleyDist_Manhattan1(float p1, float p2) { return std::fabsf(p1 - p2); }
+    float WorleyDist_Manhattan2(Vector2f p1, Vector2f p2) { return WorleyDist_Manhattan1(p1.x, p2.x) +
+                                                                   WorleyDist_Manhattan1(p1.y, p2.y); }
+    float WorleyDist_Manhattan3(Vector3f p1, Vector3f p2) { return WorleyDist_Manhattan1(p1.x, p2.x) +
+                                                                   WorleyDist_Manhattan1(p1.y, p2.y) +
+                                                                   WorleyDist_Manhattan1(p1.z, p2.z); }
+    float WorleyDist_Manhattan4(Vector4f p1, Vector4f p2) { return WorleyDist_Manhattan1(p1.x, p2.x) +
+                                                                   WorleyDist_Manhattan1(p1.y, p2.y) +
+                                                                   WorleyDist_Manhattan1(p1.z, p2.z) +
+                                                                   WorleyDist_Manhattan1(p1.w, p2.w); }
 }
 Vectorf MV_PerlinNoise::GetValue(const Ray& ray, FastRand& prng,
                                  const Shape* shpe,
@@ -424,6 +604,138 @@ Vectorf MV_PerlinNoise::GetValue(const Ray& ray, FastRand& prng,
         case RT::Dimensions::Four: return NoiseFuncs::Perlin((Vector4f)x);
         default: assert(false); return 0.5f;
     }
+}
+Vectorf MV_WorleyNoise::GetValue(const Ray& ray, FastRand& prng,
+                                 const Shape* shpe,
+                                 const Vertex* surface) const
+{
+    //Get the inputs.
+    Vectorf x = X->GetValue(ray, prng, shpe, surface);
+    Vectorf variance = X->GetValue(ray, prng, shpe, surface);
+    Dimensions size = Max(x.NValues, variance.NValues);
+
+    //Get the two closest distances.
+    NoiseFuncs::WorleyResult result;
+    switch (size)
+    {
+        case RT::Dimensions::One:
+        {
+            float(*distFunc)(float, float);
+            switch (DistFunc)
+            {
+                case StraightLine: distFunc = NoiseFuncs::WorleyDist_StraightLine1; break;
+                case Manhattan: distFunc = NoiseFuncs::WorleyDist_Manhattan1; break;
+                default: assert(false); distFunc = NoiseFuncs::WorleyDist_StraightLine1; break;
+            }
+            result = NoiseFuncs::Worley(x.x, variance.x, distFunc);
+        } break;
+
+        case RT::Dimensions::Two:
+        {
+            float(*distFunc)(Vector2f, Vector2f);
+            switch (DistFunc)
+            {
+                case StraightLine: distFunc = NoiseFuncs::WorleyDist_StraightLine2; break;
+                case Manhattan: distFunc = NoiseFuncs::WorleyDist_Manhattan2; break;
+                default: assert(false); distFunc = NoiseFuncs::WorleyDist_StraightLine2; break;
+            }
+            result = NoiseFuncs::Worley((Vector2f)x, (Vector2f)variance, distFunc);
+        } break;
+
+        case RT::Dimensions::Three:
+        {
+            float(*distFunc)(Vector3f, Vector3f);
+            switch (DistFunc)
+            {
+                case StraightLine: distFunc = NoiseFuncs::WorleyDist_StraightLine3; break;
+                case Manhattan: distFunc = NoiseFuncs::WorleyDist_Manhattan3; break;
+                default: assert(false); distFunc = NoiseFuncs::WorleyDist_StraightLine3; break;
+            }
+            result = NoiseFuncs::Worley((Vector3f)x, (Vector3f)variance, distFunc);
+        } break;
+
+        case RT::Dimensions::Four:
+        {
+            float(*distFunc)(Vector4f, Vector4f);
+            switch (DistFunc)
+            {
+                case StraightLine: distFunc = NoiseFuncs::WorleyDist_StraightLine4; break;
+                case Manhattan: distFunc = NoiseFuncs::WorleyDist_Manhattan4; break;
+                default: assert(false); distFunc = NoiseFuncs::WorleyDist_StraightLine4; break;
+            }
+            result = NoiseFuncs::Worley((Vector4f)x, (Vector4f)variance, distFunc);
+        } break;
+
+        default:
+            assert(false);
+            result.Dists[0] = 0.0f;
+            result.Dists[1] = 0.0f;
+    }
+
+    //Modify the distances.
+    float d1 = result.Dists[0],
+          d2 = result.Dists[1];
+    switch (DistParam1)
+    {
+        case Params::One: break;
+        case Params::Zero: d1 = 0.0f; break;
+        case Params::D1: d1 *= result.Dists[0]; break;
+        case Params::D2: d1 *= result.Dists[1]; break;
+        case Params::InvD1: d1 /= result.Dists[0]; break;
+        case Params::InvD2: d2 /= result.Dists[1]; break;
+        default: assert(false); break;
+    }
+    switch (DistParam1)
+    {
+        case Params::One: break;
+        case Params::Zero: d2 = 0.0f; break;
+        case Params::D1: d2 *= result.Dists[0]; break;
+        case Params::D2: d2 *= result.Dists[1]; break;
+        case Params::InvD1: d2 /= result.Dists[0]; break;
+        case Params::InvD2: d2 /= result.Dists[1]; break;
+        default: assert(false); break;
+    }
+
+    //Combine the distances.
+    switch (DistCombineOp)
+    {
+        case Ops::Add: return d1 + d2;
+        case Ops::Sub: return d1 - d2;
+        case Ops::InvSub: return d2 - d1;
+        case Ops::Mul: return d1 * d2;
+        case Ops::Div: return d1 / d2;
+        case Ops::InvDiv: return d2 / d1;
+        default: assert(false); return 0.0f;
+    }
+}
+
+void MV_WorleyNoise::WriteData(DataWriter& data, const String& namePrefix,
+                               const ConstMaterialValueToID& idLookup) const
+{
+    MaterialValue::WriteData(data, namePrefix, idLookup);
+    data.WriteByte((unsigned char)DistFunc, namePrefix + "DistFunc");
+    data.WriteByte((unsigned char)DistCombineOp, namePrefix + "DistCombine");
+    data.WriteByte((unsigned char)DistParam1, namePrefix + "DistParam1");
+    data.WriteByte((unsigned char)DistParam2, namePrefix + "DistParam2");
+}
+void MV_WorleyNoise::ReadData(DataReader& data, const String& namePrefix,
+                              NodeToChildIDs& childIDLookup)
+{
+    MaterialValue::ReadData(data, namePrefix, childIDLookup);
+
+    unsigned char c;
+
+    data.ReadByte(c, namePrefix + "DistFunc");
+    DistFunc = (DistFuncs)c;
+
+    data.ReadByte(c, namePrefix + "DistCombine");
+    DistCombineOp = (Ops)c;
+
+    data.ReadByte(c, namePrefix + "DistParam1");
+    DistParam1 = (Params)c;
+
+    data.ReadByte(c, namePrefix + "DistParam2");
+    DistParam2 = (Params)c;
 }
 
 

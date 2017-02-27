@@ -66,6 +66,7 @@ namespace RT.MaterialValue
 				case TypeName_Swizzle: mv = new MV_Swizzle(null, MV_Swizzle.Components.X); break;
 				case TypeName_PureNoise: mv = new MV_PureNoise(1); break;
 				case TypeName_PerlinNoise: mv = new MV_Perlin(null); break;
+				case TypeName_WorleyNoise: mv = new MV_Worley(null, null); break;
 				case TypeName_SurfUV: mv = MV_Inputs.SurfaceUV; break;
 				case TypeName_SurfPos: mv = MV_Inputs.SurfacePos; break;
 				case TypeName_SurfNormal: mv = MV_Inputs.SurfaceNormal; break;
@@ -173,6 +174,7 @@ namespace RT.MaterialValue
 							   TypeName_Swizzle = "Swizzle",
 							   TypeName_PureNoise = "PureNoise",
 							   TypeName_PerlinNoise = "PerlinNoise",
+							   TypeName_WorleyNoise = "WorleyNoise",
 							   TypeName_SurfUV = "SurfUV",
 							   TypeName_SurfPos = "SurfPos",
 							   TypeName_SurfNormal = "SurfNormal",
