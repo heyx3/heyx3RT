@@ -12,12 +12,22 @@ namespace RT
     class RT_API FastRand
     {
     public:
+        static int Hash(int x, int y) { return (x << 5) + x ^ y; } //http://stackoverflow.com/questions/13812335/how-to-hash-an-int-in-c-sharp
+        static int Hash(float f) { return *(int*)(&f); }
+
 
 	    int Seed;
 
-	
+
         FastRand(int seed = 1234567) : Seed(seed) { }
-        FastRand(int x, int y) : Seed((x << 5) + x ^ y) { } //http://stackoverflow.com/questions/13812335/how-to-hash-an-int-in-c-sharp
+        FastRand(int x, int y) : FastRand(Hash(x, y)) { }
+        FastRand(int x, int y, int z) : FastRand(Hash(x, y), z) { }
+        FastRand(int x, int y, int z, int w) : FastRand(Hash(x, y), Hash(z, w)) { }
+
+        FastRand(float seed) : FastRand(Hash(seed)) { }
+        FastRand(float x, float y) : FastRand(Hash(x), Hash(y)) { }
+        FastRand(float x, float y, float z) : FastRand(Hash(x), Hash(y), Hash(z)) { }
+        FastRand(float x, float y, float z, float w) : FastRand(Hash(x), Hash(y), Hash(z), Hash(w)) { }
 
 
         //Gets a random non-negative integer.
@@ -35,6 +45,8 @@ namespace RT
         //Gets a random float between 0 and 1.
 	    inline float NextFloat()
         {
+            //TODO: Check this out: https://www.reddit.com/r/askscience/comments/3kxj7u/many_prngs_use_bitwise_operations_for_their_speed/cv6ao96/
+
             const int b = 9999999;
 		    return (float)(NextInt() % b) / (float)b;
 	    }

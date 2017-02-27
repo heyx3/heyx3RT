@@ -163,7 +163,7 @@ void Tracer::TraceImage(const Camera& cam, Texture2D& tex,
 
             Vector3f color(0.0f, 0.0f, 0.0f);
 
-            FastRand fr(x, y);
+            FastRand fr((int)x, (int)y);
 
             for (size_t i = 0; i < nSamples; ++i)
             {

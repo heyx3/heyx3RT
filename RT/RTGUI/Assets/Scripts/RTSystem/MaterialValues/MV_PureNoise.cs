@@ -69,7 +69,7 @@ namespace RT.MaterialValue
 			cgFunctionBody.Append(base.ShaderValueName(idLookup));
 			cgFunctionBody.Append(" = tex2D(");
 			cgFunctionBody.Append(RTSystem.Param_PureNoiseTex);
-			cgFunctionBody.Append(", ");
+			cgFunctionBody.Append(", _Time.z + ");
 			cgFunctionBody.Append(RTSystem.Input_WorldPos);
 			cgFunctionBody.Append(".xy + (5234.234 *");
 			cgFunctionBody.Append(RTSystem.Input_ScreenPos);

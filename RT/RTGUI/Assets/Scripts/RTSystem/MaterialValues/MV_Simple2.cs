@@ -47,6 +47,14 @@ namespace RT.MaterialValue
 								  new EditableVectorf(new Vectorf(1.0f, OutputSizes.One),
 													  false, OutputSizes.All));
 		}
+		public static MV_Simple2 Cross(MV_Base a, MV_Base b)
+		{
+			return new MV_Simple2("cross($1, $0)", "Cross Product", TypeName_Cross, "A", "B", a, b,
+								  new EditableVectorf(new Vector3(0.0f, 1.0f, 0.0f), false,
+													  OutputSizes.Three, -1.0f, 1.0f),
+								  new EditableVectorf(new Vector3(1.0f, 0.0f, 0.0f), false,
+													  OutputSizes.Three, -1.0f, 1.0f));
+		}
 		public static MV_Simple2 Reflect(MV_Base a, MV_Base b)
 		{
 			return new MV_Simple2("reflect($0, $1)", "Reflect Along Normal", TypeName_Reflect,

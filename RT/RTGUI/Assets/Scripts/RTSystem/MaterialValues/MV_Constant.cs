@@ -71,9 +71,7 @@ namespace RT.MaterialValue
 
 		public override string ShaderValueName(Dictionary<MV_Base, uint> idLookup)
 		{
-			if (Value.OutputSize == OutputSizes.One)
-				return Value.FullValue.x.ToString();
-
+			
 			System.Text.StringBuilder valStr = new System.Text.StringBuilder();
 			valStr.Append(Value.OutputSize.ToHLSLType());
 			valStr.Append("(");
@@ -81,7 +79,11 @@ namespace RT.MaterialValue
 			{
 				if (i > 0)
 					valStr.Append(", ");
-				valStr.Append(Value[i]);
+
+				string componentStr = Value[i].ToString("f");
+				if (!componentStr.Contains('.'))
+					componentStr += ".0";
+				valStr.Append(componentStr);
 			}
 			valStr.Append(")");
 			return valStr.ToString();

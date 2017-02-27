@@ -135,6 +135,8 @@ namespace RT.MatEditor
 			Vector2 mousePos = currEvent.mousePosition - new Vector2(area.xMin, 0.0f),
 					localMousePos = mousePos + CamOffset;
 
+			//TODO: GUI.ScaleAroundPivot() based on mouse wheel.
+
 			switch (currEvent.type)
 			{
 				case EventType.MouseUp:

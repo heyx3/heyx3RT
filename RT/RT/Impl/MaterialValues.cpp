@@ -1,5 +1,7 @@
 #include "../Headers/MaterialValues.h"
 
+#include "../Headers/Mathf.h"
+
 #include "../Headers/ThirdParty/bmp_io.hpp"
 #include "../Headers/ThirdParty/lodepng.h"
 
@@ -23,8 +25,11 @@ ADD_MVAL_REFLECTION_DATA_CPP(MV_ShapeScale);
 ADD_MVAL_REFLECTION_DATA_CPP(MV_ShapeRot);
 
 ADD_MVAL_REFLECTION_DATA_CPP(MV_Swizzle);
+ADD_MVAL_REFLECTION_DATA_CPP(MV_Map);
+ADD_MVAL_REFLECTION_DATA_CPP(MV_Cross);
 
 ADD_MVAL_REFLECTION_DATA_CPP(MV_PureNoise);
+ADD_MVAL_REFLECTION_DATA_CPP(MV_PerlinNoise);
 
 
 namespace
@@ -112,6 +117,58 @@ void MV_Swizzle::ReadData(DataReader& data, const String& namePrefix,
     }
 }
 
+Dimensions MV_Map::GetNDims() const
+{
+    return Max(X->GetNDims(),
+               Max(SrcMin->GetNDims(),
+                   Max(SrcMax->GetNDims(),
+                       Max(DestMin->GetNDims(),
+                           DestMax->GetNDims()))));
+}
+Vectorf MV_Map::GetValue(const Ray& ray, FastRand& prng,
+                         const Shape* shpe, const Vertex* surface) const
+{
+    auto x = X->GetValue(ray, prng, shpe, surface),
+         srcMin = SrcMin->GetValue(ray, prng, shpe, surface),
+         srcMax = SrcMax->GetValue(ray, prng, shpe, surface),
+         destMin = DestMin->GetValue(ray, prng, shpe, surface),
+         destMax = DestMax->GetValue(ray, prng, shpe, surface);
+
+    auto t = srcMin.OperateOn(Mathf::InvLerp, srcMax, x);
+    return destMin.OperateOn(Mathf::Lerp, destMax, t);
+}
+const MaterialValue* MV_Map::GetChild(size_t i) const
+{
+    switch (i)
+    {
+        case 0: return X.Get();
+        case 1: return SrcMin.Get();
+        case 2: return SrcMax.Get();
+        case 3: return DestMin.Get();
+        case 4: return DestMax.Get();
+        default: assert(false); return X.Get();
+    }
+}
+void MV_Map::SetChild(size_t i, const Ptr& newChild)
+{
+    switch (i)
+    {
+        case 0: X = newChild; return;
+        case 1: SrcMin = newChild; return;
+        case 2: SrcMax = newChild; return;
+        case 3: DestMin = newChild; return;
+        case 4: DestMax = newChild; return;
+        default: assert(false);
+    }
+}
+
+Vectorf MV_Cross::GetValue(const Ray& ray, FastRand& prng,
+                           const Shape* shpe, const Vertex* surface) const
+{
+    Vector3f a = A->GetValue(ray, prng, shpe, surface),
+             b = B->GetValue(ray, prng, shpe, surface);
+    return a.Cross(b);
+}
 
 Vectorf MV_PureNoise::GetValue(const Ray& ray, FastRand& prng,
                                const Shape* shpe,
@@ -136,6 +193,237 @@ void MV_PureNoise::ReadData(DataReader& data, const String& namePrefix,
     unsigned char b;
     data.ReadByte(b, namePrefix + "Dimensions");
     NDims = (Dimensions)b;
+}
+
+namespace NoiseFuncs
+{
+    //Returns a pseudo-random value between 0 and 1 using the given seed.
+    float Hash(const Vectorf& v)
+    {
+        switch (v.NValues)
+        {
+            case RT::Dimensions::One: return FastRand(v.x).NextFloat();
+            case RT::Dimensions::Two: return FastRand(v.x, v.y).NextFloat();
+            case RT::Dimensions::Three: return FastRand(v.x, v.y, v.z).NextFloat();
+            case RT::Dimensions::Four: return FastRand(v.x, v.y, v.z, v.w).NextFloat();
+            
+            default: assert(false); return FastRand(v.x).NextFloat();
+        }
+    }
+
+    const float MAX_PERLIN = sqrtf(0.5f),
+                HALF_MAX_PERLIN = 0.5 * MAX_PERLIN,
+                PERLIN_SCALE_TO_NORM = 1.0f / MAX_PERLIN;
+    float Perlin(float x)
+    {
+        float minX = floorf(x),
+              maxX = minX + 1.0f,
+              t = x - minX;
+
+        float minX_V = -1.0 + (2.0 * Hash(minX));
+        float toMin = -t;
+
+        float maxX_V = -1.0 + (2.0 * Hash(maxX));
+        float toMax = maxX - x;
+
+        float outVal = Mathf::Lerp(minX_V * toMin,
+                                   maxX_V * toMax,
+                                   Mathf::SmoothLerp(t));
+        return PERLIN_SCALE_TO_NORM * (HALF_MAX_PERLIN + (HALF_MAX_PERLIN * outVal));
+    }
+    float Perlin(Vector2f v)
+    {
+        Vector2f minXY(floorf(v.x), floorf(v.y)),
+                 maxXY = minXY + 1.0f,
+                 minXMaxY(minXY.x, maxXY.y),
+                 maxXMinY(maxXY.x, minXY.y);
+        Vector2f t = v - minXY;
+
+        float temp;
+
+        temp = Hash(minXY);
+        Vector2f minXY_V = (Vector2f(temp, Hash(temp)) * 2.0f) - 1.0f,
+                 toMinXY = -t;
+
+        temp = Hash(maxXY);
+        Vector2f maxXY_V = (Vector2f(temp, Hash(temp)) * 2.0f) - 1.0f,
+                 toMaxXY = maxXY - v;
+
+        temp = Hash(minXMaxY);
+        Vector2f minXMaxY_V = (Vector2f(temp, Hash(temp)) * 2.0f) - 1.0f,
+                 toMinXMaxY = minXMaxY - v;
+
+        temp = Hash(maxXMinY);
+        Vector2f maxXMinY_V = (Vector2f(temp, Hash(temp)) * 2.0f) - 1.0f,
+                 toMaxXMinY = maxXMinY - v;
+
+        t = Vector2f(Mathf::SmoothLerp(t.x), Mathf::SmoothLerp(t.y));//TODO: Use Smootherstep?
+        float outVal = Mathf::Lerp(Mathf::Lerp(minXY_V.Dot(toMinXY),
+                                               maxXMinY_V.Dot(toMaxXMinY),
+                                               t.x),
+                                   Mathf::Lerp(minXMaxY_V.Dot(toMinXMaxY),
+                                               maxXY_V.Dot(toMaxXY),
+                                               t.x),
+                                   t.y);
+        return PERLIN_SCALE_TO_NORM * (HALF_MAX_PERLIN + (HALF_MAX_PERLIN * outVal));
+    }
+    float Perlin(Vector3f v)
+    {
+        Vector3f minXYZ(floorf(v.x), floorf(v.y), floorf(v.z)),
+                 maxXYZ = minXYZ + 1.0f,
+                 maxXMinYZ    (maxXYZ.x, minXYZ.y, minXYZ.z),
+                 minXMaxYMinZ (minXYZ.x, maxXYZ.y, minXYZ.z),
+                 minXYMaxZ    (minXYZ.x, minXYZ.y, maxXYZ.z),
+                 maxXYMinZ    (maxXYZ.x, maxXYZ.y, minXYZ.z),
+                 maxXMinYMaxZ (maxXYZ.x, minXYZ.y, maxXYZ.z),
+                 minXMaxYZ    (minXYZ.x, maxXYZ.y, maxXYZ.z);
+        Vector3f t = v - minXYZ;
+
+        Vector3f temp;
+#define DO(toDo) \
+    temp.x = Hash(toDo); \
+    temp.y = Hash(temp.x); \
+    temp.z = Hash(temp.y); \
+    Vector3f toDo##_V = (temp * 2.0f) - 1.0f, \
+             to_##toDo = toDo - v;
+
+        DO(minXYZ);
+        DO(maxXMinYZ);
+        DO(minXMaxYMinZ);
+        DO(minXYMaxZ);
+        DO(maxXYMinZ);
+        DO(maxXMinYMaxZ);
+        DO(minXMaxYZ);
+        DO(maxXYZ);
+#undef DO
+
+        t = Vector3f(Mathf::SmoothLerp(t.x),
+                     Mathf::SmoothLerp(t.y),
+                     Mathf::SmoothLerp(t.z));//TODO: Use Smootherstep?
+
+#define DOT(a) a##_V.Dot(to_##a)
+        float outVal = Mathf::Lerp(Mathf::Lerp(Mathf::Lerp(DOT(minXYZ), DOT(maxXMinYZ), t.x),
+                                               Mathf::Lerp(DOT(minXMaxYMinZ), DOT(maxXYMinZ), t.x),
+                                               t.y),
+                                   Mathf::Lerp(Mathf::Lerp(DOT(minXYMaxZ), DOT(maxXMinYMaxZ), t.x),
+                                               Mathf::Lerp(DOT(minXMaxYZ), DOT(maxXYZ), t.x),
+                                               t.y),
+                                   t.z);
+#undef DOT
+
+        return PERLIN_SCALE_TO_NORM * (HALF_MAX_PERLIN + (HALF_MAX_PERLIN * outVal));
+    }
+    float Perlin(Vector4f v)
+    {
+        Vector4f min(floorf(v.x), floorf(v.y), floorf(v.z), floorf(v.w)),
+                 max = min + 1.0f,
+                 minXminYminZminW = min,
+                 minXminYminZmaxW (min.x, min.y, min.z, max.w),
+                 minXminYmaxZminW (min.x, min.y, max.z, min.w),
+                 minXminYmaxZmaxW (min.x, min.y, max.z, max.w),
+                 minXmaxYminZminW (min.x, max.y, min.z, min.w),
+                 minXmaxYminZmaxW (min.x, max.y, min.z, max.w),
+                 minXmaxYmaxZminW (min.x, max.y, max.z, min.w),
+                 minXmaxYmaxZmaxW (min.x, max.y, max.z, max.w),
+                 maxXminYminZminW (max.x, min.y, min.z, min.w),
+                 maxXminYminZmaxW (max.x, min.y, min.z, max.w),
+                 maxXminYmaxZminW (max.x, min.y, max.z, min.w),
+                 maxXminYmaxZmaxW (max.x, min.y, max.z, max.w),
+                 maxXmaxYminZminW (max.x, max.y, min.z, min.w),
+                 maxXmaxYminZmaxW (max.x, max.y, min.z, max.w),
+                 maxXmaxYmaxZminW (max.x, max.y, max.z, min.w),
+                 maxXmaxYmaxZmaxW = max;
+
+        Vector4f t = v - min;
+
+        Vector4f temp;
+#define DO(toDo) \
+    temp.x = Hash(toDo); \
+    temp.y = Hash(temp.x); \
+    temp.z = Hash(temp.y); \
+    temp.w = Hash(temp.z); \
+    Vector4f toDo##_V = (temp * 2.0f) - 1.0f, \
+             to_##toDo = toDo - v;
+
+        DO(minXminYminZminW);
+        DO(minXminYminZmaxW);
+        DO(minXminYmaxZminW);
+        DO(minXminYmaxZmaxW);
+        DO(minXmaxYminZminW);
+        DO(minXmaxYminZmaxW);
+        DO(minXmaxYmaxZminW);
+        DO(minXmaxYmaxZmaxW);
+        DO(maxXminYminZminW);
+        DO(maxXminYminZmaxW);
+        DO(maxXminYmaxZminW);
+        DO(maxXminYmaxZmaxW);
+        DO(maxXmaxYminZminW);
+        DO(maxXmaxYminZmaxW);
+        DO(maxXmaxYmaxZminW);
+        DO(maxXmaxYmaxZmaxW);
+#undef DO
+
+        t = Vector4f(Mathf::SmoothLerp(t.x),
+                     Mathf::SmoothLerp(t.y),
+                     Mathf::SmoothLerp(t.z),
+                     Mathf::SmoothLerp(t.w));//TODO: Use Smootherstep?
+
+#define DOT(a) (a##_V.Dot(to_##a))
+#define LERP(x1, y1, z1, w1, x2, y2, z2, w2, tComponent) \
+        (Mathf::Lerp(DOT(x1##X##y1##Y##z1##Z##w1##W), \
+                     DOT(x2##X##y2##Y##z2##Z##w2##W), \
+                     tComponent))
+
+        float outVal = Mathf::Lerp(Mathf::Lerp(Mathf::Lerp(LERP(min, min, min, min,
+                                                                max, min, min, min,
+                                                                t.x),
+                                                           LERP(min, max, min, min,
+                                                                max, max, min, min,
+                                                                t.x),
+                                                           t.y),
+                                               Mathf::Lerp(LERP(min, min, max, min,
+                                                                max, min, max, min,
+                                                                t.x),
+                                                           LERP(min, max, max, min,
+                                                                max, max, max, min,
+                                                                t.x),
+                                                           t.y),
+                                               t.z),
+                                   Mathf::Lerp(Mathf::Lerp(LERP(min, min, min, max,
+                                                                max, min, min, max,
+                                                                t.x),
+                                                           LERP(min, max, min, max,
+                                                                max, max, min, max,
+                                                                t.x),
+                                                           t.y),
+                                               Mathf::Lerp(LERP(min, min, max, max,
+                                                                max, min, max, max,
+                                                                t.x),
+                                                           LERP(min, max, max, max,
+                                                                max, max, max, max,
+                                                                t.x),
+                                                           t.y),
+                                               t.z),
+                                   t.w);
+#undef LERP
+#undef DOT
+
+        return PERLIN_SCALE_TO_NORM * (HALF_MAX_PERLIN + (HALF_MAX_PERLIN * outVal));
+    }
+}
+Vectorf MV_PerlinNoise::GetValue(const Ray& ray, FastRand& prng,
+                                 const Shape* shpe,
+                                 const Vertex* surface) const
+{
+    Vectorf x = X->GetValue(ray, prng, shpe, surface);
+    switch (x.NValues)
+    {
+        case RT::Dimensions::One: return NoiseFuncs::Perlin(x.x);
+        case RT::Dimensions::Two: return NoiseFuncs::Perlin((Vector2f)x);
+        case RT::Dimensions::Three: return NoiseFuncs::Perlin((Vector3f)x);
+        case RT::Dimensions::Four: return NoiseFuncs::Perlin((Vector4f)x);
+        default: assert(false); return 0.5f;
+    }
 }
 
 

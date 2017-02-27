@@ -10,9 +10,6 @@ namespace RT.MaterialValue
 {
 	public class MV_RayPos : MV_Base
 	{
-		//Note that this class has a "secret" dependency on the RayStartPos and RayDir MaterialValues.
-
-
 		public override string TypeName { get { return TypeName_RayPos; } }
 		public override OutputSizes OutputSize { get { return OutputSizes.Three; } }
 
@@ -27,6 +24,7 @@ namespace RT.MaterialValue
 								  StringBuilder cgFunctionBody,
 								  Dictionary<MV_Base, uint> idLookup)
 		{
+			//This class has a secret dependency on RayStart and RayDir.
 			MV_Inputs.RayStart.Emit(shaderlabProperties, cgDefinitions, cgFunctionBody, idLookup);
 			MV_Inputs.RayDir.Emit(shaderlabProperties, cgDefinitions, cgFunctionBody, idLookup);
 
@@ -43,6 +41,7 @@ namespace RT.MaterialValue
 		public override void SetParams(Transform shapeTr, Material unityMat,
 									   Dictionary<MV_Base, uint> idLookup)
 		{
+			//This class has a secret dependency on RayStart and RayDir.
 			MV_Inputs.RayStart.SetParams(shapeTr, unityMat, idLookup);
 			MV_Inputs.RayDir.SetParams(shapeTr, unityMat, idLookup);
 		}

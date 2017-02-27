@@ -28,8 +28,14 @@ namespace RT
     class MV_Length;
     class MV_Distance;
     class MV_Dot;
+    class MV_Cross;
+    class MV_Reflect;
+    class MV_Refract;
 
     class MV_Sqrt;
+    class MV_Pow;
+    class MV_Ln;
+
     class MV_Sin;
     class MV_Cos;
     class MV_Tan;
@@ -40,6 +46,7 @@ namespace RT
 
     class MV_Step;
     class MV_Lerp;
+    class MV_Map;
     class MV_Smoothstep;
     class MV_Smootherstep;
     class MV_Clamp;
@@ -49,6 +56,8 @@ namespace RT
     class MV_Abs;
     class MV_Min;
     class MV_Max;
+    class MV_Average;
+    class MV_Append;
 
     class MV_Swizzle;
 
@@ -63,7 +72,9 @@ namespace RT
     class MV_ShapePos;
     class MV_ShapeScale;
     class MV_ShapeRot;
+
     class MV_PureNoise;
+    class MV_PerlinNoise;
 
 
     //Just outputs a constant value.
@@ -186,6 +197,24 @@ namespace RT
                               NodeToChildIDs& childIDLookup) override;
     private:
         ADD_MVAL_REFLECTION_DATA_H(MV_PureNoise, PureNoise);
+    };
+
+
+    class RT_API MV_PerlinNoise : public MaterialValue
+    {
+    public:
+        Ptr X;
+        MV_PerlinNoise(Ptr x) : X(x) { }
+        virtual Dimensions GetNDims() const override { return One; }
+        virtual Vectorf GetValue(const Ray& ray, FastRand& prng,
+                                 const Shape* shpe = nullptr,
+                                 const Vertex* surface = nullptr) const override;
+        virtual size_t GetNChildren() const override { return 1; }
+        virtual const MaterialValue* GetChild(size_t i) const override { return X.Get(); }
+        virtual void SetChild(size_t i, const Ptr& newChild) override { X = newChild; }
+    private:
+        MV_PerlinNoise() { }
+        ADD_MVAL_REFLECTION_DATA_H(MV_PerlinNoise, PerlinNoise);
     };
 
 
@@ -334,6 +363,57 @@ namespace RT
     };
 
 
+    //Maps a value from a source range to a destination range.
+    class RT_API MV_Map : public MaterialValue
+    {
+    public:
+
+        Ptr X, SrcMin, SrcMax, DestMin, DestMax;
+
+        MV_Map(Ptr x, Ptr srcMin, Ptr srcMax, Ptr destMin, Ptr destMax)
+            : X(x), SrcMin(srcMin), SrcMax(srcMax), DestMin(destMin), DestMax(destMax) { }
+
+        virtual Dimensions GetNDims() const override;
+
+        virtual Vectorf GetValue(const Ray& ray, FastRand& prng,
+                                 const Shape* shpe = nullptr,
+                                 const Vertex* surface = nullptr) const override;
+
+        virtual size_t GetNChildren() const override { return 5; }
+        virtual const MaterialValue* GetChild(size_t i) const override;
+        virtual void SetChild(size_t i, const Ptr& newChild) override;
+
+    private:
+        MV_Map() { }
+        ADD_MVAL_REFLECTION_DATA_H(MV_Map, Map);
+    };
+
+
+    //Cross product.
+    class RT_API MV_Cross : public MaterialValue
+    {
+    public:
+
+        Ptr A, B;
+
+        MV_Cross(Ptr a, Ptr b) : A(a), B(b) { }
+
+        virtual Dimensions GetNDims() const override { return Dimensions::Three; }
+
+        virtual Vectorf GetValue(const Ray&, FastRand& prng,
+                                 const Shape* shpe = nullptr,
+                                 const Vertex* surface = nullptr) const override;
+
+        virtual size_t GetNChildren() const override { return 2; }
+        virtual const MaterialValue* GetChild(size_t i) const override { return (i == 0 ? A : B).Get(); }
+        virtual void SetChild(size_t i, const Ptr& newChild) override { (i == 0 ? A : B) = newChild; }
+
+    private:
+        MV_Cross() { }
+        ADD_MVAL_REFLECTION_DATA_H(MV_Cross, Cross);
+    };
+
+
 /*
     Use a bunch of macros to quickly define a large number of simple MaterialValues.
 */
@@ -386,8 +466,8 @@ namespace RT
             \
         virtual Dimensions GetNDims() const override { dimsCalc } \
         virtual Vectorf GetValue(const Ray& ray, FastRand& prng, \
-                                    const Shape* shpe = nullptr, \
-                                    const Vertex* surface = nullptr) const override; \
+                                 const Shape* shpe = nullptr, \
+                                 const Vertex* surface = nullptr) const override; \
         virtual size_t GetNChildren() const override { return 1; } \
         virtual const MaterialValue* GetChild(size_t i) const override { return paramName.Get(); } \
         virtual void SetChild(size_t i, const Ptr& newChild) override { assert(i == 0); paramName = newChild; } \
@@ -492,12 +572,9 @@ namespace RT
 
     MAKE_SIMPLE_FUNC3(Clamp, Min, Max, X);
 
-    //TODO: Noise generation MV's.
+    //TODO: Worley Noise MV.
     //TODO: Modulo MV.
-    //TODO: Cross MV.
     //TODO: Fract/Int MV's.
-    //TODO: Branch MV's.
-    //TODO: Remap MV.
 
 #undef MAKE_MULTI_MV
 #undef MAKE_COMPLEX_FUNC1

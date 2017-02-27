@@ -37,6 +37,7 @@ namespace RT.MaterialValue
 				case TypeName_Length: mv = MV_Simple1.Length(null); break;
 				case TypeName_Distance: mv = MV_Simple2.Distance(null, null); break;
 				case TypeName_Dot: mv = MV_Simple2.Dot(null, null); break;
+				case TypeName_Cross: mv = MV_Simple2.Cross(null, null); break;
 				case TypeName_Reflect: mv = MV_Simple2.Reflect(null, null); break;
 				case TypeName_Refract: mv = MV_Simple3.Refract(null, null, null); break;
 				case TypeName_Sqrt: mv = MV_Simple1.Sqrt(null); break;
@@ -51,6 +52,7 @@ namespace RT.MaterialValue
 				case TypeName_Atan2: mv = MV_Simple2.Atan2(null, null); break;
 				case TypeName_Step: mv = MV_Simple2.Step(null, null); break;
 				case TypeName_Lerp: mv = MV_Simple3.Lerp(null, null, null); break;
+				case TypeName_Map: mv = new MV_Map(null, null, null, null, null); break;
 				case TypeName_Smoothstep: mv = MV_Simple1.Smoothstep(null); break;
 				case TypeName_Smootherstep: mv = MV_Simple1.Smootherstep(null); break;
 				case TypeName_Clamp: mv = MV_Simple3.Clamp(null, null, null); break;
@@ -63,6 +65,7 @@ namespace RT.MaterialValue
 				case TypeName_Append: mv = new MV_Append(null, null); break;
 				case TypeName_Swizzle: mv = new MV_Swizzle(null, MV_Swizzle.Components.X); break;
 				case TypeName_PureNoise: mv = new MV_PureNoise(1); break;
+				case TypeName_PerlinNoise: mv = new MV_Perlin(null); break;
 				case TypeName_SurfUV: mv = MV_Inputs.SurfaceUV; break;
 				case TypeName_SurfPos: mv = MV_Inputs.SurfacePos; break;
 				case TypeName_SurfNormal: mv = MV_Inputs.SurfaceNormal; break;
@@ -141,6 +144,7 @@ namespace RT.MaterialValue
 							   TypeName_Length = "Length",
 							   TypeName_Distance = "Distance",
 							   TypeName_Dot = "Dot",
+							   TypeName_Cross = "Cross",
 							   TypeName_Reflect = "Reflect",
 							   TypeName_Refract = "Refract",
 							   TypeName_Sqrt = "Sqrt",
@@ -155,6 +159,7 @@ namespace RT.MaterialValue
 							   TypeName_Atan2 = "Atan2",
 							   TypeName_Step = "Step",
 							   TypeName_Lerp = "Lerp",
+							   TypeName_Map = "Map",
 							   TypeName_Smoothstep = "Smoothstep",
 							   TypeName_Smootherstep = "Smootherstep",
 							   TypeName_Clamp = "Clamp",
@@ -167,6 +172,7 @@ namespace RT.MaterialValue
 							   TypeName_Append = "Append",
 							   TypeName_Swizzle = "Swizzle",
 							   TypeName_PureNoise = "PureNoise",
+							   TypeName_PerlinNoise = "PerlinNoise",
 							   TypeName_SurfUV = "SurfUV",
 							   TypeName_SurfPos = "SurfPos",
 							   TypeName_SurfNormal = "SurfNormal",
