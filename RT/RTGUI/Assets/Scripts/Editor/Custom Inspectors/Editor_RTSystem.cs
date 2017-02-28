@@ -169,12 +169,15 @@ namespace RT.CustomInspectors
 						tempPath = Path.Combine(tempDir, i.ToString() + ".json");
 					}
 
-					sys.ToFile(tempPath);
+					string errMsg = sys.ToFile(tempPath);
+					if (errMsg.Length > 0)
+						throw new Exception(errMsg);
 
 					//Generate the texture.
 					Camera c = UnityEditor.SceneView.lastActiveSceneView.camera;
 					TraceResult = sys.GenerateImage(c.transform, tempPath);
-					TraceResult.filterMode = FilterMode.Point;
+					if (TraceResult != null)
+						TraceResult.filterMode = FilterMode.Point;
 
 					//Clean up temp files.
 					File.Delete(tempPath);
@@ -182,7 +185,7 @@ namespace RT.CustomInspectors
 				catch (Exception e)
 				{
 					Debug.LogError("Unable to render image: (" + e.GetType().Name +
-									   ") " + e.Message);
+									   ") " + e.Message + "\n" + e.StackTrace);
 				}
 			}
 			MyGUI.EndCompact();

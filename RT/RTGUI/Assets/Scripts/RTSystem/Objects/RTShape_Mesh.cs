@@ -12,11 +12,7 @@ namespace RT
 	public class RTShape_Mesh : RTShape
 	{
 		public override string TypeName { get { return TypeName_Mesh; } }
-		public override Mesh UnityMesh { get { return myMesh; } }
-
-
-		[SerializeField]
-		private Mesh myMesh;
+		public override Mesh UnityMesh { get { return GetComponent<MeshFilter>().sharedMesh; } }
 
 		private string myMeshGUID;
 
@@ -28,8 +24,7 @@ namespace RT
 		}
 		void OnValidate()
 		{
-			myMeshGUID = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(myMesh));
-			GetComponent<MeshFilter>().sharedMesh = myMesh;
+			myMeshGUID = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(UnityMesh));
 		}
 
 		public override void WriteData(Serialization.DataWriter writer)
@@ -40,6 +35,7 @@ namespace RT
 			writer.String(myMeshGUID, "GUID");
 
 			//Turn mesh data into a list of vertices.
+			Mesh myMesh = UnityMesh;
 			if (!myMesh.isReadable)
 				throw new Serialization.DataWriter.WriteException("Mesh " + myMesh.name + " isn't readable");
 			int[] indices = myMesh.triangles;
@@ -115,7 +111,7 @@ namespace RT
 				}
 				
 				//Create the mesh.
-				myMesh = new Mesh();
+				Mesh myMesh = new Mesh();
 				myMesh.vertices = poses;
 				myMesh.normals = normals;
 				myMesh.tangents = tangents;
@@ -124,7 +120,7 @@ namespace RT
 				myMesh.UploadMeshData(false);
 				myMesh.RecalculateBounds();
 
-				//Find an unused mesh file name.
+				//Find an unused file name for the mesh.
 				string meshFileName = "Assets\\RT Meshes\\0.asset";
 				int meshI = 0;
 				while (AssetDatabase.FindAssets(meshFileName).Length > 0)
@@ -136,13 +132,15 @@ namespace RT
 				//Save the mesh to a file.
 				AssetDatabase.CreateAsset(myMesh, meshFileName);
 				AssetDatabase.SaveAssets();
+				GetComponent<MeshFilter>().sharedMesh = AssetDatabase.LoadAssetAtPath<Mesh>(meshFileName);
 				Debug.Log("Created mesh " + meshFileName);
 				OnValidate();
 			}
 			//Otherwise, just get the mesh with that GUID.
 			else
 			{
-				myMesh = AssetDatabase.LoadAssetAtPath<Mesh>(AssetDatabase.GUIDToAssetPath(myMeshGUID));
+				GetComponent<MeshFilter>().sharedMesh =
+					AssetDatabase.LoadAssetAtPath<Mesh>(AssetDatabase.GUIDToAssetPath(myMeshGUID));
 			}
 		}
 		#region Helper struct for serialization

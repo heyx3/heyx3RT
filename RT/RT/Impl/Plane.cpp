@@ -55,9 +55,9 @@ bool Plane::CastRay(const Ray& ray, Vertex& outHit) const
     outHit.Pos = ray.GetPos(t);
 
     //If ray intersection is outside the plane's bounds, exit.
-    Vector3f localPos = Tr.GetMatToLocal().ApplyPoint(outHit.Pos);
-    if (localPos.x < -1.0f || localPos.x > 1.0f ||
-        localPos.z < -1.0f || localPos.z > 1.0f)
+    Vector3f localHitPos = Tr.GetMatToLocal().ApplyPoint(outHit.Pos);
+    if (localHitPos.x < -1.0f || localHitPos.x > 1.0f ||
+        localHitPos.z < -1.0f || localHitPos.z > 1.0f)
     {
         return false;
     }
@@ -74,8 +74,7 @@ bool Plane::CastRay(const Ray& ray, Vertex& outHit) const
     }
 
     //Compute UV.
-    outHit.UV.x = outHit.Pos.Dot(tangent);
-    outHit.UV.y = outHit.Pos.Dot(bitangent);
+    outHit.UV = (Vector2f(localHitPos.x, localHitPos.z) * -0.5f) + 0.5f;
 
     return true;
 }
