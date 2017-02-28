@@ -255,7 +255,7 @@ namespace NoiseFuncs
         Vector2f maxXMinY_V = (Vector2f(temp, Hash(temp)) * 2.0f) - 1.0f,
                  toMaxXMinY = maxXMinY - v;
 
-        t = Vector2f(Mathf::SmoothLerp(t.x), Mathf::SmoothLerp(t.y));//TODO: Use Smootherstep?
+        t = Vector2f(Mathf::SmoothLerp(t.x), Mathf::SmoothLerp(t.y));
         float outVal = Mathf::Lerp(Mathf::Lerp(minXY_V.Dot(toMinXY),
                                                maxXMinY_V.Dot(toMaxXMinY),
                                                t.x),
@@ -297,7 +297,7 @@ namespace NoiseFuncs
 
         t = Vector3f(Mathf::SmoothLerp(t.x),
                      Mathf::SmoothLerp(t.y),
-                     Mathf::SmoothLerp(t.z));//TODO: Use Smootherstep?
+                     Mathf::SmoothLerp(t.z));
 
 #define DOT(a) a##_V.Dot(to_##a)
         float outVal = Mathf::Lerp(Mathf::Lerp(Mathf::Lerp(DOT(minXYZ), DOT(maxXMinYZ), t.x),
@@ -364,7 +364,7 @@ namespace NoiseFuncs
         t = Vector4f(Mathf::SmoothLerp(t.x),
                      Mathf::SmoothLerp(t.y),
                      Mathf::SmoothLerp(t.z),
-                     Mathf::SmoothLerp(t.w));//TODO: Use Smootherstep?
+                     Mathf::SmoothLerp(t.w));
 
 #define DOT(a) (a##_V.Dot(to_##a))
 #define LERP(x1, y1, z1, w1, x2, y2, z2, w2, tComponent) \

@@ -180,6 +180,9 @@ namespace RT.MaterialValue
                 Debug.LogError("Can't create a loop in the graph!");
                 return;
             }
+
+			//Make sure the new input is in this graph.
+			AddNode(newInput);
              
 			//If the node has variable numbers of children
 			//    and this input index doesn't yet exist, add it.

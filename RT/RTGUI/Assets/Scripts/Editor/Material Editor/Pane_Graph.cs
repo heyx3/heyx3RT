@@ -318,7 +318,6 @@ namespace RT.MatEditor
 			{
 				//TODO: "Undo" here.
 				var newInput = node.GetDefaultInput(node.GetNInputs());
-				Graph.AddNode(newInput);
 				Graph.ConnectInput(node, node.GetNInputs(), newInput);
 			}
 			GUILayout.FlexibleSpace();
