@@ -13,11 +13,14 @@ namespace RT
     {
     public:
 
-        static Vector2f Lerp(const Vector2f& a, const Vector2f& b, float t)
+        static Vector2f Lerp(Vector2f a, Vector2f b, Vector2f t)
         {
-            return Vector2f(a.x + (t * (b.x - a.x)),
-                            a.y + (t * (b.y - a.y)));
+            return Vector2f(a.x + (t.x * (b.x - a.x)),
+                            a.y + (t.y * (b.y - a.y)));
         }
+        static Vector2f Lerp(Vector2f a, Vector2f b, float t) { return Lerp(a, b, Vector2f(t, t)); }
+
+
 
         static Vector2f X() { return Vector2f(1.0f, 0.0f); }
         static Vector2f Y() { return Vector2f(0.0f, 1.0f); }
@@ -83,12 +86,13 @@ namespace RT
     {
     public:
 
-        static Vector3f Lerp(const Vector3f& a, const Vector3f& b, float t)
+        static Vector3f Lerp(Vector3f a, Vector3f b, Vector3f t)
         {
-            return Vector3f(a.x + (t * (b.x - a.x)),
-                            a.y + (t * (b.y - a.y)),
-                            a.z + (t * (b.z - a.z)));
+            return Vector3f(a.x + (t.x * (b.x - a.x)),
+                            a.y + (t.y * (b.y - a.y)),
+                            a.z + (t.z * (b.z - a.z)));
         }
+        static Vector3f Lerp(Vector3f a, Vector3f b, float t) { return Lerp(a, b, Vector3f(t, t, t)); }
     
         static Vector3f X() { return Vector3f(1.0f, 0.0f, 0.0f); }
         static Vector3f Y() { return Vector3f(0.0f, 1.0f, 0.0f); }
@@ -176,13 +180,14 @@ namespace RT
     {
     public:
 
-        static Vector4f Lerp(const Vector4f& a, const Vector4f& b, float t)
+        static Vector4f Lerp(Vector4f a, Vector4f b, Vector4f t)
         {
-            return Vector4f(a.x + (t * (b.x - a.x)),
-                            a.y + (t * (b.y - a.y)),
-                            a.z + (t * (b.z - a.z)),
-                            a.w + (t * (b.w - a.w)));
+            return Vector4f(a.x + (t.x * (b.x - a.x)),
+                            a.y + (t.y * (b.y - a.y)),
+                            a.z + (t.z * (b.z - a.z)),
+                            a.w + (t.w * (b.w - a.w)));
         }
+        static Vector4f Lerp(Vector4f a, Vector4f b, float t) { return Lerp(a, b, Vector4f(t, t, t, t)); }
     
         static Vector4f X() { return Vector4f(1.0f, 0.0f, 0.0f, 0.0f); }
         static Vector4f Y() { return Vector4f(0.0f, 1.0f, 0.0f, 0.0f); }

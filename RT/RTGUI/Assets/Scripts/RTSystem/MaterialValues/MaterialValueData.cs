@@ -75,6 +75,17 @@ namespace RT.MaterialValue
 				default: throw new NotImplementedException(o.ToString());
 			}
 		}
+		public static char ToComponent(this OutputSizes o, bool lowerCase = true)
+		{
+			switch (o)
+			{
+				case OutputSizes.One: return (lowerCase ? 'x' : 'X');
+				case OutputSizes.Two: return (lowerCase ? 'y' : 'Y');
+				case OutputSizes.Three: return (lowerCase ? 'z' : 'Z');
+				case OutputSizes.Four: return (lowerCase ? 'w' : 'W');
+				default: throw new NotImplementedException(o.ToString());
+			}
+		}
 
 		public static bool IsSingleOption(this OutputSizes o)
 		{

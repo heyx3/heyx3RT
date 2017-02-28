@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using RT.Serialization;
 using UnityEngine;
+using UnityEditor;
+
 
 namespace RT.MaterialValue
 {
@@ -14,7 +16,7 @@ namespace RT.MaterialValue
 		public enum DistFuncs { StraightLine, Manhattan }
 
 
-		public override string TypeName { get { return TypeName_PerlinNoise; } }
+		public override string TypeName { get { return TypeName_WorleyNoise; } }
 		public override OutputSizes OutputSize {  get { return OutputSizes.One; } }
 
 		public override string PrettyName { get { return "Worley Noise"; } }
@@ -29,7 +31,7 @@ namespace RT.MaterialValue
 
 		public MV_Worley(MV_Base x, MV_Base variance) { AddInput(x); AddInput(variance); }
 
-
+		
 		public override void Emit(StringBuilder shaderlabProperties,
 								  StringBuilder cgDefs,
 								  StringBuilder cgFunctionBody,
@@ -65,23 +67,15 @@ namespace RT.MaterialValue
 						{
 							if (i > 0)
 								distFunc.Append(" + ");
-
-							string componentStr = "";
-							switch (i)
-							{
-								case 0: componentStr = "x"; break;
-								case 1: componentStr = "y"; break;
-								case 2: componentStr = "z"; break;
-								case 3: componentStr = "w"; break;
-								default: throw new NotImplementedException(i.ToString());
-							}
-
+							
+							char component = ((uint)i + 1).ToOutputSize().ToComponent();
 							distFunc.Append("abs(p.");
-							distFunc.Append(componentStr);
+							distFunc.Append(component);
 							distFunc.Append("- worleyPos.");
-							distFunc.Append(componentStr);
+							distFunc.Append(component);
 							distFunc.Append(")");
 						}
+						distFunc.Append(")");
 						break;
 
 					default: throw new NotImplementedException(DistFunc.ToString());
@@ -100,7 +94,7 @@ namespace RT.MaterialValue
 
 				//Body.
 				cgDefs.Append(@"
-	const int N_CELLS = ");
+	#define N_CELLS (");
 				int N_CELLS = 3;
 				for (int i = 0; i < inputSize.ToNumber(); ++i)
 				{
@@ -111,15 +105,17 @@ namespace RT.MaterialValue
 					}
 					cgDefs.Append("3");
 				}
-				cgDefs.Append(@";
-	float" + sizeStr + @" refPoses[] = { 0.0, floor(p), 0.0 };
+				cgDefs.Append(@")
+	float" + sizeStr + @" refPoses[3];
+	refPoses[1] = floor(p);
 	refPoses[0] = refPoses[1] - 1.0;
 	refPoses[2] = refPoses[1] + 1.0;
 	
 	float distances[N_CELLS];
-	float" + sizeStr + @"minWorleyPos = -variance + 0.5,
-						 maxWorleyPos = variance + 0.5;
-	float" + sizeStr + @" worleyPos;
+	float" + sizeStr + @" minWorleyPos = -variance + 0.5,
+						  maxWorleyPos = variance + 0.5;
+	float" + sizeStr + @" worleyPos, tempPos;
+
 	");
 
 				//Calculate all the distances.
@@ -137,20 +133,20 @@ namespace RT.MaterialValue
 							cgDefs.Append("]");
 							break;
 
-						case OutputSizes.Two:
-							int x = ,
-								y = ;
+						case OutputSizes.Two: {
+							int x = i % 3,
+								y = i / 3;
 							cgDefs.Append("refPoses[");
 							cgDefs.Append(x);
 							cgDefs.Append("].x, refPoses[");
 							cgDefs.Append(y);
 							cgDefs.Append("].y");
-							break;
+							} break;
 
-						case OutputSizes.Three:
-							int x = ,
-								y = ,
-								z = ;
+						case OutputSizes.Three: {
+							int x = i % 3,
+								y = (i / 3) % 3,
+								z = i / 9;
 							cgDefs.Append("refPoses[");
 							cgDefs.Append(x);
 							cgDefs.Append("].x, refPoses[");
@@ -158,13 +154,13 @@ namespace RT.MaterialValue
 							cgDefs.Append("].y, refPoses[");
 							cgDefs.Append(z);
 							cgDefs.Append("].z");
-							break;
+							} break;
 
-						case OutputSizes.Four:
-							int x = ,
-								y = ,
-								z = ,
-								w = ;
+						case OutputSizes.Four: {
+							int x = i % 3,
+								y = (i / 3) % 3,
+								z = (i / 9) % 3,
+								w = i / 27;
 							cgDefs.Append("refPoses[");
 							cgDefs.Append(x);
 							cgDefs.Append("].x, refPoses[");
@@ -174,28 +170,43 @@ namespace RT.MaterialValue
 							cgDefs.Append("].z, refPoses[");
 							cgDefs.Append(w);
 							cgDefs.Append("].w");
-							break;
+							} break;
 
 						default: throw new NotImplementedException(inputSize.ToString());
 					}
 					cgDefs.AppendLine(");");
 
-					cgDefs.Append(@"
-	worleyPos += lerp(minWorleyPos, maxWorleyPos, hashValue");
-					cgDefs.Append(inputSize.ToNumber());
-					cgDefs.Append(@"(worleyPos));
+					cgDefs.Append("	tempPos");
+					if (inputSize == OutputSizes.One)
+						cgDefs.AppendLine(" = hashValue1(worleyPos);");
+					else
+					{
+						cgDefs.Append(".x = hashValue");
+						cgDefs.Append(sizeStr);
+						cgDefs.AppendLine("(worleyPos);");
+						for (int j = 1; j < inputSize.ToNumber(); ++j)
+						{
+							cgDefs.Append("\ttempPos.");
+							cgDefs.Append(((uint)(j + 1)).ToOutputSize().ToComponent());
+							cgDefs.Append(" = hashValue1(tempPos.");
+							cgDefs.Append(((uint)j).ToOutputSize().ToComponent());
+							cgDefs.AppendLine(");");
+						}
+					}
+					cgDefs.Append(
+@"	worleyPos += lerp(minWorleyPos, maxWorleyPos, tempPos);
 	distances[");
 					cgDefs.Append(i);
 					cgDefs.Append(
 			  @"] = ");
 					cgDefs.Append(distFunc);
-					cgDefs.AppendLine("\n;");
+					cgDefs.AppendLine(";\n");
 				}
 
 				//Get the 2 closest distances.
 				cgDefs.Append(@"
 	int closest1, closest2;
-	int smallest;");
+	int smallest, i;");
 				for (int i = 0; i < 2; ++i)
 				{
 					cgDefs.Append(@"
@@ -206,16 +217,16 @@ namespace RT.MaterialValue
 						cgDefs.Append("closest1 == 0 ? 1 : 0;");
 
 					cgDefs.Append(@"
-	for (int j = 0; j < N_CELLS; ++j)
+	for (i = 1; i < N_CELLS; ++i)
 		if (");
 					if (i > 0)
-						cgDefs.Append("j != closest1 && ");
+						cgDefs.Append("i != closest1 && ");
 					cgDefs.Append(
-		@"distances[j] < distances[smallest])
-			smallest = j;
+		@"distances[i] < distances[smallest])
+			smallest = i;
 	closest");
 					cgDefs.Append(i + 1);
-					cgDefs.AppendLine(" = distances[smallest];");
+					cgDefs.AppendLine(" = smallest;");
 				}
 
 				//Combine the results.
@@ -286,7 +297,7 @@ namespace RT.MaterialValue
 					default: throw new NotImplementedException(DistCombineOp.ToString());
 				}
 
-				cgDefs.AppendLine("}");
+				cgDefs.AppendLine("#undef N_CELLS\n}");
 			}
 
 			//Call out to the Worley Noise function.
@@ -309,6 +320,56 @@ namespace RT.MaterialValue
 				case 1: return "Variance";
 				default: throw new NotImplementedException(index.ToString());
 			}
+		}
+		public override MV_Base GetDefaultInput(int inputIndex)
+		{
+			switch (inputIndex)
+			{
+				case 0: return MV_Constant.MakeVec2(0.0f, 0.0f, false,
+												    float.NegativeInfinity, float.PositiveInfinity,
+													OutputSizes.All, true);
+				case 1: return MV_Constant.MakeFloat(0.5f, false,
+													 float.NegativeInfinity, float.PositiveInfinity,
+													 OutputSizes.All, true);
+				default: throw new NotImplementedException(inputIndex.ToString());
+			}
+		}
+
+		public override GUIResults DoCustomGUI()
+		{
+			GUIResults result = base.DoCustomGUI();
+			if (result != GUIResults.Nothing)
+				return result;
+			
+			GUILayout.BeginHorizontal();
+			{
+				GUILayout.Label("Dist Func:");
+				DistFunc = (DistFuncs)EditorGUILayout.EnumPopup(DistFunc);
+			}
+			GUILayout.EndHorizontal();
+			
+			GUILayout.BeginHorizontal();
+			{
+				GUILayout.Label("Combine Op:");
+				DistCombineOp = (Ops)EditorGUILayout.EnumPopup(DistCombineOp);
+			}
+			GUILayout.EndHorizontal();
+			
+			GUILayout.BeginHorizontal();
+			{
+				GUILayout.Label("Dist Param 1:");
+				DistParam1 = (Params)EditorGUILayout.EnumPopup(DistParam1);
+			}
+			GUILayout.EndHorizontal();
+			
+			GUILayout.BeginHorizontal();
+			{
+				GUILayout.Label("Dist Param 2:");
+				DistParam2 = (Params)EditorGUILayout.EnumPopup(DistParam2);
+			}
+			GUILayout.EndHorizontal();
+
+			return result;
 		}
 
 		public override void WriteData(DataWriter writer, string namePrefix,

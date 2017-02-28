@@ -226,7 +226,7 @@ namespace RT
         enum Params { One, Zero, D1, D2, InvD1, InvD2 };
         enum DistFuncs { StraightLine, Manhattan };
 
-        Ptr X, Variation;
+        Ptr X, Variance;
 
         Ops DistCombineOp = Add;
         Params DistParam1 = One,
@@ -234,7 +234,7 @@ namespace RT
         DistFuncs DistFunc = StraightLine;
 
 
-        MV_WorleyNoise(Ptr x, Ptr variation) : X(x), Variation(variation) { }
+        MV_WorleyNoise(Ptr x, Ptr variance) : X(x), Variance(variance) { }
 
         virtual Dimensions GetNDims() const override { return Dimensions::One; }
         virtual Vectorf GetValue(const Ray& ray, FastRand& prng,
@@ -242,8 +242,8 @@ namespace RT
                                  const Vertex* surface = nullptr) const override;
 
         virtual size_t GetNChildren() const override { return 2; }
-        virtual const MaterialValue* GetChild(size_t i) const override { return (i == 0 ? X : Variation).Get(); }
-        virtual void SetChild(size_t i, const Ptr& newChild) override { (i == 0 ? X : Variation) = newChild; }
+        virtual const MaterialValue* GetChild(size_t i) const override { return (i == 0 ? X : Variance).Get(); }
+        virtual void SetChild(size_t i, const Ptr& newChild) override { (i == 0 ? X : Variance) = newChild; }
 
         virtual void WriteData(DataWriter& data, const String& namePrefix,
                                const ConstMaterialValueToID& idLookup) const override;

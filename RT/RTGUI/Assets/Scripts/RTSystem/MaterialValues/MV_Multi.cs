@@ -203,7 +203,7 @@ namespace RT.MaterialValue
 	{
 		public override string TypeName { get { return TypeName_Append; } }
 		public override string PrettyName { get { return "Append"; } }
-		public override OutputSizes OutputSize { get { return ((uint)Inputs.Sum(mv => (uint)mv.OutputSize)).ToOutputSize(); } }
+		public override OutputSizes OutputSize { get { return ((uint)Inputs.Sum(mv => mv.OutputSize.ToNumber())).ToOutputSize(); } }
 
 		public MV_Append(MV_Base a, MV_Base b)
 		{

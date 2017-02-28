@@ -416,7 +416,9 @@ namespace NoiseFuncs
               cellLess = cellThis - 1.0f,
               cellMore = cellThis + 1.0f;
 
-#define POINT(var) (var + Mathf::Lerp(0.5f - variance, 0.5f + variance, Hash(var)))
+        float minPos = 0.5f - variance,
+              maxPos = 0.5f + variance;
+#define POINT(var) (var + Mathf::Lerp(minPos, maxPos, Hash(var)))
         const int N_CELLS = 3;
         float distances[N_CELLS] = { distFunc(x, POINT(cellThis)),
                                      distFunc(x, POINT(cellLess)),
@@ -429,7 +431,7 @@ namespace NoiseFuncs
         for (int i = 0; i < 2; ++i)
         {
             int smallest = 0;
-            for (int j = 0; j < N_CELLS; ++j)
+            for (int j = 1; j < N_CELLS; ++j)
             {
                 if (j != exclude && distances[j] < distances[smallest])
                     smallest = j;
@@ -441,25 +443,32 @@ namespace NoiseFuncs
     }
     WorleyResult Worley(Vector2f v, Vector2f variance, float(*distFunc)(Vector2f p1, Vector2f p2))
     {
-        Vector2f cellMid(floorf(v.x), floorf(v.y)),
-                 cellMin = cellMid - 1.0f,
-                 cellMax = cellMid + 1.0f,
-                 cellMidXMinY(cellMid.x, cellMin.y),
-                 cellMaxXMinY(cellMax.x, cellMin.y),
-                 cellMinXMidY(cellMin.x, cellMid.y),
-                 cellMaxXMidY(cellMax.x, cellMid.y),
-                 cellMinXMaxY(cellMin.x, cellMax.y),
-                 cellMidXMaxY(cellMid.x, cellMax.y);
+        const int N_CELLS = 3 * 3;
+
+        float Xs[] = { 0.0f, floor(v.x), 0.0f },
+              Ys[] = { 0.0f, floor(v.y), 0.0f };
+        Xs[0] = Xs[1] - 1.0f;
+        Xs[2] = Xs[1] + 1.0f;
+        Ys[0] = Ys[1] - 1.0f;
+        Ys[2] = Ys[1] + 1.0f;
+
+        Vector2f cellPoses[N_CELLS];
+        int cellI = 0;
+        for (int x = -1; x < 2; ++x)
+            for (int y = -1; y < 2; ++y)
+                cellPoses[cellI++] = Vector2f(Xs[x + 1], Ys[y + 1]);
 
         Vector2f minPos = -variance + 0.5f,
                  maxPos = variance + 0.5f;
-#define POINT(var) (var + Vector2f::Lerp(minPos, maxPos, Hash(var)))
-#define DIST(var) distFunc(v, POINT(var))
-        const int N_CELLS = 3 * 3;
-        float distances[N_CELLS] = { DIST(cellMin), DIST(cellMidXMinY), DIST(cellMaxXMinY),
-                                     DIST(cellMinXMidY), DIST(cellMid), DIST(cellMaxXMidY),
-                                     DIST(cellMinXMaxY), DIST(cellMidXMaxY), DIST(cellMax) };
-#undef POINT
+        float distances[N_CELLS];
+        for (int i = 0; i < N_CELLS; ++i)
+        {
+            Vector2f hashPoint(Hash(cellPoses[i]), 0.0f);
+            hashPoint.y = Hash(hashPoint.x);
+
+            distances[i] = distFunc(cellPoses[i] + Vector2f::Lerp(minPos, maxPos, hashPoint),
+                                    v);
+        }
 
         //Get the 2 closest distances.
         WorleyResult result;
@@ -467,7 +476,7 @@ namespace NoiseFuncs
         for (int i = 0; i < 2; ++i)
         {
             int smallest = 0;
-            for (int j = 0; j < N_CELLS; ++j)
+            for (int j = 1; j < N_CELLS; ++j)
             {
                 if (j != exclude && distances[j] < distances[smallest])
                     smallest = j;
@@ -504,8 +513,12 @@ namespace NoiseFuncs
         float distances[N_CELLS];
         for (int i = 0; i < N_CELLS; ++i)
         {
-            Vector3f point = cellPoses[i] + Vector3f::Lerp(minPos, maxPos, Hash(cellPoses[i]));
-            distances[i] = distFunc(v, point);
+            Vector3f hashPoint(Hash(cellPoses[i]), 0.0f, 0.0f);
+            hashPoint.y = Hash(hashPoint.x);
+            hashPoint.z = Hash(hashPoint.y);
+
+            distances[i] = distFunc(cellPoses[i] + Vector3f::Lerp(minPos, maxPos, hashPoint),
+                                    v);
         }
 
         //Get the 2 closest distances.
@@ -514,7 +527,7 @@ namespace NoiseFuncs
         for (int i = 0; i < 2; ++i)
         {
             int smallest = 0;
-            for (int j = 0; j < N_CELLS; ++j)
+            for (int j = 1; j < N_CELLS; ++j)
             {
                 if (j != exclude && distances[j] < distances[smallest])
                     smallest = j;
@@ -555,8 +568,13 @@ namespace NoiseFuncs
         float distances[N_CELLS];
         for (int i = 0; i < N_CELLS; ++i)
         {
-            Vector4f point = cellPoses[i] + Vector4f::Lerp(minPos, maxPos, Hash(cellPoses[i]));
-            distances[i] = distFunc(v, point);
+            Vector4f hashPoint(Hash(cellPoses[i]), 0.0f, 0.0f, 0.0f);
+            hashPoint.y = Hash(hashPoint.x);
+            hashPoint.z = Hash(hashPoint.y);
+            hashPoint.w = Hash(hashPoint.z);
+
+            distances[i] = distFunc(cellPoses[i] + Vector4f::Lerp(minPos, maxPos, hashPoint),
+                                    v);
         }
 
         //Get the 2 closest distances.
@@ -565,7 +583,7 @@ namespace NoiseFuncs
         for (int i = 0; i < 2; ++i)
         {
             int smallest = 0;
-            for (int j = 0; j < N_CELLS; ++j)
+            for (int j = 1; j < N_CELLS; ++j)
             {
                 if (j != exclude && distances[j] < distances[smallest])
                     smallest = j;
@@ -611,7 +629,7 @@ Vectorf MV_WorleyNoise::GetValue(const Ray& ray, FastRand& prng,
 {
     //Get the inputs.
     Vectorf x = X->GetValue(ray, prng, shpe, surface);
-    Vectorf variance = X->GetValue(ray, prng, shpe, surface);
+    Vectorf variance = Variance->GetValue(ray, prng, shpe, surface);
     Dimensions size = Max(x.NValues, variance.NValues);
 
     //Get the two closest distances.
@@ -682,10 +700,10 @@ Vectorf MV_WorleyNoise::GetValue(const Ray& ray, FastRand& prng,
         case Params::D1: d1 *= result.Dists[0]; break;
         case Params::D2: d1 *= result.Dists[1]; break;
         case Params::InvD1: d1 /= result.Dists[0]; break;
-        case Params::InvD2: d2 /= result.Dists[1]; break;
+        case Params::InvD2: d1 /= result.Dists[1]; break;
         default: assert(false); break;
     }
-    switch (DistParam1)
+    switch (DistParam2)
     {
         case Params::One: break;
         case Params::Zero: d2 = 0.0f; break;
