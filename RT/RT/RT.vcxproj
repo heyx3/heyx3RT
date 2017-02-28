@@ -20,7 +20,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\BoundingBox.h" />
+    <ClInclude Include="Headers\Bounds.h" />
     <ClInclude Include="Headers\Camera.h" />
+    <ClInclude Include="Headers\CommonBVHTypes.h" />
     <ClInclude Include="Headers\Dictionary.h" />
     <ClInclude Include="Headers\FastRand.h" />
     <ClInclude Include="Headers\Main.hpp" />
@@ -31,9 +33,12 @@
     <ClInclude Include="Headers\Mathf.h" />
     <ClInclude Include="Headers\Matrix4f.h" />
     <ClInclude Include="Headers\Mesh.h" />
+    <ClInclude Include="Headers\Node.h" />
+    <ClInclude Include="Headers\NodeRef.h" />
     <ClInclude Include="Headers\Plane.h" />
     <ClInclude Include="Headers\Quaternion.h" />
     <ClInclude Include="Headers\Ray.h" />
+    <ClInclude Include="Headers\Root.h" />
     <ClInclude Include="Headers\RT.hpp" />
     <ClInclude Include="Headers\DataSerialization.h" />
     <ClInclude Include="Headers\JsonSerialization.h" />

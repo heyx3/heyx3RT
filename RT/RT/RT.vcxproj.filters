@@ -31,6 +31,9 @@
     <Filter Include="Headers\Wrappers">
       <UniqueIdentifier>{cb0a7a80-a530-456c-aba6-edf541cd1d2a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Headers\BVH">
+      <UniqueIdentifier>{8609a69a-fcb9-4422-8c67-9c2d25e120f7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\Camera.h">
@@ -152,6 +155,21 @@
     </ClInclude>
     <ClInclude Include="Headers\Dictionary.h">
       <Filter>Headers\Wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\NodeRef.h">
+      <Filter>Headers\BVH</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Node.h">
+      <Filter>Headers\BVH</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Root.h">
+      <Filter>Headers\BVH</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Bounds.h">
+      <Filter>Headers\BVH</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\CommonBVHTypes.h">
+      <Filter>Headers\BVH</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
