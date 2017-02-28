@@ -21,7 +21,7 @@ void Plane::PrecalcData()
     normal = Tr.GetMatToWorld().ApplyVector(LocalNormal).Normalize();
     normal.GetOrthoBasis(tangent, bitangent);
 
-    planePos = Tr.GetPos().Dot(normal);
+    planePos = -Tr.GetPos().Dot(normal);
 
     Vector3f p1 = Tr.GetMatToWorld().ApplyPoint(Vector3f(-1.0f, 0.0f, -1.0f)),
              p2 = Tr.GetMatToWorld().ApplyPoint(Vector3f(1.0f, 0.0f, -1.0f)),
@@ -57,7 +57,7 @@ bool Plane::CastRay(const Ray& ray, Vertex& outHit) const
     //If ray intersection is outside the plane's bounds, exit.
     Vector3f localPos = Tr.GetMatToLocal().ApplyPoint(outHit.Pos);
     if (localPos.x < -1.0f || localPos.x > 1.0f ||
-        localPos.z < -1.0f || localPos.x > 1.0f)
+        localPos.z < -1.0f || localPos.z > 1.0f)
     {
         return false;
     }
