@@ -5,6 +5,8 @@ using UnityEngine;
 using UnityEditor;
 
 
+//TODO: When serializing scene and material graphs, set indentation to 0 or 1.
+
 namespace RT
 {
 	public class ShapeAndMat : Serialization.ISerializableRT

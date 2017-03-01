@@ -144,6 +144,7 @@ namespace RT
 			}
 		}
 		#region Helper struct for serialization
+		//TODO: Actually store vertex as a struct and make one class that is reused for every vertex.
 		private class Vertex : Serialization.ISerializableRT
 		{
 			public Vector3 Pos, Normal, Tangent, Bitangent;

@@ -177,7 +177,11 @@ namespace RT.CustomInspectors
 					Camera c = UnityEditor.SceneView.lastActiveSceneView.camera;
 					TraceResult = sys.GenerateImage(c.transform, tempPath);
 					if (TraceResult != null)
+					{
 						TraceResult.filterMode = FilterMode.Point;
+						TraceResult.wrapMode = TextureWrapMode.Clamp;
+						TraceResult.anisoLevel = 0;
+					}
 
 					//Clean up temp files.
 					File.Delete(tempPath);
@@ -193,7 +197,7 @@ namespace RT.CustomInspectors
 			//Results of the render.
 			if (TraceResult != null)
 			{
-				TraceResultScale = EditorGUILayout.Slider(TraceResultScale, 0.1f, 10.0f);
+				TraceResultScale = EditorGUILayout.Slider(TraceResultScale, 0.1f, 50.0f);
 
 				//Draw the render.
 				if (traceResultStyle == null)
@@ -204,9 +208,10 @@ namespace RT.CustomInspectors
 				}
 				MyGUI.BeginCompact();
 				traceResultStyle.normal.background = TraceResult;
-				GUILayout.Box("", traceResultStyle,
-							  GUILayout.Width(TraceResult.width * TraceResultScale),
-							  GUILayout.Height(TraceResult.height * TraceResultScale));
+				var texSpace = EditorGUILayout.GetControlRect(false,
+															  GUILayout.Width(TraceResult.width * TraceResultScale),
+															  GUILayout.Height(TraceResult.height * TraceResultScale));
+				EditorGUI.DrawPreviewTexture(texSpace, TraceResult, null, ScaleMode.StretchToFill);
 				MyGUI.EndCompact();
 				
 				MyGUI.BeginCompact();

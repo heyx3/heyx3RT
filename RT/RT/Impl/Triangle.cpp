@@ -11,19 +11,20 @@ namespace
         float b = p1.Distance(p3);
         float c = p2.Distance(p3);
         float s = (p1P2Dist + b + c) * 0.5f;
-        return sqrtf(s * (s - p1P2Dist) * (s - b) * (s - c));
+        return sqrtf(std::fmaxf(0.0f, s * (s - p1P2Dist) * (s - b) * (s - c)));
     }
 }
 
 
 bool Triangle::RayIntersect(const Ray& ray, Vector3f& outPos, float& outDist) const
 {
+    const float EPSILON = 0.0001f; //This DOES NOT appear to have a major effect on the mesh rendering holes.
+
     //Miller-Trumbore intersection algorithm.
 
     Vector3f p = ray.GetDir().Cross(e2);
     float determinant = e1.Dot(p);
 
-    const float EPSILON = 0.00001f;
     if (determinant > -EPSILON && determinant < EPSILON)
         return false;
 
@@ -31,13 +32,13 @@ bool Triangle::RayIntersect(const Ray& ray, Vector3f& outPos, float& outDist) co
 
     Vector3f T = ray.GetPos() - Verts[0].Pos;
     float u = T.Dot(p) * invDet;
-    if (u < 0.0f || u > 1.0f)
+    if (u < -EPSILON || u > (1.0f + EPSILON))
         return false;
 
     Vector3f q = T.Cross(e1);
 
     float v = ray.GetDir().Dot(q) * invDet;
-    if (v < 0.0f || (u + v) > 1.0f)
+    if (v < -EPSILON || (u + v) > (1.0f + EPSILON))
         return false;
 
     outDist = e2.Dot(q) * invDet;
@@ -68,8 +69,17 @@ void Triangle::GetMoreData(Vertex& vert, const Matrix4f& worldM) const
           area1 = invTotalArea * GetArea(Verts[0].Pos, Verts[2].Pos, vert.Pos, length02),
           area0 = invTotalArea * GetArea(Verts[1].Pos, Verts[2].Pos, vert.Pos, length12);
 
-    vert.Normal = ((Verts[0].Normal * area0) + (Verts[1].Normal * area1) + (Verts[2].Normal * area2)).Normalize();
-    vert.Tangent = ((Verts[0].Tangent * area0) + (Verts[1].Tangent * area1) + (Verts[2].Tangent * area2)).Normalize();
+    vert.Normal = (Verts[0].Normal * area0) + (Verts[1].Normal * area1) + (Verts[2].Normal * area2);
+    if (vert.Normal.LengthSqr() < 0.001f)
+        vert.Normal = Verts[0].Normal;
+    else
+        vert.Normal = vert.Normal.Normalize();
+
+    vert.Tangent = (Verts[0].Tangent * area0) + (Verts[1].Tangent * area1) + (Verts[2].Tangent * area2);
+    if (vert.Tangent.LengthSqr() < 0.001f)
+        vert.Tangent = Verts[0].Tangent;
+    else
+        vert.Tangent = vert.Tangent.Normalize();
 
     vert.Normal = worldM.ApplyVector(vert.Normal).Normalize();
     vert.Tangent = worldM.ApplyVector(vert.Tangent).Normalize();

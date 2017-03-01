@@ -7,11 +7,16 @@ ModelImporter:
   fileIDToRecycleName:
     100000: //RootNode
     100002: pPlane1
+    100004: default
     400000: //RootNode
     400002: pPlane1
+    400004: default
     2300000: pPlane1
+    2300002: default
     3300000: pPlane1
+    3300002: default
     4300000: pPlane1
+    4300002: default
   materials:
     importMaterials: 0
     materialName: 0

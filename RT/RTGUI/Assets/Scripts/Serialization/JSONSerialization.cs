@@ -12,12 +12,12 @@ namespace RT.Serialization
 		private Newtonsoft.Json.JsonTextWriter writer;
 
 
-		public JSONWriter(string filePath)
+		public JSONWriter(string filePath, int indentation = 1)
 		{
 			try
 			{
 				writer = new Newtonsoft.Json.JsonTextWriter(new System.IO.StreamWriter(filePath));
-				Init();
+				Init(indentation);
 			}
 			catch (Exception e)
 			{
@@ -25,12 +25,12 @@ namespace RT.Serialization
 				throw new WriteException("Unable to open " + filePath + ": " + e.Message);
 			}
 		}
-		public JSONWriter(System.IO.TextWriter streamWriter)
+		public JSONWriter(System.IO.TextWriter streamWriter, int indentation = 1)
 		{
 			try
 			{
 				writer = new Newtonsoft.Json.JsonTextWriter(streamWriter);
-				Init();
+				Init(indentation);
 			}
 			catch (Exception e)
 			{
@@ -38,12 +38,11 @@ namespace RT.Serialization
 				throw new WriteException("Unable to create stream: " + e.Message);
 			}
 		}
-		private void Init()
+		private void Init(int indentation)
 		{
-			writer.Indentation = 4;
+			writer.Indentation = indentation;
 			writer.Formatting = Newtonsoft.Json.Formatting.Indented;
 			writer.IndentChar = '\t';
-			writer.IndentChar = ' ';
 
 			writer.WriteStartObject();
 		}

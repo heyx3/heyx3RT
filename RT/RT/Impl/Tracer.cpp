@@ -107,7 +107,7 @@ bool Tracer::TraceRay(size_t bounce, size_t maxBounces,
 {
     if (bounce >= maxBounces)
     {
-        outColor = SkyMat->GetColor(ray, prng);
+        outColor = SkyMat->GetColor(ray, prng);//TODO: return black if ray goes too far -- it gets fully attenuated!
         return false;
     }
 
@@ -173,7 +173,7 @@ void Tracer::TraceImage(const Camera& cam, Texture2D& tex,
                                     forward +
                                     (cam.GetSideways() * cX) +
                                     (cam.GetUpward() * cY);
-                Ray r(pixelPos, (pixelPos - cam.Pos).Normalize());
+                Ray r(cam.Pos, (pixelPos - cam.Pos).Normalize());
 
                 Vector3f tempCol;
                 Vertex outHit;

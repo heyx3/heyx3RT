@@ -47,15 +47,23 @@ void Mesh::PrecalcData()
             bounds.Max.z = Max(bounds.Max.z, Tris[tri].Verts[i].Pos.z);
         }
     }
+
+    const float EPSILON = 0.001f;
+    if (std::fabsf(bounds.Min.x - bounds.Max.x) < EPSILON)
+        bounds.Max.x += EPSILON;
+    if (std::fabsf(bounds.Min.y - bounds.Max.y) < EPSILON)
+        bounds.Max.y += EPSILON;
+    if (std::fabsf(bounds.Min.z - bounds.Max.z) < EPSILON)
+        bounds.Max.z += EPSILON;
 }
 bool Mesh::CastRay(const Ray& ray, Vertex& outHit) const
 {
-    if (!bounds.RayIntersects(ray))
-        return false;
-
     //TODO: Try not bothering to normalize the local ray's direction.
     Ray newRay(Tr.GetMatToLocal().ApplyPoint(ray.GetPos()),
                Tr.GetMatToLocal().ApplyVector(ray.GetDir()).Normalize());
+
+    if (!bounds.RayIntersects(newRay))
+        return false;
 
     const Triangle* closest = nullptr;
     float hitDist = std::numeric_limits<float>().infinity();
