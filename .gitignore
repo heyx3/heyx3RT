@@ -85,6 +85,9 @@ RT/RTCmd/Build
 RT/RT.VC.opendb
 
 # Unity Project
+RT/RTGUI/.vs*
+RT/RTGUI/Assets/Plugins/Win32/RT.dll*
+RT/RTGUI/Assets/Plugins/x64/RT.dll*
 RT/RTGUI/*.csproj
 RT/RTGUI/ProjectSettings
 RT/RTGUI/*.sln
@@ -92,3 +95,4 @@ RT/RTGUI/Library
 RT/RTGUI/Temp
 RT/RTGUI/Assets/Generated*
 RT/RTGUI/Assets/Test*
+RT/RTGUI/Assets/Standard Assets*
