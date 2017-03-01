@@ -28,6 +28,7 @@
     <ClInclude Include="Headers\Main.hpp" />
     <ClInclude Include="Headers\Material.h" />
     <ClInclude Include="Headers\MaterialValueGraph.h" />
+    <ClInclude Include="Headers\Material_Dielectric.h" />
     <ClInclude Include="Headers\Material_Lambert.h" />
     <ClInclude Include="Headers\Material_Metal.h" />
     <ClInclude Include="Headers\Mathf.h" />
@@ -66,6 +67,7 @@
     <ClInclude Include="Headers\Vertex.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Headers\Material_Dielectric.cpp" />
     <ClCompile Include="Impl\BoundingBox.cpp" />
     <ClCompile Include="Impl\Camera.cpp" />
     <ClCompile Include="Impl\DataSerialization.cpp" />

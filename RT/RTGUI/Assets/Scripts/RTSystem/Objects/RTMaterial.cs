@@ -12,7 +12,8 @@ namespace RT
 	public abstract class RTMaterial : RTBaseMaterial, Serialization.ISerializableRT
 	{
 		protected const string TypeName_Lambert = "Lambert",
-		                       TypeName_Metal = "Metal";
+		                       TypeName_Metal = "Metal",
+							   TypeName_Dielectric = "Dielectric";
 
 
 		public static void Serialize(RTMaterial mat, string name, Serialization.DataWriter writer)
@@ -34,6 +35,9 @@ namespace RT
 					break;
 				case TypeName_Metal:
 					mat = toAttachTo.AddComponent<RTMaterial_Metal>();
+					break;
+				case TypeName_Dielectric:
+					mat = toAttachTo.AddComponent<RTMaterial_Dielectric>();
 					break;
 					
 				default:

@@ -9,6 +9,7 @@ namespace RT
 		public bool IsOneSided = true;
 
 		[SerializeField]
+		[HideInInspector]
 		private PlaneFollower follower = null;
 
 
@@ -22,10 +23,10 @@ namespace RT
 		}
 		private void Update()
 		{
-			if (follower == null)
+			if (follower == null || follower.MyTr.parent != transform)
 			{
 				follower = new GameObject("Plane Backside").AddComponent<PlaneFollower>();
-				follower.transform.parent = transform;
+				follower.MyTr.parent = transform;
 			}
 		}
 

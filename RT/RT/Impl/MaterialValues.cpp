@@ -909,11 +909,15 @@ IMPL_SIMPLE_FUNC(Distance,
 IMPL_SIMPLE_FUNC(Dot, return GET_VAL(A).Dot(GET_VAL(B)); ,
                  return One; );
 IMPL_SIMPLE_FUNC(Reflect, return GET_VAL(V).Reflect(GET_VAL(Normal)); ,
-                 return Max(V->GetNDims(), Normal->GetNDims()); );
+                 return Max(COMMA(V->GetNDims(), Normal->GetNDims())); );
 IMPL_SIMPLE_FUNC(Refract,
-                 return GET_VAL(V).Refract(COMMA(GET_VAL(Normal),
-                                                 (float)GET_VAL(IndexOfRefraction))); ,
-                 return Max(V->GetNDims(), Normal->GetNDims()); );
+                    auto v = GET_VAL(V);
+                    auto normal = GET_VAL(Normal);
+                    float index = (float)GET_VAL(IndexOfRefraction);
+                    Vectorf result;
+                    v.Refract(COMMA3(normal, index, result));
+                    return result; ,
+                 return Max(COMMA(V->GetNDims(), Normal->GetNDims())); );
 
 IMPL_SIMPLE_FUNC1(Sqrt, return GET_VAL(X).OperateOn(&sqrtf); );
 IMPL_SIMPLE_FUNC(Pow, return GET_VAL(Base).OperateOn(COMMA(&powf, GET_VAL(Exp))); ,
@@ -932,7 +936,7 @@ IMPL_SIMPLE_FUNC(Atan2,
                  return MinIgnoring1D(COMMA(X->GetNDims(), Y->GetNDims()));
                  );
 IMPL_SIMPLE_FUNC(Step,
-                 return GET_VAL(Edge).OperateOn(COMMA([](float edge, float x) { return (x < edge ? 0.0f : 1.0f); },
+                 return GET_VAL(Edge).OperateOn(COMMA([](COMMA(float edge, float x)) { return (x < edge ? 0.0f : 1.0f); },
                                                       GET_VAL(X))); ,
                  return MinIgnoring1D(COMMA(Edge->GetNDims(), X->GetNDims()));
                  );

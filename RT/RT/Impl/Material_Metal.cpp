@@ -20,7 +20,7 @@ bool Material_Metal::Scatter(const Ray& rIn, const Vertex& surf, const Shape& sh
     //If the ray is pointing into the surface, count it as absorbed.
     if (reflected.Dot(surf.Normal) > 0.0f)
     {
-        rOut = Ray(surf.Pos + (surf.Normal * 0.0001f),
+        rOut = Ray(surf.Pos + (surf.Normal * PushoffDist),
                    reflected);
         return true;
     }

@@ -133,12 +133,22 @@ namespace RT
             return *this * invLen;
         }
 
-        Vector3f Reflect(const Vector3f& normal) const { return (*this) - (normal * 2.0f * (normal).Dot(*this)); }
-        Vector3f Refract(const Vector3f& normal, float invIndex) const
+        Vector3f Reflect(Vector3f normal) const { return (*this) - (normal * 2.0f * (normal).Dot(*this)); }
+        bool Refract(Vector3f normal, float indexOfRefractionRatio, Vector3f& outResult) const
         {
-            Vector3f crossed = normal.Cross(*this);
-            return ((normal.Cross(-crossed)) * invIndex) -
-                   (normal * sqrtf(1.0f - (invIndex * invIndex * crossed.Dot(crossed))));
+            Vector3f thisNormalized = Normalize();
+            float thisDotNormal = thisNormalized.Dot(normal);
+            float discriminant = 1.0f - (indexOfRefractionRatio * indexOfRefractionRatio *
+                                         (1.0f - (thisDotNormal * thisDotNormal)));
+            if (discriminant > 0.0f)
+            {
+                outResult = ((*this - (normal * thisDotNormal)) * indexOfRefractionRatio) -
+                            (normal * sqrtf(discriminant));
+                return true;
+            }
+
+            outResult = Vector3f();
+            return false;
         }
 
         Vector3f Reciprocal() const { return Vector3f(1.0f / x, 1.0f / y, 1.0f / z); }

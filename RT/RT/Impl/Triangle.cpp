@@ -18,13 +18,12 @@ namespace
 
 bool Triangle::RayIntersect(const Ray& ray, Vector3f& outPos, float& outDist) const
 {
-    const float EPSILON = 0.0001f; //This DOES NOT appear to have a major effect on the mesh rendering holes.
-
     //Miller-Trumbore intersection algorithm.
 
     Vector3f p = ray.GetDir().Cross(e2);
     float determinant = e1.Dot(p);
 
+    const float EPSILON = 0.0001f;
     if (determinant > -EPSILON && determinant < EPSILON)
         return false;
 
@@ -32,17 +31,17 @@ bool Triangle::RayIntersect(const Ray& ray, Vector3f& outPos, float& outDist) co
 
     Vector3f T = ray.GetPos() - Verts[0].Pos;
     float u = T.Dot(p) * invDet;
-    if (u < -EPSILON || u > (1.0f + EPSILON))
+    if (u < 0.0f || u > 1.0f)
         return false;
 
     Vector3f q = T.Cross(e1);
 
     float v = ray.GetDir().Dot(q) * invDet;
-    if (v < -EPSILON || (u + v) > (1.0f + EPSILON))
+    if (v < 0.0f || (u + v) > 1.0f)
         return false;
 
     outDist = e2.Dot(q) * invDet;
-    if (outDist > EPSILON)
+    if (outDist > 0.0f)
     {
         outPos = ray.GetPos() + (ray.GetDir() * outDist);
         return true;

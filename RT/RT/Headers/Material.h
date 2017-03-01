@@ -11,6 +11,11 @@ namespace RT
     class RT_API Material : public ISerializable
     {
     public:
+        
+        //When a ray is scattered off the surface of this material,
+        //The ray should be moved forward this small epsilon amount.
+        const float PushoffDist = 0.0001f;
+
 
         //Allocates a material on the heap with the given type-name. Used in the serialization system.
         static Material* Create(const String& typeName) { return GetFactory(typeName)(); }

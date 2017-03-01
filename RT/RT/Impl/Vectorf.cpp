@@ -20,14 +20,21 @@ Vectorf Vectorf::Reflect(const Vectorf& normal) const
 {
     return (*this) + (normal * 2.0 * (-normal).Dot(*this));
 }
-Vectorf Vectorf::Refract(const Vectorf& normal, float indexOfRefraction) const
+bool Vectorf::Refract(const Vectorf& normal, float indexOfRefraction, Vectorf& outResult) const
 {
-    float nDotV = Dot(normal);
-    float k = 1.0f - (indexOfRefraction * indexOfRefraction * (1.0f - (nDotV * nDotV)));
-    if (k < 0.0f)
-        return Vectorf(0.0f, NValues);
-    else
-        return (*this * indexOfRefraction) - (normal * ((indexOfRefraction * nDotV) + sqrtf(k)));
+    Vectorf thisNormalized = Normalized();
+    float thisDotNormal = thisNormalized.Dot(normal);
+    float discriminant = 1.0f - (indexOfRefraction * indexOfRefraction *
+                                 (1.0f - (thisDotNormal * thisDotNormal)));
+    if (discriminant < 0.0f)
+    {
+        outResult = Vector3f(0.0f, 0.0f, 0.0f);
+        return false;
+    }
+
+    outResult = ((*this - (normal * thisDotNormal)) * indexOfRefraction) -
+                (normal * sqrtf(discriminant));
+    return true;
 }
 
 

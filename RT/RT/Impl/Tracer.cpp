@@ -107,7 +107,8 @@ bool Tracer::TraceRay(size_t bounce, size_t maxBounces,
 {
     if (bounce >= maxBounces)
     {
-        outColor = SkyMat->GetColor(ray, prng);//TODO: return black if ray goes too far -- it gets fully attenuated!
+        //The ray went too far; assume it's fully attenuated.
+        outColor = Vector3f();
         return false;
     }
 

@@ -171,6 +171,9 @@
     <ClInclude Include="Headers\CommonBVHTypes.h">
       <Filter>Headers\BVH</Filter>
     </ClInclude>
+    <ClInclude Include="Headers\Material_Dielectric.h">
+      <Filter>Headers\Materials</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Impl\Quaternion.cpp">
@@ -261,6 +264,9 @@
       <Filter>Impl</Filter>
     </ClCompile>
     <ClCompile Include="Impl\MaterialValueGraph.cpp">
+      <Filter>Impl</Filter>
+    </ClCompile>
+    <ClCompile Include="Headers\Material_Dielectric.cpp">
       <Filter>Impl</Filter>
     </ClCompile>
   </ItemGroup>

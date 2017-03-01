@@ -6,6 +6,8 @@
 
 namespace RT
 {
+    //TODO: Store inverse transpose matrix for transforming normals.
+
     struct RT_API Transform : public ISerializable
     {
     public:

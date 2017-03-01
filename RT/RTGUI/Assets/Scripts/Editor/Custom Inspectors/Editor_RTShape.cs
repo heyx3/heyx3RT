@@ -34,9 +34,13 @@ namespace RT.CustomInspectors
 		}
 	}
 
-
-	[CustomEditor(typeof(RTShape_Mesh))]
-	public class Editor_RTShape_Mesh : Editor_RTShape
-	{
-	}
+	
+	[CustomEditor(typeof(RTShape_Plane))]
+	public class Editor_RTShape_Plane : Editor_RTShape { }
+	
+	[CustomEditor(typeof(RTShape_Sphere))]
+	public class Editor_RTShape_Sphere : Editor_RTShape { }
+	
+	[CustomEditor(typeof(RTShape_Sphere))]
+	public class Editor_RTShape_Mesh : Editor_RTShape { }
 }

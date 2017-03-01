@@ -53,7 +53,7 @@ namespace RT
         Vectorf Normalized() const { return *this / Length(); }
 
         Vectorf Reflect(const Vectorf& normal) const;
-        Vectorf Refract(const Vectorf& normal, float indexOfRefraction) const;
+        bool Refract(const Vectorf& normal, float indexOfRefraction, Vectorf& result) const;
 
 
         //"Func" is of the type "float f(float myF, float otherF)".
