@@ -34,6 +34,9 @@ void Transform::UpdateMats()
 
     toWorld = Matrix4f(Matrix4f(scaleM, rotM), transM);
     toWorld.GetInverse(toLocal);
+
+    toWorld.GetTranspose(toLocal_InverseTranspose);
+    toLocal.GetTranspose(toWorld_InverseTranspose);
 }
 
 void Transform::WriteData(DataWriter& writer) const

@@ -117,7 +117,7 @@ void Sphere::FillInData(Vertex& v, const Vector3f& localPos) const
 
     Vector3f localNormal = localPos.Normalize(); //TODO: Is normalization necessary?
 
-    v.Normal = Tr.GetMatToWorld().ApplyVector(localNormal).Normalize();
+    v.Normal = Tr.GetMatToWorld_InverseTranspose().ApplyVector(localNormal).Normalize();
     v.Tangent = v.Normal.Cross(fabs(v.Normal.x) == 1.0f ? Vector3f::Y() : Vector3f::X()).Normalize();
     v.Bitangent = v.Normal.Cross(v.Tangent);
     

@@ -18,7 +18,7 @@ const Vector3f Plane::LocalNormal = Vector3f::Y();
 
 void Plane::PrecalcData()
 {
-    normal = Tr.GetMatToWorld().ApplyVector(LocalNormal).Normalize();
+    normal = Tr.GetMatToWorld_InverseTranspose().ApplyVector(LocalNormal).Normalize();
     normal.GetOrthoBasis(tangent, bitangent);
 
     planePos = -Tr.GetPos().Dot(normal);

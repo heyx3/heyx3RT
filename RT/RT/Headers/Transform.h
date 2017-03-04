@@ -6,8 +6,6 @@
 
 namespace RT
 {
-    //TODO: Store inverse transpose matrix for transforming normals.
-
     struct RT_API Transform : public ISerializable
     {
     public:
@@ -21,7 +19,10 @@ namespace RT
         const Quaternion& GetRot() const { return rot; }
 
         const Matrix4f& GetMatToWorld() const { return toWorld; }
+        const Matrix4f& GetMatToWorld_InverseTranspose() const { return toWorld_InverseTranspose; }
+
         const Matrix4f& GetMatToLocal() const { return toLocal; }
+        const Matrix4f& GetWorldToLocal_InverseTranspose() const { return toLocal_InverseTranspose; }
 
 
         void SetPos(const Vector3f& pos);
@@ -45,6 +46,8 @@ namespace RT
         Quaternion rot;
 
         Matrix4f toWorld, toLocal;
+        Matrix4f toWorld_InverseTranspose,
+                 toLocal_InverseTranspose;
 
         void UpdateMats();
     };
