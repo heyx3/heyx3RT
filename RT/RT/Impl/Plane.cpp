@@ -18,15 +18,15 @@ const Vector3f Plane::LocalNormal = Vector3f::Y();
 
 void Plane::PrecalcData()
 {
-    normal = Tr.GetMatToWorld_InverseTranspose().ApplyVector(LocalNormal).Normalize();
+    normal = Tr.Normal_LocalToWorld(LocalNormal).Normalize();
     normal.GetOrthoBasis(tangent, bitangent);
 
     planePos = -Tr.GetPos().Dot(normal);
 
-    Vector3f p1 = Tr.GetMatToWorld().ApplyPoint(Vector3f(-1.0f, 0.0f, -1.0f)),
-             p2 = Tr.GetMatToWorld().ApplyPoint(Vector3f(1.0f, 0.0f, -1.0f)),
-             p3 = Tr.GetMatToWorld().ApplyPoint(Vector3f(-1.0f, 0.0f, 1.0f)),
-             p4 = Tr.GetMatToWorld().ApplyPoint(Vector3f(1.0f, 0.0f, 1.0f));
+    Vector3f p1 = Tr.Point_LocalToWorld(Vector3f(-1.0f, 0.0, -1.0f)),
+             p2 = Tr.Point_LocalToWorld(Vector3f(1.0f, 0.0f, -1.0f)),
+             p3 = Tr.Point_LocalToWorld(Vector3f(-1.0f, 0.0f, 1.0f)),
+             p4 = Tr.Point_LocalToWorld(Vector3f(1.0f, 0.0f, 1.0f));
 
     bounds.Min = Vector3f(min(p1.x, min(p2.x, min(p3.x, p4.x))),
                           min(p1.y, min(p2.y, min(p3.y, p4.y))),
@@ -55,7 +55,7 @@ bool Plane::CastRay(const Ray& ray, Vertex& outHit) const
     outHit.Pos = ray.GetPos(t);
 
     //If ray intersection is outside the plane's bounds, exit.
-    Vector3f localHitPos = Tr.GetMatToLocal().ApplyPoint(outHit.Pos);
+    Vector3f localHitPos = Tr.Point_WorldToLocal(outHit.Pos);
     if (localHitPos.x < -1.0f || localHitPos.x > 1.0f ||
         localHitPos.z < -1.0f || localHitPos.z > 1.0f)
     {

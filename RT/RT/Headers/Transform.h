@@ -18,9 +18,16 @@ namespace RT
         const Vector3f& GetScale() const { return scale; }
         const Quaternion& GetRot() const { return rot; }
 
+        Vector3f Point_WorldToLocal(Vector3f v) const { return toLocal.ApplyPoint(v); }
+        Vector3f Dir_WorldToLocal(Vector3f d) const { return toLocal.ApplyVector(d); }
+        Vector3f Normal_WorldToLocal(Vector3f n) const { return toLocal_InverseTranspose.ApplyVector(n); }
+
+        Vector3f Point_LocalToWorld(Vector3f v) const { return toWorld.ApplyPoint(v); }
+        Vector3f Dir_LocalToWorld(Vector3f d) const { return toWorld.ApplyVector(d); }
+        Vector3f Normal_LocalToWorld(Vector3f n) const { return toWorld_InverseTranspose.ApplyVector(n); }
+
         const Matrix4f& GetMatToWorld() const { return toWorld; }
         const Matrix4f& GetMatToWorld_InverseTranspose() const { return toWorld_InverseTranspose; }
-
         const Matrix4f& GetMatToLocal() const { return toLocal; }
         const Matrix4f& GetWorldToLocal_InverseTranspose() const { return toLocal_InverseTranspose; }
 

@@ -56,8 +56,8 @@ bool Sphere::CastRay(const Ray& ray, Vertex& outHit) const
     //Transform the ray to local space.
     //Note that this sphere has a radius of 1.0 in that space.
 
-    Ray newRay(Tr.GetMatToLocal().ApplyPoint(ray.GetPos()),
-               Tr.GetMatToLocal().ApplyVector(ray.GetDir()).Normalize());
+    Ray newRay(Tr.Point_WorldToLocal(ray.GetPos()),
+               Tr.Dir_WorldToLocal(ray.GetDir()).Normalize());
 
     float a = newRay.GetDir().Dot(newRay.GetDir()),
           b = 2.0f * newRay.GetDir().Dot(newRay.GetPos()),
@@ -113,11 +113,11 @@ bool Sphere::CastRay(const Ray& ray, Vertex& outHit) const
 }
 void Sphere::FillInData(Vertex& v, const Vector3f& localPos) const
 {
-    v.Pos = Tr.GetMatToWorld().ApplyPoint(localPos);
+    v.Pos = Tr.Point_LocalToWorld(localPos);
 
     Vector3f localNormal = localPos.Normalize(); //TODO: Is normalization necessary?
 
-    v.Normal = Tr.GetMatToWorld_InverseTranspose().ApplyVector(localNormal).Normalize();
+    v.Normal = Tr.Normal_LocalToWorld(localNormal).Normalize();
     v.Tangent = v.Normal.Cross(fabs(v.Normal.x) == 1.0f ? Vector3f::Y() : Vector3f::X()).Normalize();
     v.Bitangent = v.Normal.Cross(v.Tangent);
     

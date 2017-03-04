@@ -62,7 +62,7 @@ void Triangle::PrecalcData()
     invTotalArea = 1.0f / sqrtf(s * (s - length01) * (s - length12) * (s - length02));
 }
 
-void Triangle::GetMoreData(Vertex& vert, const Matrix4f& worldM) const
+void Triangle::GetMoreData(Vertex& vert, const Transform& transf) const
 {
     float area2 = invTotalArea * GetArea(Verts[0].Pos, Verts[1].Pos, vert.Pos, length01),
           area1 = invTotalArea * GetArea(Verts[0].Pos, Verts[2].Pos, vert.Pos, length02),
@@ -80,11 +80,11 @@ void Triangle::GetMoreData(Vertex& vert, const Matrix4f& worldM) const
     else
         vert.Tangent = vert.Tangent.Normalize();
 
-    vert.Normal = worldM.ApplyVector(vert.Normal).Normalize();
-    vert.Tangent = worldM.ApplyVector(vert.Tangent).Normalize();
+    vert.Normal = transf.Normal_LocalToWorld(vert.Normal).Normalize();
+    vert.Tangent = transf.Normal_LocalToWorld(vert.Tangent).Normalize();
     vert.Bitangent = vert.Normal.Cross(vert.Tangent);
 
     vert.UV = (Verts[0].UV * area0) + (Verts[1].UV * area1) + (Verts[2].UV * area2);
 
-    vert.Pos = worldM.ApplyPoint(vert.Pos);
+    vert.Pos = transf.Point_LocalToWorld(vert.Pos);
 }

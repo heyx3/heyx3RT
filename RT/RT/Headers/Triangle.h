@@ -2,7 +2,7 @@
 
 #include "Vertex.h"
 #include "Ray.h"
-#include "Matrix4f.h"
+#include "Transform.h"
 
 
 namespace RT
@@ -27,7 +27,7 @@ namespace RT
         //Given a position on this triangle, fills in the normal, UV, etc. of that position
         //    by interpolating across the surface of this triangle.
         //Transforms all data (including input position) using the given matrix.
-        void GetMoreData(Vertex& vert, const Matrix4f& worldTransform) const;
+        void GetMoreData(Vertex& vert, const Transform& worldTransform) const;
 
         //Returns whether an intersection actually happened.
         bool RayIntersect(const Ray& ray, Vector3f& outPos, float& outDistance) const;

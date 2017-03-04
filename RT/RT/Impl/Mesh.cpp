@@ -59,8 +59,8 @@ void Mesh::PrecalcData()
 bool Mesh::CastRay(const Ray& ray, Vertex& outHit) const
 {
     //TODO: Try not bothering to normalize the local ray's direction.
-    Ray newRay(Tr.GetMatToLocal().ApplyPoint(ray.GetPos()),
-               Tr.GetMatToLocal().ApplyVector(ray.GetDir()).Normalize());
+    Ray newRay(Tr.Point_WorldToLocal(ray.GetPos()),
+               Tr.Dir_WorldToLocal(ray.GetDir()).Normalize());
 
     if (!bounds.RayIntersects(newRay))
         return false;
@@ -85,7 +85,7 @@ bool Mesh::CastRay(const Ray& ray, Vertex& outHit) const
 
     if (closest != nullptr)
     {
-        closest->GetMoreData(outHit, Tr.GetMatToWorld());
+        closest->GetMoreData(outHit, Tr);
         return true;
     }
 
