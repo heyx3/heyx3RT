@@ -4,6 +4,8 @@ using System.Linq;
 using UnityEngine;
 using UnityEditor;
 
+using RT.MaterialValue;
+
 
 //TODO: Use Glass shader from StandardAssets folder.
 
@@ -16,28 +18,51 @@ namespace RT
 		protected override string GraphSerializationName { get { return "IndexOfRefraction"; } }
 
 
-		public MaterialValue.MV_Base IndexOfRefraction { get { return Graph.GetRootNode(0); }
-														 set { Graph.ConnectInput(null, 0, value); } }
+		public MV_Base IndexOfRefraction { get { return Graph.GetRootNode(0); }
+										   set { Graph.ConnectInput(null, 0, value); } }
 
 		
 		protected override void InitGraph()
 		{
-			var IoR = MaterialValue.MV_Constant.MakeFloat(1.0f, true, 1.0f, 10.0f,
-														  MaterialValue.OutputSizes.One,
-														  true);
+			var IoR = MV_Constant.MakeFloat(1.0f, true, 1.0f, 10.0f,
+											OutputSizes.One, true);
 			Graph.AddNode(IoR);
 			Graph.ConnectInput(null, 0, IoR);
 		}
 
-
-		protected override void GetUnityMaterialOutputs(MaterialValue.Graph tempGraph,
-														out MaterialValue.MV_Base albedo,
-														out MaterialValue.MV_Base metallic,
-														out MaterialValue.MV_Base smoothness)
+		
+		protected override string GenerateShader(string shaderName, Graph tempGraph,
+												 List<MV_Base> outTopLevelMVs)
 		{
-			albedo = tempGraph.GetRootNode(0);
-			metallic = MaterialValue.MV_Constant.MakeFloat(0.5f);
-			smoothness = MaterialValue.MV_Constant.MakeFloat(0.1f);
+			try
+			{
+				MV_Constant one = MV_Constant.MakeFloat(1.0f);
+				MV_Base albedo, refractStrength;
+
+				albedo = one;
+
+				//Make the distortion amount equal to:
+				//    lerp(0, 128, 1 - (1 / refractionIndex))
+				var t = MV_Arithmetic.Subtract(one, MV_Arithmetic.Divide(one, tempGraph.GetRootNode(0)));
+				refractStrength = MV_Simple3.Lerp(MV_Constant.MakeFloat(0.0f),
+												  MV_Constant.MakeFloat(128.0f),
+												  t);
+
+				outTopLevelMVs.Add(albedo);
+				outTopLevelMVs.Add(refractStrength);
+
+				tempGraph.AddNode(albedo);
+				tempGraph.AddNode(refractStrength);
+
+				return ShaderGenerator.GenerateShader(shaderName, tempGraph.UniqueNodeIDs,
+													  albedo, refractStrength);
+			}
+			catch (Exception e)
+			{
+				Debug.LogError("Unable to create shader \"" + shaderName + "\": " +
+							       e.Message + "\n" + e.StackTrace);
+				return null;
+			}
 		}
 		
 		public override string GetRootNodeDisplayName(int rootNodeIndex)

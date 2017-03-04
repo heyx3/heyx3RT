@@ -52,41 +52,6 @@ namespace RT
 		public abstract string TypeName { get; }
 
 
-		protected override string GenerateShader(string shaderName, Graph tempGraph,
-												 List<MV_Base> outTopLevelMVs)
-		{
-			try
-			{
-				MaterialValue.MV_Base albedo, metallic, smoothness;
-				GetUnityMaterialOutputs(tempGraph, out albedo, out metallic, out smoothness);
-
-				tempGraph.AddNode(albedo);
-				tempGraph.AddNode(metallic);
-				tempGraph.AddNode(smoothness);
-
-				outTopLevelMVs.Add(albedo);
-				outTopLevelMVs.Add(metallic);
-				outTopLevelMVs.Add(smoothness);
-
-				return MaterialValue.ShaderGenerator.GenerateShader(shaderName, tempGraph.UniqueNodeIDs,
-																	albedo, metallic, smoothness);
-			}
-			catch (Exception e)
-			{
-				Debug.LogError("Unable to create shader \"" + shaderName + "\": " +
-							       e.Message + "\n" + e.StackTrace);
-				return null;
-			}
-		}
-		/// <summary>
-		/// Gets the outputs of this material in terms of the Unity standard shader.
-		/// </summary>
-		/// <param name="tempGraph">A copy of this instance's Graph that can be modified at will.</param>
-		protected abstract void GetUnityMaterialOutputs(Graph tempGraph,
-														out MaterialValue.MV_Base albedo,
-														out MaterialValue.MV_Base metallic,
-														out MaterialValue.MV_Base smoothness);
-
 		private Vector3 lastPos = Vector3.zero;
 		private Vector3 lastScale = Vector3.one;
 		private Quaternion lastRot = Quaternion.identity;
@@ -95,13 +60,8 @@ namespace RT
 			Transform tr = transform;
 			if (tr.position != lastPos || tr.lossyScale != lastScale || tr.rotation != lastRot)
 			{
-				//Get the final material graph.
-				MaterialValue.Graph tempGraph = Graph.Clone();
-				MV_Base[] mvOuts = new MV_Base[3];
-				GetUnityMaterialOutputs(tempGraph, out mvOuts[0], out mvOuts[1], out mvOuts[2]);
-
 				ShaderGenerator.SetMaterialParams(tr, GetComponent<Renderer>().sharedMaterial, 
-												  tempGraph.UniqueNodeIDs, mvOuts);
+												  GraphCopy.UniqueNodeIDs, OutTopLevelMVs.ToArray());
 
 				//Remember this position/scale/rotation.
 				lastPos = tr.position;

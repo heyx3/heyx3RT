@@ -28,7 +28,7 @@ namespace RT.CustomInspectors
 			if (GUILayout.Button("Clear material") && EditorUtility.DisplayDialog("Confirm clear material", "Are you sure?", "OK"))
 			{
 				mat.Graph.Wipe();
-				mat.RegenerateMaterial();
+				mat.ResetGraph();
 			}
 			MyGUI.EndCompact();
 			

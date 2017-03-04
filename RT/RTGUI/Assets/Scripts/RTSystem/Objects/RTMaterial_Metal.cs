@@ -33,18 +33,32 @@ namespace RT
 			Graph.AddNode(roughness);
 			Graph.ConnectInput(null, 1, roughness);
 		}
-
-		protected override void GetUnityMaterialOutputs(MaterialValue.Graph tempGraph,
-														out MaterialValue.MV_Base albedo,
-														out MaterialValue.MV_Base metallic,
-														out MaterialValue.MV_Base smoothness)
+		
+		protected override string GenerateShader(string shaderName, MaterialValue.Graph tempGraph,
+												 List<MaterialValue.MV_Base> outTopLevelMVs)
 		{
-			albedo = tempGraph.GetRootNode(0);
+			try
+			{
+				MaterialValue.MV_Base albedo, metallic, smoothness;
 
-			metallic = MaterialValue.MV_Constant.MakeFloat(1.0f);
+				albedo = tempGraph.GetRootNode(0);
+				var constant1 = MaterialValue.MV_Constant.MakeFloat(1.0f);
+				metallic = constant1;
+				smoothness = MaterialValue.MV_Arithmetic.Subtract(constant1, tempGraph.GetRootNode(1));
 
-			var constant1 = MaterialValue.MV_Constant.MakeFloat(1.0f);
-			smoothness = MaterialValue.MV_Arithmetic.Subtract(constant1, tempGraph.GetRootNode(1));
+				tempGraph.AddNode(albedo);
+				tempGraph.AddNode(metallic);
+				tempGraph.AddNode(smoothness);
+
+				return MaterialValue.ShaderGenerator.GenerateShader(shaderName, tempGraph.UniqueNodeIDs,
+																	albedo, metallic, smoothness);
+			}
+			catch (Exception e)
+			{
+				Debug.LogError("Unable to create shader \"" + shaderName + "\": " +
+							       e.Message + "\n" + e.StackTrace);
+				return null;
+			}
 		}
 		
 		public override string GetRootNodeDisplayName(int rootNodeIndex)

@@ -32,6 +32,9 @@ namespace RT
 		[SerializeField]
 		private Shader myShader = null;
 
+		protected MaterialValue.Graph GraphCopy = null;
+		protected List<MaterialValue.MV_Base> OutTopLevelMVs = new List<MaterialValue.MV_Base>();
+
 		
 		protected abstract string GraphSerializationName { get; }
 
@@ -60,6 +63,11 @@ namespace RT
 			{
 				InitGraph();
 			}
+		}
+		public void ResetGraph()
+		{
+			graph.Clear(true);
+			InitGraph();
 		}
 
 
@@ -113,17 +121,17 @@ namespace RT
 			//Make sure it's up-to-date.
 			SaveGraph();
 
-			var graphCopy = Graph.Clone();
+			GraphCopy = Graph.Clone();
 
 			//Try loading the shader.
 			string shaderFile = "";
-			List<MaterialValue.MV_Base> outTopLevelMVs = new List<MaterialValue.MV_Base>();
+			OutTopLevelMVs = new List<MaterialValue.MV_Base>();
 			try
 			{
 				shaderFile = GetNewGeneratedFileName("Shad", ".shader");
 				string shaderName = Path.GetFileNameWithoutExtension(shaderFile);
 
-				string shaderText = GenerateShader(shaderName, graphCopy, outTopLevelMVs);
+				string shaderText = GenerateShader(shaderName, GraphCopy, OutTopLevelMVs);
 				if (shaderText == null)
 					return;
 					
@@ -145,8 +153,8 @@ namespace RT
 			{
 				matFile = GetNewGeneratedFileName("Mat", ".mat");
 				myMat = new Material(myShader);
-				MaterialValue.ShaderGenerator.SetMaterialParams(transform, myMat, graphCopy.UniqueNodeIDs,
-																outTopLevelMVs.ToArray());
+				MaterialValue.ShaderGenerator.SetMaterialParams(transform, myMat, GraphCopy.UniqueNodeIDs,
+																OutTopLevelMVs.ToArray());
 
 				AssetDatabase.CreateAsset(myMat, matFile);
 				myMat = AssetDatabase.LoadAssetAtPath<Material>(matFile);

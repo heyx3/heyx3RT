@@ -77,7 +77,7 @@ namespace RT.MatEditor
 		}
 		public void Clear()
 		{
-			Graph.Clear(true);
+			Owner.Owner.ResetGraph();
 		}
 
 		public void DoGUI(Rect area)
