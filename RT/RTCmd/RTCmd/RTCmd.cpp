@@ -16,8 +16,9 @@ Parameters (mandatory unless said otherwise):
 -outputSize 800 600      The width/height of the output image.
 -scene "MyScene.json"    The scene JSON file containing the Tracer scene.
 -nThreads 4              OPTIONAL (default 4): The number of threads to split the work across.
--gamma 2.2               OPTIONAL (default 2.2): The gamma value, used to gamma-correct the output file.
--fovScale 1.0            OPTIONAL (default 1.0): Scales the FOV of the camera.
+-fov 60.0                OPTIONAL (default 60.0): The vertical Field of View, in degrees.
+-aperture 0.0            OPTIONAL (default 0.0): The aperture of the camera lens.
+-focusDist 0.0           OPTIONAL (default 0.0): The focus distance of the camera.
 
 Bad or unrecognized arguments will just be ignored and the program will attempt to continue.
 
@@ -76,7 +77,8 @@ int main(int argc, const char* argv[])
     std::cout << "Rendering...\n";
 
     tracer.TraceFullImage(cam, tex, cmdArgs.NThreads, cmdArgs.NBounces,
-                          cmdArgs.FovScale, cmdArgs.Gamma, cmdArgs.NSamples);
+                          cmdArgs.VertFOVDegrees, cmdArgs.Aperture, cmdArgs.FocusDist,
+                          cmdArgs.NSamples);
 
 
     //Generate an image file.
@@ -180,7 +182,6 @@ int main(int argc, const char* argv[])
         "-cPos", "0.0", "1.0", "0.0",
         "-cForward", "1.0", "0.75", "1.0",
         "-cUp", "0.0", "1.0", "0.0",
-        "-gamma", "2.2",
         "-fovScale", "2.3",
         "-nSamples", "100",
         "-nBounces", "50",

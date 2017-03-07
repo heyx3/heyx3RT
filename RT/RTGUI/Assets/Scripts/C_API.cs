@@ -18,7 +18,7 @@ namespace RT
 		/// </summary>
 		public static string GenerateImage(Texture2D outTex, uint samplesPerPixel,
 							  			   uint maxBounces, uint nThreads,
-										   float fovScale, float gamma,
+										   float vertFOVDegrees, float aperture, float focusDist,
 										   Vector3 camPos, Vector3 camForward, Vector3 camUp,
 										   string sceneJSONPath)
 		{
@@ -27,7 +27,8 @@ namespace RT
 
 			//Error-checking.
 			byte err = rt_GetError(imgWidth, imgHeight, samplesPerPixel, maxBounces, nThreads,
-								   fovScale, gamma, camPos.x, camPos.y, camPos.z,
+								   vertFOVDegrees, aperture, focusDist,
+								   camPos.x, camPos.y, camPos.z,
 								   camForward.x, camForward.y, camForward.z,
 								   camUp.x, camUp.y, camUp.z, sceneJSONPath);
 			if (err == rt_ERRORCODE_BAD_JSON())
@@ -35,13 +36,14 @@ namespace RT
 			else if (err == rt_ERRORCODE_BAD_SIZE())
 				return "Image size is too small to render";
 			else if (err == rt_ERRORCODE_BAD_VALUE())
-				return "Make sure samplesPerPixel and nThreads are greater than 0, and fovScale is positive";
+				return "Make sure samplesPerPixel and nThreads are greater than 0, and vertFOVDegrees is positive";
 			else if (err != rt_ERRORCODE_SUCCESS())
 				return "Unknown error " + err;
 
 			//Do the ray-tracing and copy the resulting texture data into a managed .NET array.
 			IntPtr arrayPtr = rt_GenerateImage(imgWidth, imgHeight, samplesPerPixel,
-											   maxBounces, nThreads, fovScale, gamma,
+											   maxBounces, nThreads,
+											   vertFOVDegrees, aperture, focusDist,
 											   camPos.x, camPos.y, camPos.z,
 											   camForward.x, camForward.y, camForward.z,
 											   camUp.x, camUp.y, camUp.z,
@@ -63,7 +65,7 @@ namespace RT
 
 			//Output the color array into the texture.
 			outTex.SetPixels(cols);
-			outTex.Apply();
+			outTex.Apply(true, false);
 
 			return "";
 		}
@@ -72,7 +74,7 @@ namespace RT
 		[DllImport("RT")]
 		private static extern byte rt_GetError(uint imgWidth, uint imgHeight, uint samplesPerPixel,
 											   uint maxBounces, uint nThreads,
-											   float fovScale, float gamma,
+											   float vertFOVDegrees, float aperture, float focusDist,
 											   float camPosX, float camPosY, float camPosZ,
 											   float camForwardX, float camForwardY, float camForwardZ,
 											   float camUpX, float camUpY, float camUpZ,
@@ -90,7 +92,7 @@ namespace RT
 		[DllImport("RT")]
 		private static extern IntPtr rt_GenerateImage(uint imgWidth, uint imgHeight, uint samplesPerPixel,
 													  uint maxBounces, uint nThreads,
-													  float fovScale, float gamma,
+													  float vertFOVDegrees, float aperture, float focusDist,
 													  float camPosX, float camPosY, float camPosZ,
 													  float camForwardX, float camForwardY, float camForwardZ,
 													  float camUpX, float camUpY, float camUpZ,

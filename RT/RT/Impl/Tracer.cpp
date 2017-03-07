@@ -31,7 +31,7 @@ namespace
         const Tracer* tracer;
         const Camera* cam;
         Texture2D* tex;
-        float gamma, fovScale;
+        float verticalFOVDegrees, aperture, focusDist;
         size_t samples, bounces;
         
         size_t startY, endY;
@@ -46,7 +46,8 @@ namespace
 #endif
         ThreadDat& d = *(ThreadDat*)pDat;
         d.tracer->TraceImage(*d.cam, *d.tex, d.startY, d.endY, d.bounces,
-                             d.fovScale, d.gamma, d.samples);
+                             d.verticalFOVDegrees, d.aperture, d.focusDist,
+                             d.samples);
         return 0;
     }
 }
@@ -143,22 +144,32 @@ bool Tracer::TraceRay(size_t bounce, size_t maxBounces,
 }
 
 void Tracer::TraceImage(const Camera& cam, Texture2D& tex,
-                        size_t startY, size_t endY, size_t maxBounces, float fovScale,
-                        float gamma, size_t nSamples) const
+                        size_t startY, size_t endY, size_t maxBounces,
+                        float verticalFOVDegrees, float aperture, float focusDist,
+                        size_t nSamples) const
 {
     float invSamples = 1.0f / (float)nSamples,
           invWidth = 1.0f / (float)(tex.GetWidth() - 1),
-          invHeight = 1.0f / (float)(tex.GetHeight() - 1);
-    float gammaPow = 1.0f / gamma;
-    Vector3f forward = cam.GetForward() / fovScale;
+          invHeight = 1.0f / (float)(tex.GetHeight() - 1),
+          lensRadius = aperture / 2.0f;
+
+    //Generate the ray's start on a disc of diameter "aperture" surrounding the circle.
+    //Generate the target pixel's world position using a pixel grid projected forward to "focusDist".
+    //To do this, we need some trig.
+    float theta = verticalFOVDegrees * (float)M_PI / 180.0f;
+    //Get the half-width/height when focus distance is 1.
+    float halfHeightBase = tanf(theta / 2.0f),
+          halfWidthBase = halfHeightBase * cam.WidthOverHeight;
 
     for (size_t y = startY; y <= endY; ++y)
     {
-        float fY = -0.5f + ((float)y  * invHeight);
+        //A measure from -1.0 to +1.0 of the camera-space Y position of the pixel.
+        float fY = -1.0 + (2.0f * (float)y * invHeight);
 
         for (size_t x = 0; x < tex.GetWidth(); ++x)
         {
-            float fX = (-0.5f + ((float)x * invWidth)) * cam.WidthOverHeight;
+            //A measure from -1.0 to +1.0 of the camera-space X position of the pixel.
+            float fX = -1.0f + (2.0f * (float)x * invWidth);
 
             //Average the result of a bunch of random samples inside the pixel.
 
@@ -168,13 +179,23 @@ void Tracer::TraceImage(const Camera& cam, Texture2D& tex,
 
             for (size_t i = 0; i < nSamples; ++i)
             {
-                float cX = fX + (fr.NextFloat() * invWidth),
-                      cY = fY + (fr.NextFloat() * invHeight);
+                Vector2f lensOffset = fr.NextUnitVector2() * lensRadius;
+                Vector3f worldLensOffset = (cam.GetSideways() * lensOffset.x) +
+                                           (cam.GetUpward() * lensOffset.y);
+
+                Vector2f pixelOffset(fr.NextFloat() * invWidth,
+                                     fr.NextFloat() * invHeight);
+
+                //Get the pixel position when the focus distance is 1,
+                //    then scale that up based on the actual focus distance.
+                //The trig works out so that it's a linear scale.
                 Vector3f pixelPos = cam.Pos +
-                                    forward +
-                                    (cam.GetSideways() * cX) +
-                                    (cam.GetUpward() * cY);
-                Ray r(cam.Pos, (pixelPos - cam.Pos).Normalize());
+                                    (cam.GetForward() * focusDist) +
+                                    (cam.GetSideways() * (fX + pixelOffset.x) * halfHeightBase * focusDist) +
+                                    (cam.GetUpward() * (fY + pixelOffset.y) * halfWidthBase * focusDist);
+
+                Vector3f rayStart = cam.Pos + worldLensOffset;
+                Ray r(rayStart, (pixelPos - rayStart).Normalize());
 
                 Vector3f tempCol;
                 Vertex outHit;
@@ -185,19 +206,15 @@ void Tracer::TraceImage(const Camera& cam, Texture2D& tex,
             }
             color *= invSamples;
 
-            //Gamma-correction.
-            color.x = pow(color.x, gammaPow);
-            color.y = pow(color.y, gammaPow);
-            color.z = pow(color.z, gammaPow);
-
             tex.SetColor(x, y, color);
         }
     }
 }
 
 void Tracer::TraceFullImage(const Camera& cam, Texture2D& tex,
-                            size_t nThreads, size_t maxBounces, float fovScale,
-                            float gamma, size_t nSamples) const
+                            size_t nThreads, size_t maxBounces,
+                            float verticalFOVDegrees, float aperture, float focusDist,
+                            size_t nSamples) const
 {
     nThreads = (nThreads > 1 ? nThreads : 1);
     size_t span = tex.GetHeight() / nThreads;
@@ -206,8 +223,9 @@ void Tracer::TraceFullImage(const Camera& cam, Texture2D& tex,
     dat.cam = &cam;
     dat.tex = &tex;
     dat.tracer = this;
-    dat.gamma = gamma;
-    dat.fovScale = fovScale;
+    dat.verticalFOVDegrees = verticalFOVDegrees;
+    dat.aperture = aperture;
+    dat.focusDist = focusDist;
     dat.bounces = maxBounces;
     dat.samples = nSamples;
     

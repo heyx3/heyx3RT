@@ -44,8 +44,10 @@ namespace RT
 				   SamplesPerPixel = 100,
 				   MaxBounces = 50;
 		[HideInInspector]
-		public float FovScale = 1.0f,
-					 Gamma = 2.2f;
+		public float VertFOVDegrees = 60.0f,
+					 Gamma = 2.2f,
+					 Aperture = 0.0f,
+					 FocusDist = 0.0f;
 
 		
 		/// <summary>
@@ -113,13 +115,29 @@ namespace RT
 			Texture2D tex = new Texture2D(ImgSizeX, ImgSizeY, TextureFormat.RGBA32, false);
 
 			string err = C_API.GenerateImage(tex, (uint)SamplesPerPixel, (uint)MaxBounces,
-											 (uint)NThreads, FovScale, Gamma,
+											 (uint)NThreads, VertFOVDegrees, Aperture, FocusDist,
 									 		 cam.position, cam.forward, cam.up,
 											 sceneJSON);
 			if (err.Length > 0)
 			{
 				Debug.LogError(err);
 				return null;
+			}
+
+			//Gamma-correct.
+			if (Gamma != 1.0f)
+			{
+				Color[] pixels = tex.GetPixels();
+				float gammaPow = 1.0f / Gamma;
+				for (int i = 0; i < pixels.Length; ++i)
+				{
+					pixels[i] = new Color(Mathf.Pow(pixels[i].r, gammaPow),
+										  Mathf.Pow(pixels[i].g, gammaPow),
+										  Mathf.Pow(pixels[i].b, gammaPow),
+										  pixels[i].a);
+				}
+				tex.SetPixels(pixels);
+				tex.Apply(true, false);
 			}
 
 			return tex;

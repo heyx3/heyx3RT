@@ -7,7 +7,7 @@ using namespace RT;
 C_RT_API_IMPL float* rt_GenerateImage(unsigned int imgWidth, unsigned int imgHeight,
                                       unsigned int samplesPerPixel,
                                       unsigned int maxBounces, unsigned int nThreads,
-                                      float fovScale, float gamma,
+                                      float vertFOVDegrees, float aperture, float focusDist,
                                       float camPosX, float camPosY, float camPosZ,
                                       float camForwardX, float camForwardY, float camForwardZ,
                                       float camUpX, float camUpY, float camUpZ,
@@ -30,7 +30,8 @@ C_RT_API_IMPL float* rt_GenerateImage(unsigned int imgWidth, unsigned int imgHei
 
     //Run the trace.
     Texture2D tex(imgWidth, imgHeight);
-    tracer.TraceFullImage(cam, tex, nThreads, maxBounces, fovScale, gamma, samplesPerPixel);
+    tracer.TraceFullImage(cam, tex, nThreads, maxBounces, vertFOVDegrees,
+                          aperture, focusDist, samplesPerPixel);
 
     //Copy out the color data.
     size_t elementsWide = imgWidth * 3;
@@ -65,13 +66,13 @@ C_RT_API_IMPL unsigned char rt_ERRORCODE_BAD_JSON() { return 3; }
 
 unsigned char rt_GetError(unsigned int imgWidth, unsigned int imgHeight, unsigned int samplesPerPixel,
                           unsigned int maxBounces, unsigned int nThreads,
-                          float fovScale, float gamma,
+                          float vertFOVDegrees, float aperture, float focusDist,
                           float camPosX, float camPosY, float camPosZ,
                           float camForwardX, float camForwardY, float camForwardZ,
                           float camUpX, float camUpY, float camUpZ,
                           const char* sceneJSONPath)
 {
-    if (nThreads == 0 || samplesPerPixel == 0 || fovScale <= 0.0f)
+    if (nThreads == 0 || samplesPerPixel == 0 || vertFOVDegrees <= 0.0f)
         return rt_ERRORCODE_BAD_VALUE();
 
     if (imgWidth == 0 || imgHeight < nThreads)

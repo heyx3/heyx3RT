@@ -52,12 +52,24 @@ namespace RT
 	    }
 
         //Gets a random vector of length 1.
-        inline Vector3f GetRandUnitVector()
+        inline Vector3f NextUnitVector3()
         {
             float theta = 2.0f * (float)M_PI * NextFloat(),
                   z = -1.0f + (2.0f * NextFloat()),
                   temp = sqrt(1.0f - (z * z));
             return Vector3f(cosf(theta) * temp, sinf(theta) * temp, z);
+        }
+        //Gets a random vector of length 1.
+        inline Vector2f NextUnitVector2()
+        {
+            float angle = 2.0f * (float)M_PI * NextFloat();
+            return Vector2f(sinf(angle), cosf(angle));
+        }
+
+        //Gets a random vector of length between 0 and 1.
+        inline Vector2f NextVector2()
+        {
+            return NextUnitVector2() * NextFloat();
         }
     };
 }

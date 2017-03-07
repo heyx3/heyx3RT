@@ -134,11 +134,26 @@ namespace RT.CustomInspectors
 				sys.MaxBounces = newI;
 			}
 
-			newF = Math.Max(0.0001f, EditorGUILayout.FloatField("FOV scale", sys.FovScale));
-			if (newF != sys.FovScale)
+			newF = Math.Max(0.0001f, EditorGUILayout.FloatField("Vertical FOV (degrees)",
+																sys.VertFOVDegrees));
+			if (newF != sys.VertFOVDegrees)
 			{
 				Undo.RecordObject(sys, "Inspector");
-				sys.FovScale = newF;
+				sys.VertFOVDegrees = newF;
+			}
+
+			newF = EditorGUILayout.FloatField("Aperture Size", sys.Aperture);
+			if (newF != sys.Aperture)
+			{
+				Undo.RecordObject(sys, "Inspector");
+				sys.Aperture = newF;
+			}
+
+			newF = EditorGUILayout.FloatField("Focus Distance", sys.FocusDist);
+			if (newF != sys.FocusDist)
+			{
+				Undo.RecordObject(sys, "Inspector");
+				sys.FocusDist = newF;
 			}
 
 			newF = EditorGUILayout.FloatField("Gamma", sys.Gamma);

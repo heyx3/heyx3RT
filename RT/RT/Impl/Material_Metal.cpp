@@ -15,7 +15,7 @@ bool Material_Metal::Scatter(const Ray& rIn, const Vertex& surf, const Shape& sh
     //TODO: See if this "normalize" is necessary.
     Vector3f reflected = rIn.GetDir().Reflect(surf.Normal).Normalize();
     //Add randomness based on roughness.
-    reflected += (prng.GetRandUnitVector() * (float)Roughness->GetValue(rIn, prng, &shpe, &surf));
+    reflected += (prng.NextUnitVector3() * (float)Roughness->GetValue(rIn, prng, &shpe, &surf));
 
     //If the ray is pointing into the surface, count it as absorbed.
     if (reflected.Dot(surf.Normal) > 0.0f)

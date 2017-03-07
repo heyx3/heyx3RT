@@ -42,7 +42,7 @@ public:
     OptionalValue<size_t> NThreads, NBounces, NSamples,
                             OutImgWidth, OutImgHeight;
     OptionalValue<Vector3f> CamPos, CamForward, CamUp;
-    OptionalValue<float> Gamma, FovScale;
+    OptionalValue<float> VertFOVDegrees, Aperture, FocusDist;
     OptionalValue<std::string> InputSceneFile, OutputImgPath;
 
 
@@ -119,29 +119,42 @@ public:
                                     CamUp.GetValue().z << "\n";
                 }
             }
-            else if (arg == "-gamma")
+            else if (arg == "-fov")
             {
                 if (i > nArgs - 2)
                 {
-                    outErrorMsg += "\nNot enough arguments after -gamma";
+                    outErrorMsg += "\nNot enough arguments after -fov";
                     i = nArgs;
                 }
                 else
                 {
-                    TryParse(args[i + 1], Gamma, outErrorMsg);
+                    TryParse(args[i + 1], VertFOVDegrees, outErrorMsg);
                     i += 1;
                 }
             }
-            else if (arg == "-fovScale")
+            else if (arg == "-aperture")
             {
                 if (i > nArgs - 2)
                 {
-                    outErrorMsg += "\nNot enough arguments after -fovScale";
+                    outErrorMsg += "\nNot enough arguments after -aperture";
                     i = nArgs;
                 }
                 else
                 {
-                    TryParse(args[i + 1], FovScale, outErrorMsg);
+                    TryParse(args[i + 1], Aperture, outErrorMsg);
+                    i += 1;
+                }
+            }
+            else if (arg == "-focusDist")
+            {
+                if (i > nArgs - 2)
+                {
+                    outErrorMsg += "\nNot enough arguments after -focusDist";
+                    i = nArgs;
+                }
+                else
+                {
+                    TryParse(args[i + 1], FocusDist, outErrorMsg);
                     i += 1;
                 }
             }
@@ -282,16 +295,21 @@ public:
             TryParse(KeepTryingForValue("\nEnter the camera's upwards vector Z: >", isValidFloat).c_str(), z, outErrorMsg);
             CamUp.MakeValue(Vector3f(x.GetValue(), y.GetValue(), z.GetValue()).Normalize());
         }
-        if (!Gamma.HasValue())
+        if (!VertFOVDegrees.HasValue())
             if (isInteractive)
-                TryParse(KeepTryingForValue("\nEnter the gamma value: >", isValidFloat).c_str(), Gamma, outErrorMsg);
+                TryParse(KeepTryingForValue("\nEnter the vertical FoV in degrees: >", isValidFloat).c_str(), VertFOVDegrees, outErrorMsg);
             else
-                Gamma = 2.2f;
-        if (!FovScale.HasValue())
+                VertFOVDegrees = 60.0f;
+        if (!FocusDist.HasValue())
             if (isInteractive)
-                TryParse(KeepTryingForValue("\nEnter the fov scale: >", isValidFloat).c_str(), FovScale, outErrorMsg);
+                TryParse(KeepTryingForValue("\nEnter the focus distance: >", isValidFloat).c_str(), FocusDist, outErrorMsg);
             else
-                FovScale = 1.0f;
+                FocusDist = 0.0f;
+        if (!Aperture.HasValue())
+            if (isInteractive)
+                TryParse(KeepTryingForValue("\nEnter the aperture size: >", isValidFloat).c_str(), Aperture, outErrorMsg);
+            else
+                Aperture = 0.0f;
         if (!InputSceneFile.HasValue())
             InputSceneFile = KeepTryingForValue("\nEnter the input scene file path: >", isValidFile);
         if (!OutputImgPath.HasValue())
