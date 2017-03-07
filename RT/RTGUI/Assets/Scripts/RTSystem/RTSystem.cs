@@ -49,6 +49,29 @@ namespace RT
 					 Aperture = 0.0f,
 					 FocusDist = 0.0f;
 
+
+		public SceneViewCameraProxy EditorCameraProxy
+		{
+			get
+			{
+				if (editorCamProxy == null)
+					editorCamProxy = FindObjectOfType<SceneViewCameraProxy>();
+				return editorCamProxy;
+			}
+		}
+		private SceneViewCameraProxy editorCamProxy = null;
+
+
+		public void OnValidate()
+		{
+			NThreads = Math.Max(1, NThreads);
+			ImgSizeY = Math.Max(ImgSizeY, NThreads);
+			SamplesPerPixel = Math.Max(0, SamplesPerPixel);
+			MaxBounces = Math.Max(0, MaxBounces);
+			Gamma = Math.Max(0.0f, Gamma);
+			Aperture = Math.Max(0.0f, Aperture);
+			FocusDist = Math.Max(0.0f, FocusDist);
+		}
 		
 		/// <summary>
 		/// Saves the scene to the given JSON file.

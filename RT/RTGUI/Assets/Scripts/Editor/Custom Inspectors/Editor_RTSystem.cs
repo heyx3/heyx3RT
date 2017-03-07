@@ -30,6 +30,8 @@ namespace RT.CustomInspectors
 				return;
 			}
 
+			UpdateCamEffects(sys);
+
 			GUILayout.Space(15.0f);
 
 			//"Save scene" button.
@@ -95,6 +97,8 @@ namespace RT.CustomInspectors
 			GUILayout.Label("Render", titleStyle);
 
 			GUILayout.Space(15.0f);
+			
+			EditorGUI.BeginChangeCheck();
 
 			int newI;
 			float newF;
@@ -162,6 +166,9 @@ namespace RT.CustomInspectors
 				Undo.RecordObject(sys, "Inspector");
 				sys.Gamma = newF;
 			}
+
+			if (EditorGUI.EndChangeCheck())
+				sys.OnValidate();
 
 
 			//"Render" button.
@@ -252,6 +259,16 @@ namespace RT.CustomInspectors
 				}
 				MyGUI.EndCompact();
 			}
+		}
+		private void UpdateCamEffects(RTSystem sys)
+		{
+			//Depth-of-Field.
+			var dof = sys.EditorCameraProxy.GetComponent<UnityStandardAssets.ImageEffects.DepthOfField>();
+			dof.aperture = Mathf.Clamp01(sys.Aperture);
+			dof.focalLength = sys.FocusDist;
+			dof.focalSize = 0.0f;
+
+			sys.EditorCameraProxy.Update();
 		}
 	}
 }
