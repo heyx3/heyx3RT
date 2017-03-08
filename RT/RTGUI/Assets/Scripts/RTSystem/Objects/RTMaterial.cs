@@ -9,7 +9,7 @@ using RT.MaterialValue;
 namespace RT
 {
 	[ExecuteInEditMode]
-	public abstract class RTMaterial : RTBaseMaterial, Serialization.ISerializableRT
+	public abstract class RTMaterial : RTBaseMaterial
 	{
 		protected const string TypeName_Lambert = "Lambert",
 		                       TypeName_Metal = "Metal",

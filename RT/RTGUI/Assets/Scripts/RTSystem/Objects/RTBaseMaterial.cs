@@ -189,16 +189,23 @@ namespace RT
             {
                 var reader = new Serialization.JSONReader(new StringReader(myGraphJSON));
                 reader.Structure(graph, "graph");
+
+				GraphCopy = new MaterialValue.Graph();
+				graph.Clone(GraphCopy);
+
+				return true;
             }
             catch (Exception e)
             {
                 Debug.LogError("Couldn't deserialize graph for GameObject \"" + gameObject.name +
 							       "\": (" + e.GetType().Name + ") " +
 								   e.Message + "\nStack: " + e.StackTrace);
+
+				GraphCopy = null;
+				OutTopLevelMVs.Clear();
+
                 return false;
             }
-
-            return true;
         }
         private bool SaveGraph()
         {
@@ -215,6 +222,8 @@ namespace RT
 					myGraphJSON = newJSON;
 					ReloadGraph();
 				}
+
+            return true;
             }
             catch (Exception e)
             {
@@ -223,7 +232,6 @@ namespace RT
 								   e.Message + "\nStack: " + e.StackTrace);
                 return false;
             }
-            return true;
         }
 
 
@@ -239,6 +247,9 @@ namespace RT
 		public virtual void ReadData(Serialization.DataReader reader)
 		{
 			reader.Structure(Graph, GraphSerializationName);
+
+			GraphCopy = new MaterialValue.Graph();
+			Graph.Clone(GraphCopy);
 		}
 	}
 }

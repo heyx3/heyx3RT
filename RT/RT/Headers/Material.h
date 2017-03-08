@@ -45,10 +45,11 @@ namespace RT
 
 
         //Scatters the given incoming ray after it hits the given surface point of this material.
-        //Also potentially attenuates the ray.
+        //Also potentially attenuates/brightens the ray.
         //Returns "true" if the ray scattered, or "false" if the ray was absorbed.
         virtual bool Scatter(const Ray& rIn, const Vertex& surface, const Shape& shpe,
-                             FastRand& prng, Vector3f& attenuation, Ray& rOut) const = 0;
+                             FastRand& prng, Vector3f& attenuation, Vector3f& emission,
+                             Ray& rOut) const = 0;
 
         virtual void ReadData(DataReader& data) override { }
         virtual void WriteData(DataWriter& data) const override { }

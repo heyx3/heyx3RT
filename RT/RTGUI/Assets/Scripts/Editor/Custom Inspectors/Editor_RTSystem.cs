@@ -268,6 +268,13 @@ namespace RT.CustomInspectors
 			dof.focalLength = sys.FocusDist;
 			dof.focalSize = 0.0f;
 
+			var sceneCam = sys.EditorCameraProxy.SceneCamera;
+			if (sceneCam != null)
+			{
+				sceneCam.fieldOfView = sys.VertFOVDegrees;
+				sceneCam.hdr = true;
+			}
+
 			sys.EditorCameraProxy.Update();
 		}
 	}

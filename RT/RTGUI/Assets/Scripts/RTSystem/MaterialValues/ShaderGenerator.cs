@@ -38,7 +38,8 @@ namespace RT.MaterialValue
 		/// Generates a custom Unity shader using the given PBR outputs.
 		/// </summary>
 		public static string GenerateShader(string name, Dictionary<MV_Base, uint> idLookup,
-											MV_Base albedo, MV_Base metallic, MV_Base smoothness)
+											MV_Base albedo, MV_Base metallic,
+											MV_Base smoothness, MV_Base emissive)
 		{
 			//Insert the MaterialValues into various parts of the shader.
 
@@ -49,7 +50,7 @@ namespace RT.MaterialValue
 			StringBuilder funcBody = new StringBuilder();
 			
 			Insert(shaderlabProperties, cgDefinitions, funcBody, idLookup,
-				   albedo, metallic, smoothness);
+				   albedo, metallic, smoothness, emissive);
 
 			shaderlabProperties.Append("\t}");
 			cgDefinitions.Append("\t\t\t//---------------------------------------------------");
@@ -127,6 +128,10 @@ namespace RT.MaterialValue
 
 		shader.Append("\t\t\t\to.Smoothness = ");
 		shader.Append(smoothness.GetShaderValue(OutputSizes.One, idLookup));
+		shader.AppendLine(";");
+
+		shader.Append("\t\t\t\to.Emission = ");
+		shader.Append(emissive.GetShaderValue(OutputSizes.Three, idLookup));
 		shader.AppendLine(";");
 
 		shader.AppendLine("\t\t\t\to.Alpha = 1.0;");

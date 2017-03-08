@@ -10,17 +10,18 @@ namespace RT
     {
     public:
 
-        MaterialValue::Ptr Albedo;
-        MaterialValue::Ptr Roughness;
+        MaterialValue::Ptr Albedo, Roughness, Emissive;
 
 
         Material_Metal(MaterialValue::Ptr albedo = new MV_Constant(Vector3f(1.0f, 1.0f, 1.0f)),
-                       MaterialValue::Ptr roughness = new MV_Constant(0.0f))
-            : Albedo(albedo), Roughness(roughness) { }
+                       MaterialValue::Ptr roughness = new MV_Constant(0.0f),
+                       MaterialValue::Ptr emissive = new MV_Constant(Vector3f(0.0f, 0.0f, 0.0f)))
+            : Albedo(albedo), Roughness(roughness), Emissive(emissive) { }
 
 
         virtual bool Scatter(const Ray& rIn, const Vertex& surf, const Shape& shpe,
-                             FastRand& prng, Vector3f& attenuation, Ray& rOut) const override;
+                             FastRand& prng, Vector3f& attenuation, Vector3f& emission,
+                             Ray& rOut) const override;
 
 
         virtual void WriteData(DataWriter& writer) const override;

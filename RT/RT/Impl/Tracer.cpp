@@ -119,8 +119,8 @@ bool Tracer::TraceRay(size_t bounce, size_t maxBounces,
     if (hit != nullptr)
     {
         Ray newR;
-        Vector3f atten;
-        bool scattered = hit->Mat->Scatter(ray, outHit, *hit->Shpe, prng, atten, newR);
+        Vector3f atten, emissive;
+        bool scattered = hit->Mat->Scatter(ray, outHit, *hit->Shpe, prng, atten, emissive, newR);
         if (scattered)
         {
             Vector3f bounceCol;
@@ -128,11 +128,11 @@ bool Tracer::TraceRay(size_t bounce, size_t maxBounces,
             float bounceDist;
             TraceRay(bounce + 1, maxBounces, newR, prng, bounceCol, bounceHit, bounceDist);
 
-            outColor = atten * bounceCol;
+            outColor = emissive + (atten * bounceCol);
         }
         else
         {
-            outColor = Vector3f();
+            outColor = emissive;
         }
 
         return true;

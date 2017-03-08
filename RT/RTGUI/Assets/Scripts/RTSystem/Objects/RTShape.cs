@@ -59,6 +59,8 @@ namespace RT
 			if (mf == null)
 				mf = gameObject.AddComponent<MeshFilter>();
 			mf.sharedMesh = UnityMesh;
+
+			gameObject.isStatic = true;
 		}
 		
 		public virtual void WriteData(Serialization.DataWriter writer)

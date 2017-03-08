@@ -8,9 +8,11 @@ ADD_MATERIAL_REFLECTION_DATA_CPP(Material_Metal);
 
 
 bool Material_Metal::Scatter(const Ray& rIn, const Vertex& surf, const Shape& shpe,
-                             FastRand& prng, Vector3f& atten, Ray& rOut) const
+                             FastRand& prng, Vector3f& atten, Vector3f& emission,
+                             Ray& rOut) const
 {
     atten = Albedo->GetValue(rIn, prng, &shpe, &surf);
+    emission = Emissive->GetValue(rIn, prng, &shpe, &surf);
 
     //TODO: See if this "normalize" is necessary.
     Vector3f reflected = rIn.GetDir().Reflect(surf.Normal).Normalize();
@@ -33,16 +35,17 @@ void Material_Metal::WriteData(DataWriter& writer) const
 {
     Material::WriteData(writer);
 
-    MaterialValueGraph graph(List<const MaterialValue*>(Albedo.Get(), Roughness.Get()));
-    writer.WriteDataStructure(graph, "Albedo_Roughness");
+    MaterialValueGraph graph(List<const MaterialValue*>(Albedo.Get(), Roughness.Get(), Emissive.Get()));
+    writer.WriteDataStructure(graph, "Albedo_Roughness_Emissive");
 }
 void Material_Metal::ReadData(DataReader& reader)
 {
     Material::ReadData(reader);
 
     MaterialValueGraph graph;
-    reader.ReadDataStructure(graph, "Albedo_Roughness");
+    reader.ReadDataStructure(graph, "Albedo_Roughness_Emissive");
 
     Albedo = graph.GetRootVals()[0];
     Roughness = graph.GetRootVals()[1];
+    Emissive = graph.GetRootVals()[2];
 }

@@ -9,7 +9,7 @@ using RT.MaterialValue;
 namespace RT
 {
 	[ExecuteInEditMode]
-	public abstract class RTSkyMaterial : RTBaseMaterial, Serialization.ISerializableRT
+	public abstract class RTSkyMaterial : RTBaseMaterial
 	{
 		public static RTSkyMaterial Instance
 		{
@@ -73,6 +73,10 @@ namespace RT
 			mf.sharedMesh = RTSystem.Instance.SkySphere;
 			
 			base.Start();
+
+			MeshRenderer mr = GetComponent<MeshRenderer>();
+			mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+			mr.receiveShadows = false;
 		}
 		private void Update()
 		{
@@ -84,6 +88,8 @@ namespace RT
 			tr.parent = null;
 			tr.position = currentSV.camera.transform.position;
 			tr.localScale = Vector3.one * Distance;
+
+			gameObject.isStatic = true;
 		}
 		public void OnValidate()
 		{

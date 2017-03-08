@@ -10,15 +10,17 @@ namespace RT
     {
     public:
 
-        MaterialValue::Ptr Color;
+        MaterialValue::Ptr Albedo, Emissive;
 
     
-        Material_Lambert(MaterialValue::Ptr col = new MV_Constant(Vector3f(1.0f, 1.0f, 1.0f)))
-            : Color(col) { }
+        Material_Lambert(MaterialValue::Ptr albedo = new MV_Constant(Vector3f(1.0f, 1.0f, 1.0f)),
+                         MaterialValue::Ptr emissive = new MV_Constant(Vector3f()))
+            : Albedo(albedo), Emissive(emissive) { }
 
 
         virtual bool Scatter(const Ray& rIn, const Vertex& surface, const Shape& shpe,
-                             FastRand& prng, Vector3f& attenuation, Ray& rOut) const override;
+                             FastRand& prng, Vector3f& attenuation, Vector3f& emission,
+                             Ray& rOut) const override;
 
 
         virtual void WriteData(DataWriter& writer) const override;
