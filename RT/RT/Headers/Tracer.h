@@ -65,11 +65,13 @@ namespace RT
 
         //Traces the given ray through the scene to see what it hits.
         //Returns the shape that was hit, or null if nothing was hit.
-        const ShapeAndMat* TraceRay(const Ray& ray, Vertex& outHit, float& outDist) const;
+        const ShapeAndMat* TraceRay(const Ray& ray, Vertex& outHit,
+                                    FastRand& prng, float& outDist) const;
         //Traces the given ray through the scene to see what it hits.
         //Returns the shape that was hit, or null if nothing was hit.
-        ShapeAndMat* TraceRay(const Ray& ray, Vertex& outHit, float& outDist)
-            { return (ShapeAndMat*)((const Tracer*)this)->TraceRay(ray, outHit, outDist); }
+        ShapeAndMat* TraceRay(const Ray& ray, Vertex& outHit,
+                              FastRand& prng, float& outDist)
+            { return (ShapeAndMat*)((const Tracer*)this)->TraceRay(ray, outHit, prng, outDist); }
 
         //Traces the given ray through the scene to see what it hits.
         //Returns whether the ray hit anything.

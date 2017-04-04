@@ -75,7 +75,7 @@ Tracer::Tracer(SkyMaterial* skyMat, const List<ShapeAndMat>& objects)
 {
 }
 
-const ShapeAndMat* Tracer::TraceRay(const Ray& ray, Vertex& outHit, float& outDist) const
+const ShapeAndMat* Tracer::TraceRay(const Ray& ray, Vertex& outHit, FastRand& prng, float& outDist) const
 {
     outDist = std::numeric_limits<float>().infinity();
     int closestShape = -1;
@@ -85,7 +85,7 @@ const ShapeAndMat* Tracer::TraceRay(const Ray& ray, Vertex& outHit, float& outDi
     {
         float tempDist;
         Vertex tempHit;
-        if (Objects[i].Shpe->CastRay(ray, tempHit))
+        if (Objects[i].Shpe->CastRay(ray, tempHit, prng))
         {
             tempDist = tempHit.Pos.Distance(ray.GetPos());
             if (tempDist < outDist)
@@ -113,7 +113,7 @@ bool Tracer::TraceRay(size_t bounce, size_t maxBounces,
         return false;
     }
 
-    const ShapeAndMat* hit = TraceRay(ray, outHit, outDist);
+    const ShapeAndMat* hit = TraceRay(ray, outHit, prng, outDist);
 
     //Get the color of the shape's surface.
     if (hit != nullptr)
@@ -152,6 +152,8 @@ void Tracer::TraceImage(const Camera& cam, Texture2D& tex,
           invWidth = 1.0f / (float)(tex.GetWidth() - 1),
           invHeight = 1.0f / (float)(tex.GetHeight() - 1),
           lensRadius = aperture / 2.0f;
+    float aspectRatio = invHeight / invWidth,
+          aspectRatioSqr = aspectRatio * aspectRatio;
 
     //Generate the ray's start on a disc of diameter "aperture" surrounding the circle.
     //Generate the target pixel's world position using a pixel grid projected forward to "focusDist".
@@ -170,6 +172,7 @@ void Tracer::TraceImage(const Camera& cam, Texture2D& tex,
         {
             //A measure from -1.0 to +1.0 of the camera-space X position of the pixel.
             float fX = -1.0f + (2.0f * (float)x * invWidth);
+            fX *= aspectRatioSqr;
 
             //Average the result of a bunch of random samples inside the pixel.
 
