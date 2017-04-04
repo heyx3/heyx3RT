@@ -2,6 +2,7 @@
 
 #include "Ray.h"
 
+#include <limits>
 
 
 namespace RT
@@ -15,6 +16,8 @@ namespace RT
         BoundingBox() : Min(), Max() { }
         BoundingBox(const Vector3f& min, const Vector3f& max) : Min(min), Max(max) { }
 
-        bool RayIntersects(const Ray& ray) const;
+        bool RayIntersects(const Ray& ray,
+                           float tMin = 0.0f,
+                           float tMax = std::numeric_limits<float>::infinity()) const;
     };
 }

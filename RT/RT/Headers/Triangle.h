@@ -30,7 +30,9 @@ namespace RT
         void GetMoreData(Vertex& vert, const Transform& worldTransform) const;
 
         //Returns whether an intersection actually happened.
-        bool RayIntersect(const Ray& ray, Vector3f& outPos, float& outDistance) const;
+        bool RayIntersect(const Ray& ray, Vector3f& outPos, float& outDistance,
+                          float tMin = 0.0f,
+                          float tMax = std::numeric_limits<float>::infinity()) const;
 
 
     private:

@@ -17,6 +17,7 @@ namespace RT
         const Vector3f& GetDir() const { return dir; }
 
         Vector3f GetPos(float t) const { return pos + (dir * t); }
+        float GetT(Vector3f posAlongRay) const { return dir.Dot(posAlongRay - pos); }
 
 
         void SetPos(const Vector3f& newPos) { pos = newPos; }

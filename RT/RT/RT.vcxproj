@@ -23,6 +23,7 @@
     <ClInclude Include="Headers\Bounds.h" />
     <ClInclude Include="Headers\Camera.h" />
     <ClInclude Include="Headers\CommonBVHTypes.h" />
+    <ClInclude Include="Headers\ConstantMedium.h" />
     <ClInclude Include="Headers\Dictionary.h" />
     <ClInclude Include="Headers\FastRand.h" />
     <ClInclude Include="Headers\Main.hpp" />
@@ -30,6 +31,7 @@
     <ClInclude Include="Headers\MaterialValueGraph.h" />
     <ClInclude Include="Headers\Material_Dielectric.h" />
     <ClInclude Include="Headers\Material_Lambert.h" />
+    <ClInclude Include="Headers\Material_Medium.h" />
     <ClInclude Include="Headers\Material_Metal.h" />
     <ClInclude Include="Headers\Mathf.h" />
     <ClInclude Include="Headers\Matrix4f.h" />
@@ -67,15 +69,17 @@
     <ClInclude Include="Headers\Vertex.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Headers\Material_Dielectric.cpp" />
+    <ClCompile Include="C:\Git Repos\D Drive\heyx3RT\RT\RT\Impl\Material_Dielectric.cpp" />
     <ClCompile Include="Impl\BoundingBox.cpp" />
     <ClCompile Include="Impl\Camera.cpp" />
+    <ClCompile Include="Impl\ConstantMedium.cpp" />
     <ClCompile Include="Impl\DataSerialization.cpp" />
     <ClCompile Include="Impl\Material.cpp" />
     <ClCompile Include="Impl\MaterialValue.cpp" />
     <ClCompile Include="Impl\MaterialValueGraph.cpp" />
     <ClCompile Include="Impl\MaterialValues.cpp" />
     <ClCompile Include="Impl\Material_Lambert.cpp" />
+    <ClCompile Include="Impl\Material_Medium.cpp" />
     <ClCompile Include="Impl\Material_Metal.cpp" />
     <ClCompile Include="Impl\Mathf.cpp" />
     <ClCompile Include="Impl\Matrix4f.cpp" />

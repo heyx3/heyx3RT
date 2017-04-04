@@ -32,7 +32,9 @@ namespace RT
         virtual void PrecalcData() override;
 
         virtual void GetBoundingBox(BoundingBox& b) const override { b = bounds; }
-        virtual bool CastRay(const Ray& ray, Vertex& outHit) const override;
+        virtual bool CastRay(const Ray& ray, Vertex& outHit, FastRand& prng,
+                             float tMin = 0.0f,
+                             float tMax = std::numeric_limits<float>::infinity()) const override;
 
 
         virtual void WriteData(DataWriter& writer) const override;

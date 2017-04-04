@@ -39,17 +39,18 @@ void Plane::GetBoundingBox(BoundingBox& outB) const
 {
     outB = bounds;
 }
-bool Plane::CastRay(const Ray& ray, Vertex& outHit) const
+bool Plane::CastRay(const Ray& ray, Vertex& outHit, FastRand& prng,
+                    float tMin, float tMax) const
 {
     //If ray is not pointing towards this plane's surface, exit.
     float dotted = normal.Dot(ray.GetDir());
     if (dotted == 0.0f || (IsOneSided && dotted > 0.0f))
         return false;
 
-    //If ray intersection is behind the ray's start, exit.
+    //If the ray intersection is too far behind or in front of the ray, exit.
     float dotted2 = -(normal.Dot(ray.GetPos()) + planePos);
     float t = dotted2 / dotted;
-    if (t < 0.0f)
+    if (t < tMin || t > tMax)
         return false;
 
     outHit.Pos = ray.GetPos(t);

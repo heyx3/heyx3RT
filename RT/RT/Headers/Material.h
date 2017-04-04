@@ -14,7 +14,7 @@ namespace RT
         
         //When a ray is scattered off the surface of this material,
         //The ray should be moved forward this small epsilon amount.
-        const float PushoffDist = 0.0001f;
+        static const float PushoffDist;
 
 
         //Allocates a material on the heap with the given type-name. Used in the serialization system.
@@ -47,9 +47,9 @@ namespace RT
         //Scatters the given incoming ray after it hits the given surface point of this material.
         //Also potentially attenuates/brightens the ray.
         //Returns "true" if the ray scattered, or "false" if the ray was absorbed.
-        virtual bool Scatter(const Ray& rIn, const Vertex& surface, const Shape& shpe,
-                             FastRand& prng, Vector3f& attenuation, Vector3f& emission,
-                             Ray& rOut) const = 0;
+        virtual bool Scatter(const Ray& rIn, const Vertex& surface,
+                             const Shape& shpe, FastRand& prng,
+                             Vector3f& outAttenuation, Vector3f& outEmission, Ray& outRay) const = 0;
 
         virtual void ReadData(DataReader& data) override { }
         virtual void WriteData(DataWriter& data) const override { }

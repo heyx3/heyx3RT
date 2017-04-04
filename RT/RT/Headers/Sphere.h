@@ -22,7 +22,9 @@ namespace RT
         virtual void PrecalcData() override;
 
         virtual void GetBoundingBox(BoundingBox& outB) const override;
-        virtual bool CastRay(const Ray& ray, Vertex& outHit) const override;
+        virtual bool CastRay(const Ray& ray, Vertex& outHit, FastRand& prng,
+                             float tMin = 0.0f,
+                             float tMax = std::numeric_limits<float>::infinity()) const override;
 
 
         virtual void WriteData(DataWriter& writer) const override;
@@ -33,7 +35,7 @@ namespace RT
 
         BoundingBox bounds;
 
-        void FillInData(Vertex& hitPos, const Vector3f& localPos) const;
+        void FillInData(Vertex& hitPos, Vector3f localIntersectPos, Vector3f worldIntersectPos) const;
 
 
         ADD_SHAPE_REFLECTION_DATA_H(Sphere);

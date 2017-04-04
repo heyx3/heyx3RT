@@ -6,7 +6,7 @@
 
 namespace RT
 {
-    //A single point in a mesh triangle.
+    //A single point on a surface.
     struct RT_API Vertex
     {
     public:

@@ -4,6 +4,7 @@
 #include "Vertex.h"
 #include "Transform.h"
 #include "DataSerialization.h"
+#include "FastRand.h"
 
 
 
@@ -46,7 +47,9 @@ namespace RT
         virtual void PrecalcData() { }
 
         virtual void GetBoundingBox(BoundingBox& outBox) const = 0;
-        virtual bool CastRay(const Ray& ray, Vertex& outHit) const = 0;
+        virtual bool CastRay(const Ray& ray, Vertex& outHit, FastRand& prng,
+                             float tMin = 0.0f,
+                             float tMax = std::numeric_limits<float>::infinity()) const = 0;
 
 
         virtual void WriteData(DataWriter& writer) const override { writer.WriteDataStructure(Tr, "Transform"); }

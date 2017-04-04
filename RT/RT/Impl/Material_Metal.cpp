@@ -7,8 +7,9 @@ using namespace RT;
 ADD_MATERIAL_REFLECTION_DATA_CPP(Material_Metal);
 
 
-bool Material_Metal::Scatter(const Ray& rIn, const Vertex& surf, const Shape& shpe,
-                             FastRand& prng, Vector3f& atten, Vector3f& emission,
+bool Material_Metal::Scatter(const Ray& rIn, const Vertex& surf,
+                             const Shape& shpe, FastRand& prng,
+                             Vector3f& atten, Vector3f& emission,
                              Ray& rOut) const
 {
     atten = Albedo->GetValue(rIn, prng, &shpe, &surf);

@@ -7,8 +7,9 @@ using namespace RT;
 ADD_MATERIAL_REFLECTION_DATA_CPP(Material_Lambert);
 
 
-bool Material_Lambert::Scatter(const Ray& rIn, const Vertex& surface, const Shape& shpe,
-                               FastRand& prng, Vector3f& attenuation, Vector3f& emission,
+bool Material_Lambert::Scatter(const Ray& rIn, const Vertex& surface,
+                               const Shape& shpe, FastRand& prng,
+                               Vector3f& attenuation, Vector3f& emission,
                                Ray& rOut) const
 {
     attenuation = Albedo->GetValue(rIn, prng, &shpe, &surface);

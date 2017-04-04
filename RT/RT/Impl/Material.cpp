@@ -33,6 +33,8 @@ namespace
     }
 }
 
+const float Material::PushoffDist = 0.0001f;
+
 void Material::AddReflectionData(const String& typeName, MaterialFactory factory)
 {
     std::lock_guard<std::mutex> lock(GetVectorMutex());

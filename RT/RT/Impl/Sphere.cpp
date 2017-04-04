@@ -49,7 +49,8 @@ void Sphere::GetBoundingBox(BoundingBox& outB) const
 {
     outB = bounds;
 }
-bool Sphere::CastRay(const Ray& ray, Vertex& outHit) const
+bool Sphere::CastRay(const Ray& ray, Vertex& outHit, FastRand& prng,
+                     float tMin, float tMax) const
 {
     //http://stackoverflow.com/questions/6533856/ray-sphere-intersection
 
@@ -70,11 +71,14 @@ bool Sphere::CastRay(const Ray& ray, Vertex& outHit) const
         return false;
     }
 
-    //Find the intersection distance.
+    //Find the intersection distance,
+    //    either along the local-space ray or the world-space ray.
     float outDist;
+    bool outDistIsLocal;
     if (discriminant == 0.0f)
     {
         outDist = -b / (2.0f * a);
+        outDistIsLocal = true;
     }
     else
     {
@@ -83,39 +87,60 @@ bool Sphere::CastRay(const Ray& ray, Vertex& outHit) const
         float t1 = (-b - temp) * inv2a,
               t2 = (-b + temp) * inv2a;
 
-        if (t2 < 0)
+        //Get the world-space t values for comparison against tMin and tMax.
+        //Common edge-case: if tMin is 0 and tMax is +INF, no need to bother.
+        if (tMin == 0.0f && tMax == std::numeric_limits<float>::infinity())
         {
-            if (t1 < 0)
-            {
-                return false;
-            }
-            else
-            {
-                outDist = t1;
-            }
-        }
-        else if (t1 < 0)
-        {
-            outDist = t2;
+            outDistIsLocal = true;
         }
         else
         {
-            outDist = min(t1, t2);
+            outDistIsLocal = false;
+
+            Vector3f localHit1 = newRay.GetPos(t1),
+                     localHit2 = newRay.GetPos(t2);
+            Vector3f worldHit1 = Tr.Point_LocalToWorld(localHit1),
+                     worldHit2 = Tr.Point_LocalToWorld(localHit2);
+
+            t1 = ray.GetT(worldHit1);
+            t2 = ray.GetT(worldHit2);
         }
 
+        bool t1Invalid = (t1 < tMin || t1 > tMax),
+             t2Invalid = (t2 < tMin || t2 > tMax);
+
+        if (t2Invalid)
+            if (t1Invalid)
+                return false;
+            else
+                outDist = t1;
+        else if (t1Invalid)
+            outDist = t2;
+        else
+            outDist = min(t1, t2);
     }
     
-    //Calculate other data.
-    outHit.Pos = newRay.GetPos(outDist);
-    FillInData(outHit, newRay.GetPos(outDist));
+    //Calculate world-space intersection data.
+    Vector3f localHit, worldHit;
+    if (outDistIsLocal)
+    {
+        localHit = newRay.GetPos(outDist);
+        worldHit = Tr.Point_LocalToWorld(localHit);
+    }
+    else
+    {
+        worldHit = ray.GetPos(outDist);
+        localHit = Tr.Point_WorldToLocal(worldHit);
+    }
+    FillInData(outHit, localHit, worldHit);
 
     return true;
 }
-void Sphere::FillInData(Vertex& v, const Vector3f& localPos) const
+void Sphere::FillInData(Vertex& v, Vector3f localIntersectPos, Vector3f worldIntersectPos) const
 {
-    v.Pos = Tr.Point_LocalToWorld(localPos);
+    v.Pos = worldIntersectPos;
 
-    Vector3f localNormal = localPos.Normalize(); //TODO: Is normalization necessary?
+    Vector3f localNormal = localIntersectPos.Normalize(); //TODO: Is normalization necessary?
 
     v.Normal = Tr.Normal_LocalToWorld(localNormal).Normalize();
     v.Tangent = v.Normal.Cross(fabs(v.Normal.x) == 1.0f ? Vector3f::Y() : Vector3f::X()).Normalize();

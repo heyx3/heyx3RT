@@ -16,7 +16,8 @@ namespace
 }
 
 
-bool Triangle::RayIntersect(const Ray& ray, Vector3f& outPos, float& outDist) const
+bool Triangle::RayIntersect(const Ray& ray, Vector3f& outPos, float& outDist,
+                            float tMin, float tMax) const
 {
     //Miller-Trumbore intersection algorithm.
 
@@ -41,7 +42,7 @@ bool Triangle::RayIntersect(const Ray& ray, Vector3f& outPos, float& outDist) co
         return false;
 
     outDist = e2.Dot(q) * invDet;
-    if (outDist > 0.0f)
+    if (outDist >= tMin && outDist <= tMax)
     {
         outPos = ray.GetPos() + (ray.GetDir() * outDist);
         return true;
