@@ -18,7 +18,7 @@ Parameters (mandatory unless said otherwise):
 -nThreads 4              OPTIONAL (default 4): The number of threads to split the work across.
 -fov 60.0                OPTIONAL (default 60.0): The vertical Field of View, in degrees.
 -aperture 0.0            OPTIONAL (default 0.0): The aperture of the camera lens.
--focusDist 0.0           OPTIONAL (default 0.0): The focus distance of the camera.
+-focusDist 1.0           OPTIONAL (default 1.0): The focus distance of the camera.
 
 Bad or unrecognized arguments will just be ignored and the program will attempt to continue.
 
@@ -65,7 +65,7 @@ int main(int argc, const char* argv[])
         std::cout << "Error reading " << cmdArgs.InputSceneFile.GetValue() << ": " << err.CStr() << "\n";
         char dummy;
         std::cin >> dummy;
-        exit(2);
+        return 2;
     }
 
 
@@ -95,17 +95,17 @@ int main(int argc, const char* argv[])
     else
     {
         std::cout << "Unrecognized output image type " << extension << "\n";
-        exit(1);
+        return 1;
     }
 
     if (!err.IsEmpty())
     {
         std::cout << "Error saving file: " << err.CStr() << "\n";
-        exit(3);
+        return 3;
     }
 
     std::cout << "Done!\n\n";
-    exit(0);
+    return 0;
 }
 
 
@@ -157,39 +157,49 @@ void hehe()
         std::cin >> dummy;
         return;
     }
-}
+}*/
 
+/*
 int main(int argc, const char* argv[])
 {
     Tracer trc;
-    trc.SkyMat = new SkyMaterial_SimpleColor(MV_Constant::Create(1.0f));
+    trc.SkyMat = new SkyMaterial_SimpleColor(MV_Constant::Create(1.0f, 1.0f, 1.0f));
     trc.Objects.PushBack(ShapeAndMat(new Plane(Vector3f(0.0f, 0.0f, 0.0f), 900.0f),
                                      new Material_Lambert(MV_Constant::Create(0.9f, 0.65f, 0.65f))));
-    trc.Objects.PushBack(ShapeAndMat(new Sphere(Vector3f(5.0f, 10.0f, 5.0f), 2.5f),
+    trc.Objects.PushBack(ShapeAndMat(new Sphere(Vector3f(0.0f, 0.0f, 0.0f), 2.5f),
                                      new Material_Lambert(MV_Constant::Create(0.5f, 0.5f, 0.5f))));
-    trc.Objects.PushBack(ShapeAndMat(new Sphere(Vector3f(4.5f, 3.0f, 4.5f), 2.75f),
+    trc.Objects.PushBack(ShapeAndMat(new Sphere(Vector3f(0.0f, 5.0f, 0.0f), 2.75f),
                                      new Material_Metal(MV_Constant::Create(0.75f, 0.75f, 0.85f),
-                                                        MV_Constant::Create(0.1f))));
+                                                        MV_Constant::Create(0.01f))));
+    trc.Objects.PushBack(ShapeAndMat(new Sphere(Vector3f(-2.0f, 2.0f, -2.0f), 0.65f),
+                                     new Material_Dielectric(MV_Constant::Create(1.5f))));
+    trc.Objects.PushBack(ShapeAndMat(new ConstantMedium(new Sphere(Vector3f(-0.0f, 0.0f, -0.0f), 10.0f),
+                                                        0.1f),
+                                     new Material_Medium(MV_Constant::Create(0.5f))));
 
     String errMsg;
     JsonSerialization::ToJSONFile("SampleScene.json", trc, false, errMsg);
     std::cout << errMsg.CStr();
 
-    const int nArgs = 32;
+    const int nArgs = 28;
     const char* args[nArgs] = {
         "",
-        "-nThreads", "4",
-        "-cPos", "0.0", "1.0", "0.0",
-        "-cForward", "1.0", "0.75", "1.0",
+        "-nThreads", "1",
+        "-cPos", "-10.0", "2.0", "-10.0",
+        "-cForward", "1.0", "0.0", "1.0",
         "-cUp", "0.0", "1.0", "0.0",
-        "-fovScale", "2.3",
-        "-nSamples", "100",
+        "-fov", "60",
+        "-nSamples", "300",
         "-nBounces", "50",
         "-outputPath", "MyImg.bmp",
-        "-outputSize", "400", "200",
+        "-outputSize", "200", "200",
         "-scene", "SampleScene.json",
     };
-    haha(nArgs, args);
-    return 0;
+    int result = haha(nArgs, args);
+
+    char d;
+    std::cin >> d;
+
+    return result;
 }
 */

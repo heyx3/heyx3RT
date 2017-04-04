@@ -304,7 +304,7 @@ public:
             if (isInteractive)
                 TryParse(KeepTryingForValue("\nEnter the focus distance: >", isValidFloat).c_str(), FocusDist, outErrorMsg);
             else
-                FocusDist = 0.0f;
+                FocusDist = 1.0f;
         if (!Aperture.HasValue())
             if (isInteractive)
                 TryParse(KeepTryingForValue("\nEnter the aperture size: >", isValidFloat).c_str(), Aperture, outErrorMsg);
