@@ -35,6 +35,8 @@ namespace RT
 			RTSkyMaterial.Serialize(RTSkyMaterial.Instance, "SkyMaterial", writer);
 
 			var objs = UnityEngine.Object.FindObjectsOfType<RTShape>()
+										 .Where(shpe => shpe.gameObject.activeInHierarchy)
+										 .Where(shpe => (shpe.GetComponent<RTMaterial>() != null))
 										 .Select(shpe => new ShapeAndMat(shpe.gameObject))
 										 .ToList();
 			writer.List(objs, "Objects", (wr, val, name) => wr.Structure(val, name));

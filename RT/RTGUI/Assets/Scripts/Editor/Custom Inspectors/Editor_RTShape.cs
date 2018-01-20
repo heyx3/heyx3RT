@@ -43,4 +43,7 @@ namespace RT.CustomInspectors
 	
 	[CustomEditor(typeof(RTShape_Sphere))]
 	public class Editor_RTShape_Mesh : Editor_RTShape { }
+
+	[CustomEditor(typeof(RTShape_ConstantMedium))]
+	public class Editor_RTShape_ConstantMedium : Editor_RTShape { }
 }

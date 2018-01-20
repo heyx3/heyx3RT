@@ -10,7 +10,8 @@ namespace RT
 	{
 		protected const string TypeName_Sphere = "Sphere",
 		                       TypeName_Plane = "Plane",
-		                       TypeName_Mesh = "Mesh";
+		                       TypeName_Mesh = "Mesh",
+							   TypeName_ConstantMedium = "ConstantMedium";
 
 
 		public static void Serialize(RTShape shpe, string name, Serialization.DataWriter writer)
@@ -35,6 +36,9 @@ namespace RT
 					break;
 				case TypeName_Mesh:
 				    shpe = toAttachTo.AddComponent<RTShape_Mesh>();
+					break;
+				case TypeName_ConstantMedium:
+					shpe = toAttachTo.AddComponent<RTShape_ConstantMedium>();
 					break;
 
 				default:

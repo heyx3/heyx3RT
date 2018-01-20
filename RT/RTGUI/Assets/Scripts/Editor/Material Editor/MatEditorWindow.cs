@@ -26,14 +26,14 @@ namespace RT.MatEditor
 
 
 		public RTBaseMaterial Owner { get; private set; }
-		
+
 		public Pane_ChooseMV ChooseMVPane { get; private set; }
 		public Pane_Controls ControlsPane { get; private set; }
 		public Pane_Graph GraphPane { get; private set; }
 
 		private bool initYet = false;
 
-		
+
 		public void Init(RTBaseMaterial owner)
 		{
 			initYet = true;
@@ -46,7 +46,7 @@ namespace RT.MatEditor
 			ChooseMVPane = new Pane_ChooseMV(this);
 			ControlsPane = new Pane_Controls(this);
 			GraphPane = new Pane_Graph(this);
-			
+
 			ControlsPane.OnSave += Save;
 			ControlsPane.OnDiscardChanges += GraphPane.DiscardChanges;
 			ControlsPane.OnClear += GraphPane.Clear;
@@ -58,10 +58,10 @@ namespace RT.MatEditor
 		{
 			//Set the original graph to have the same layout as the editor pane's copy.
 			GraphPane.Graph.Clone(Owner.Graph);
-			
+
 			Owner.RegenerateMaterial();
 		}
-		
+
 		private void OnFocus()
 		{
 			//If the material we were editing is gone, close the editor.

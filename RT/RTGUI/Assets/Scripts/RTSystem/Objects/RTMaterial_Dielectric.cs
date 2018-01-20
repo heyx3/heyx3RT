@@ -7,8 +7,6 @@ using UnityEditor;
 using RT.MaterialValue;
 
 
-//TODO: Use Glass shader from StandardAssets folder.
-
 namespace RT
 {
 	[ExecuteInEditMode]
@@ -54,8 +52,8 @@ namespace RT
 				tempGraph.AddNode(albedo);
 				tempGraph.AddNode(refractStrength);
 
-				return ShaderGenerator.GenerateShader(shaderName, tempGraph.UniqueNodeIDs,
-													  albedo, refractStrength);
+				return ShaderGenerator.GenerateShader_Refract(shaderName, tempGraph.UniqueNodeIDs,
+															  albedo, refractStrength);
 			}
 			catch (Exception e)
 			{

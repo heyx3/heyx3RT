@@ -63,6 +63,9 @@ namespace RT.CustomInspectors
 	[CustomEditor(typeof(RTMaterial_Dielectric))]
 	public class Editor_RTMaterial_Dielectric : Editor_RTMaterial { }
 
+	[CustomEditor(typeof(RTMaterial_Medium))]
+	public class Editor_RTMaterial_Medium : Editor_RTMaterial { }
+
 
 	public abstract class Editor_RTSkyMaterial : Editor_RTBaseMaterial
 	{

@@ -114,7 +114,7 @@ namespace RT.MatEditor
                                        Graph.OutputNodePos.size);
             Rect newRootPos = GUINode(oldRootPos, null);
             if (Mathf.Abs(oldRootPos.x - newRootPos.x) >= 2.0f ||
-                    Mathf.Abs(oldRootPos.y - newRootPos.y) >= 2.0f)
+                Mathf.Abs(oldRootPos.y - newRootPos.y) >= 2.0f)
             {
                 //TODO: "Undo" here.
             }
@@ -273,7 +273,7 @@ namespace RT.MatEditor
 				nodeFunc = GUIWindow_Node;
 				nodeText = node.PrettyName;
 			}
-			
+
 			nodeRect = GUILayout.Window(nodeID, nodeRect, nodeFunc, nodeText,
 										GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
 
@@ -284,7 +284,7 @@ namespace RT.MatEditor
 		{
 			GUILayout.BeginVertical();
 			GUILayout.BeginHorizontal();
-			
+
 			GUILayout.BeginVertical();
 			for (int i = 0; i < Graph.NRoots; ++i)
 				GUIWindowInput(null, i, false);
@@ -347,14 +347,14 @@ namespace RT.MatEditor
 			}
 
 			GUILayout.EndHorizontal();
-			
+
 			//Custom GUI.
 			MV_Base.GUIResults subResult = node.DoCustomGUI();
 			if (subResult != MaterialValue.MV_Base.GUIResults.Nothing)
 			{
 				//TODO: "Undo" here.
 			}
-			
+
 			//"Duplicate" and "Delete" buttons.
 			//TODO: Duplicate by serializing the node to a stream, then deserializing a new node. Then add to its position.
 			GUILayout.BeginHorizontal();
@@ -370,7 +370,7 @@ namespace RT.MatEditor
 				Graph.DeleteNode(node);
 			}
 			GUILayout.EndHorizontal();
-			
+
 			GUILayout.EndVertical();
 
 			GUI.DragWindow();

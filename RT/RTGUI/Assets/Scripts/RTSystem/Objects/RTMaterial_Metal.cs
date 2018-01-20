@@ -62,8 +62,10 @@ namespace RT
 				outTopLevelMVs.Add(smoothness);
 				outTopLevelMVs.Add(emissive);
 
-				return MaterialValue.ShaderGenerator.GenerateShader(shaderName, tempGraph.UniqueNodeIDs,
-																	albedo, metallic, smoothness, emissive);
+				return MaterialValue.ShaderGenerator.GenerateShader_PBR(shaderName,
+																		tempGraph.UniqueNodeIDs,
+																		albedo, metallic, smoothness,
+																		emissive);
 			}
 			catch (Exception e)
 			{

@@ -16,6 +16,7 @@ void ConstantMedium::PrecalcData()
 bool ConstantMedium::CastRay(const Ray& ray, Vertex& outHit, FastRand& prng,
                              float tMin, float tMax) const
 {
+    //Check the bounding box first to save time.
     BoundingBox surfaceBox;
     Surface->GetBoundingBox(surfaceBox);
     if (!surfaceBox.RayIntersects(ray, tMin, tMax))

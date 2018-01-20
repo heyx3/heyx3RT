@@ -44,8 +44,10 @@ namespace RT
 				tempGraph.AddNode(smoothness);
 				tempGraph.AddNode(emissive);
 
-				return MaterialValue.ShaderGenerator.GenerateShader(shaderName, tempGraph.UniqueNodeIDs,
-																	albedo, metallic, smoothness, emissive);
+				return MaterialValue.ShaderGenerator.GenerateShader_PBR(shaderName,
+																		tempGraph.UniqueNodeIDs,
+																	    albedo, metallic, smoothness,
+																		emissive);
 			}
 			catch (Exception e)
 			{

@@ -13,7 +13,8 @@ namespace RT
 	{
 		protected const string TypeName_Lambert = "Lambert",
 		                       TypeName_Metal = "Metal",
-							   TypeName_Dielectric = "Dielectric";
+							   TypeName_Dielectric = "Dielectric",
+							   TypeName_Medium = "Medium";
 
 
 		public static void Serialize(RTMaterial mat, string name, Serialization.DataWriter writer)

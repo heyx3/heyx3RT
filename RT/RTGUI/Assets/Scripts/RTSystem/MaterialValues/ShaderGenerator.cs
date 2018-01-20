@@ -35,11 +35,11 @@ namespace RT.MaterialValue
 
 
 		/// <summary>
-		/// Generates a custom Unity shader using the given PBR outputs.
+		/// Generates a custom Standard Specular shader using the given PBR outputs.
 		/// </summary>
-		public static string GenerateShader(string name, Dictionary<MV_Base, uint> idLookup,
-											MV_Base albedo, MV_Base metallic,
-											MV_Base smoothness, MV_Base emissive)
+		public static string GenerateShader_PBR(string name, Dictionary<MV_Base, uint> idLookup,
+												MV_Base albedo, MV_Base metallic,
+												MV_Base smoothness, MV_Base emissive)
 		{
 			//Insert the MaterialValues into various parts of the shader.
 
@@ -146,8 +146,11 @@ namespace RT.MaterialValue
 
 			return shader.ToString().Replace("\r", "");
 		}
-		public static string GenerateShader(string name, Dictionary<MV_Base, uint> idLookup,
-											MV_Base albedo, MV_Base refractStrength)
+		/// <summary>
+		/// Generates a custom transparent/refracting shader using the given outputs.
+		/// </summary>
+		public static string GenerateShader_Refract(string name, Dictionary<MV_Base, uint> idLookup,
+												    MV_Base albedo, MV_Base refractStrength)
 		{
 			StringBuilder shaderlabProperties = new StringBuilder();
 			shaderlabProperties.AppendLine("\tProperties\n\t{");
@@ -278,6 +281,93 @@ namespace RT.MaterialValue
 		}
 	}
 	Fallback ""Diffuse""
+}");
+
+			return shader.ToString().Replace("\r", "");
+		}
+		/// <summary>
+		/// Generates a custom fog shader using the given outputs.
+		/// </summary>
+		public static string GenerateShader_Fog(string name, Dictionary<MV_Base, uint> idLookup,
+												MV_Base color, MV_Base density)
+		{
+			StringBuilder shaderlabProperties = new StringBuilder();
+			shaderlabProperties.AppendLine("\tProperties\n\t{");
+			StringBuilder cgDefinitions = new StringBuilder();
+			cgDefinitions.AppendLine("//------------Generated from MV_Base instances-------");
+			StringBuilder funcBody = new StringBuilder();
+			
+			Insert(shaderlabProperties, cgDefinitions, funcBody, idLookup, color, density);
+
+			shaderlabProperties.Append("\t}");
+			cgDefinitions.Append("\t\t\t//---------------------------------------------------");
+
+			
+			//Generate the rest of the shader.
+
+			StringBuilder shader = new StringBuilder();
+
+			shader.Append("Shader \"");
+			shader.Append(name);
+			shader.AppendLine("\"");
+			shader.AppendLine("{");
+			shader.AppendLine(shaderlabProperties.ToString());
+
+			shader.Append(@"
+	SubShader
+	{
+		Tags { ""Queue""=""Transparent+5"" ""RenderType""=""Transparent"" }
+		Blend SrcAlpha OneMinusSrcAlpha
+		
+		Pass
+		{
+			CGPROGRAM
+
+			#pragma vertex vert
+			#pragma fragment frag
+
+			#include ""UnityCG.cginc""
+
+			");
+			shader.AppendLine(cgDefinitions.ToString());
+			shader.Append(@"
+			struct VertexInput
+			{
+				float4 vertex : POSITION;
+			};
+			struct FragmentInput
+			{
+	            float4 vertex : SV_POSITION;
+			};
+
+			FragmentInput vert(VertexInput v)
+			{
+				FragmentInput o;
+				o.vertex = mul(UNITY_MATRIX_MVP, v.vertex);
+				return o;
+			}
+			half4 frag(FragmentInput i) : SV_Target
+			{
+				//-------------------------------
+				//MaterialValue graph:
+				");
+			shader.AppendLine(funcBody.ToString());
+			shader.Append(@"
+				//------------------------------
+
+				float strength = ");
+			shader.Append(density.ShaderValueName(idLookup));
+			shader.Append(" / (");
+			shader.Append(density.ShaderValueName(idLookup));
+			shader.Append(@" + 1.0);
+
+				return float4(");
+			shader.Append(color.ShaderValueName(idLookup));
+			shader.Append(@", strength);
+			}
+			ENDCG
+		}
+	}
 }");
 
 			return shader.ToString().Replace("\r", "");

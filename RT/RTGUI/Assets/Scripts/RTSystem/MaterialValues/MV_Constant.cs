@@ -71,7 +71,6 @@ namespace RT.MaterialValue
 
 		public override string ShaderValueName(Dictionary<MV_Base, uint> idLookup)
 		{
-			
 			System.Text.StringBuilder valStr = new System.Text.StringBuilder();
 			valStr.Append(Value.OutputSize.ToHLSLType());
 			valStr.Append("(");
